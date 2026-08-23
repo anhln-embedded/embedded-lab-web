@@ -1,0 +1,98 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Post {
+  id              String    @id @default(cuid())
+  title           String
+  slug            String    @unique
+  excerpt         String
+  contentHtml     String    // Rich HTML / WYSIWYG content
+  coverImage      String?   @default("/images/logo.png")
+  coverAlt        String?
+  postType        String    @default("technical") // recruitment, daily, technical, event, general
+  tags            String    @default("embedded") // comma-separated or JSON string
+  series          String?
+  seriesOrder     Int?
+  readingTime     Int       @default(5)
+  featured        Boolean   @default(false)
+  pinned          Boolean   @default(false)
+  draft           Boolean   @default(false)
+  authorName      String    @default("Embedded-AIoT Lab PTIT")
+  authorTitle     String?   @default("Kỹ sư Lab PTIT")
+  authorAvatar    String?   @default("/images/logo.png")
+  facebookPostUrl String?
+  githubUrl       String?
+  demoUrl         String?
+  views           Int       @default(0)
+  likesCount      Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  comments        Comment[]
+}
+
+model Course {
+  id          String         @id @default(cuid())
+  title       String
+  slug        String         @unique
+  description String
+  level       String         @default("intermediate") // beginner, intermediate, advanced
+  category    String         @default("embedded-rtos") // embedded-rtos, embedded-linux, tinyml, fpga, pcb-hardware
+  duration    String         @default("6 hours")
+  price       String         @default("free") // free, paid
+  thumbnail   String?        @default("/images/logo.png")
+  githubRepo  String?
+  featured    Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  modules     CourseModule[]
+}
+
+model CourseModule {
+  id        String   @id @default(cuid())
+  module    String   // Module title
+  order     Int      @default(0)
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons   Lesson[]
+}
+
+model Lesson {
+  id          String       @id @default(cuid())
+  title       String
+  slug        String
+  duration    String       @default("15 min")
+  free        Boolean      @default(true)
+  summary     String?
+  contentHtml String?      // Rich HTML Lesson content
+  videoUrl    String?
+  codeSnippet String?
+  order       Int          @default(0)
+  moduleId    String
+  module      CourseModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  postId     String
+  post       Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author     String
+  authorRole String?
+  content    String
+  createdAt  DateTime @default(now())
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      String   @default("student") // student, mentor, admin, superadmin
+  avatar    String?  @default("/images/logo.png")
+  title     String?
+  createdAt DateTime @default(now())
+}

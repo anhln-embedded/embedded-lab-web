@@ -1,0 +1,292 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ============================================
+   DESIGN TOKENS - EMBEDDED-AIOT (Electronics of PTIT)
+   Premium High-Tech Dark Mode (Deep Slate Canvas) with Coral (#f05a28) & Amber (#f59e0b)
+   ============================================ */
+
+:root {
+  /* Light mode default (when not .dark) */
+  --bg-primary: #f8fafc;
+  --bg-panel: #ffffff;
+  --bg-elevated: #f1f5f9;
+  --bg-code: #1e293b;
+  --text-primary: #0f172a;      /* Bold dark text for light mode */
+  --text-secondary: #334155;    /* Slate body text for light mode */
+  --text-muted: #64748b;        /* Muted gray text for light mode */
+  --text-disabled: #94a3b8;
+  --border: rgba(0, 0, 0, 0.12);
+  --border-subtle: rgba(0, 0, 0, 0.05);
+  --border-strong: rgba(240, 90, 40, 0.4);
+
+  /* Accent - Brand Coral Orange (from EMBEDDED-AIOT Logo) */
+  --accent: #f05a28;            /* Core Brand Coral */
+  --accent-hover: #ff7243;      /* Bright vibrant coral hover */
+  --accent-muted: rgba(240, 90, 40, 0.14); /* Subtle ambient glow */
+  --accent-gradient: linear-gradient(135deg, #f05a28 0%, #f59e0b 100%);
+
+  /* Secondary Accent - Warm Amber Orbit (from Logo) */
+  --accent-amber: #f59e0b;
+  --accent-amber-hover: #fbbf24;
+  --accent-amber-muted: rgba(245, 158, 11, 0.14);
+
+  /* Tertiary - High Speed RF / Cyan */
+  --accent-cyan: #06b6d4;
+  --accent-cyan-muted: rgba(6, 182, 212, 0.14);
+
+  /* Semantic */
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-pill: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 16px 36px rgba(0, 0, 0, 0.12);
+  --shadow-accent: 0 0 25px rgba(240, 90, 40, 0.25);
+
+  /* Fonts */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Dark mode overrides (when html has .dark) */
+.dark, :root.dark {
+  --bg-primary: #090d16;        /* Deep Midnight Slate Canvas */
+  --bg-panel: #111726;          /* Card & Sidebar surface */
+  --bg-elevated: #1a2336;       /* Dropdowns, Modals, Hover state */
+  --bg-code: #0b101b;           /* Terminal / Code editor background */
+
+  --text-primary: #ffffff;      /* PURE CRISP WHITE - 100% VISIBLE ON DARK */
+  --text-secondary: #cbd5e1;    /* Slate Silver - Highly readable */
+  --text-muted: #94a3b8;        /* Slate muted text */
+  --text-disabled: #4b586e;
+
+  --border: rgba(255, 255, 255, 0.12);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(240, 90, 40, 0.5);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 16px 36px rgba(0, 0, 0, 0.7);
+}
+
+/* ============================================
+   TAILWIND v4 THEME MAPPING
+   ============================================ */
+
+@theme inline {
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-panel: var(--bg-panel);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-bg-code: var(--bg-code);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-disabled: var(--text-disabled);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-muted: var(--accent-muted);
+  --color-accent-amber: var(--accent-amber);
+  --color-accent-cyan: var(--accent-cyan);
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-pill: var(--radius-pill);
+
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-accent: var(--shadow-accent);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  --text-display-hero: 44px;
+  --text-display-hero--line-height: 1.1;
+  --text-display-hero--letter-spacing: -0.02em;
+  --text-display-hero--font-weight: 700;
+
+  --text-section-heading: 30px;
+  --text-section-heading--line-height: 1.2;
+  --text-section-heading--letter-spacing: -0.015em;
+  --text-section-heading--font-weight: 600;
+
+  --text-card-title: 19px;
+  --text-card-title--line-height: 1.35;
+  --text-card-title--font-weight: 600;
+
+  --text-body-large: 17px;
+  --text-body-large--line-height: 1.65;
+
+  --text-body: 15px;
+  --text-body--line-height: 1.6;
+
+  --text-caption: 13px;
+  --text-caption--line-height: 1.5;
+
+  --text-code: 13.5px;
+  --text-code--line-height: 1.6;
+}
+
+/* ============================================
+   BASE STYLES & UTILITIES
+   ============================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+::selection {
+  background-color: rgba(240, 90, 40, 0.3);
+  color: #ffffff;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* Custom glow utility */
+.glow-accent {
+  box-shadow: 0 0 30px rgba(240, 90, 40, 0.25);
+}
+
+.glow-amber {
+  box-shadow: 0 0 30px rgba(245, 158, 11, 0.25);
+}
+
+.glow-cyan {
+  box-shadow: 0 0 30px rgba(6, 182, 212, 0.25);
+}
+
+.gradient-text-brand {
+  background: linear-gradient(135deg, #f05a28 0%, #f59e0b 55%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-text-linear {
+  background: linear-gradient(180deg, var(--text-primary) 0%, var(--text-muted) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Linear & High-Tech Circuit Utilities */
+.bg-grid-pattern {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, var(--border-subtle) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--border-subtle) 1px, transparent 1px);
+}
+
+.bg-dots-pattern {
+  background-size: 24px 24px;
+  background-image: radial-gradient(var(--border) 1px, transparent 1px);
+}
+
+.linear-card-border {
+  position: relative;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+}
+
+.linear-card-border:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 30px -5px rgba(240, 90, 40, 0.2);
+}
+
+.linear-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.linear-shine::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.linear-shine:hover::after {
+  opacity: 1;
+}
+
+/* Container */
+.container {
+  width: 100%;
+  max-width: 1240px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
