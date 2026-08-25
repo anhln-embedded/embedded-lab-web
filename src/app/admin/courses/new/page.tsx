@@ -147,7 +147,7 @@ export default function NewCoursePage() {
     setModules(updated);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !description.trim()) {
       alert("Vui lòng điền đủ tiêu đề và mô tả khóa học.");
@@ -169,9 +169,42 @@ export default function NewCoursePage() {
     const totalLessons = modules.reduce((total, m) => total + m.lessons.length, 0);
 
     try {
+      const generatedSlug =
+        slug.trim() ||
+        title
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "") || `course-${Date.now()}`;
+
+      // 1. Lưu vào SQLite Database qua API
+      try {
+        await fetch("/api/courses", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: title.trim(),
+            slug: generatedSlug,
+            description: description.trim(),
+            category,
+            level,
+            duration: duration.trim() || `${totalLessons * 20} phút`,
+            price,
+            thumbnail: thumbnail.trim() || "/images/logo.png",
+            githubRepo: githubRepo.trim() || undefined,
+            featured: true,
+            modules,
+          }),
+        });
+      } catch (apiErr) {
+        console.warn("Could not save to SQLite API, fallback to LocalStorage:", apiErr);
+      }
+
+      // 2. Lưu vào LocalStorage
       const newCourse = createCourse({
         title: title.trim(),
-        slug: slug.trim() || `course-${Date.now()}`,
+        slug: generatedSlug,
         description: description.trim(),
         category,
         level,
@@ -182,12 +215,13 @@ export default function NewCoursePage() {
         price,
         thumbnail: thumbnail.trim() || "/images/logo.png",
         githubRepo: githubRepo.trim() || undefined,
-        instructor: instructor.trim() || "Embedded-AIoT Lab PTIT",
+        instructor: instructor.trim() || "Embedded AIoT Laboratory",
         curriculum: modules,
         body: { raw: "" },
       });
 
-      alert("🎉 Đã tạo khóa học thành công!");
+      window.dispatchEvent(new CustomEvent("embedded_courses_updated"));
+      alert("🎉 Đã tạo và xuất bản khóa học thành công!");
       router.push(`/courses/${newCourse.slug}`);
     } catch (err) {
       console.error(err);

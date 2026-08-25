@@ -50,6 +50,12 @@ export default function CoursePage({ params }: PageProps) {
         console.warn("Could not fetch course from SQLite API:", e);
       }
 
+      const dynamicCourse = getDynamicCourseBySlug(slug);
+      if (dynamicCourse) {
+        setCourse(dynamicCourse);
+        return;
+      }
+
       setCourse(null);
     }
 

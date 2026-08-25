@@ -17,17 +17,67 @@ export default function CourseLessonPage({ params }: LessonPageProps) {
   const [course, setCourse] = useState<CourseData | null | undefined>(undefined);
 
   useEffect(() => {
-    const staticCourse = getStaticCourseBySlug(resolvedParams.slug);
-    if (staticCourse) {
-      setCourse(staticCourse);
-      return;
+    async function loadCourse() {
+      const slug = resolvedParams.slug;
+      try {
+        const res = await fetch(`/api/courses/${slug}`);
+        const json = await res.json();
+        if (json.success && json.data) {
+          const c = json.data;
+          const formatted: CourseData = {
+            _id: c.id,
+            title: c.title,
+            slug: c.slug,
+            description: c.description,
+            level: c.level || "intermediate",
+            category: c.category || "embedded-rtos",
+            duration: c.duration || "6 hours",
+            lessons: c.modules ? c.modules.reduce((sum: number, m: any) => sum + (m.lessons?.length || 0), 0) : 0,
+            prerequisites: [],
+            tags: [c.category || "embedded"],
+            price: c.price || "free",
+            thumbnail: c.thumbnail || "/images/logo.png",
+            githubRepo: c.githubRepo,
+            featured: c.featured,
+            url: `/courses/${c.slug}`,
+            curriculum: (c.modules || []).map((m: any) => ({
+              module: m.module,
+              lessons: (m.lessons || []).map((l: any) => ({
+                title: l.title,
+                slug: l.slug,
+                duration: l.duration || "20 phút",
+                free: l.free !== undefined ? l.free : true,
+                summary: l.summary || "",
+                contentHtml: l.contentHtml || "",
+                videoUrl: l.videoUrl || undefined,
+                codeSnippet: l.codeSnippet || undefined,
+              })),
+            })),
+            body: { raw: "" },
+          };
+          setCourse(formatted);
+          return;
+        }
+      } catch (e) {
+        console.warn("Could not fetch course from SQLite API:", e);
+      }
+
+      const staticCourse = getStaticCourseBySlug(slug);
+      if (staticCourse) {
+        setCourse(staticCourse);
+        return;
+      }
+
+      const dynamicCourse = getDynamicCourseBySlug(slug);
+      if (dynamicCourse) {
+        setCourse(dynamicCourse);
+      } else {
+        setCourse(null);
+      }
     }
 
-    const dynamicCourse = getDynamicCourseBySlug(resolvedParams.slug);
-    if (dynamicCourse) {
-      setCourse(dynamicCourse);
-    } else {
-      setCourse(null);
+    if (resolvedParams.slug) {
+      loadCourse();
     }
   }, [resolvedParams.slug]);
 
