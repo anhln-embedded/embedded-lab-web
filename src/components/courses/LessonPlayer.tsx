@@ -28,8 +28,6 @@ import {
   Volume2,
   Maximize2,
   Minimize2,
-  Tv,
-  ExternalLink,
 } from "lucide-react";
 
 interface LessonPlayerProps {
@@ -73,10 +71,9 @@ export function LessonPlayer({
   const [copiedCode, setCopiedCode] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState<"video" | "text">("video");
   const [isFullscreen, setIsFullscreen] = React.useState(false);
-  const [isTheaterMode, setIsTheaterMode] = React.useState(false);
   const videoContainerRef = React.useRef<HTMLDivElement>(null);
 
-  // Fullscreen change listener & Keyboard Shortcuts (F = Fullscreen, T = Theater)
+  // Fullscreen change listener & Keyboard Shortcuts (F = Fullscreen)
   React.useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(Boolean(document.fullscreenElement || (document as any).webkitFullscreenElement));
@@ -90,9 +87,6 @@ export function LessonPlayer({
       if (e.key === "f" || e.key === "F") {
         e.preventDefault();
         toggleFullscreen();
-      } else if (e.key === "t" || e.key === "T") {
-        e.preventDefault();
-        setIsTheaterMode((prev) => !prev);
       }
     };
 
@@ -213,16 +207,14 @@ export function LessonPlayer({
         </div>
       </div>
 
-      <div className={`container py-8 transition-all duration-300 ${isTheaterMode ? "max-w-7xl" : "max-w-6xl"}`}>
-        <div className={`grid grid-cols-1 gap-8 ${isTheaterMode ? "grid-cols-1" : "lg:grid-cols-12"}`}>
+      <div className="container py-8 max-w-6xl">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Main Lesson Player Section */}
-          <div className={`${isTheaterMode ? "w-full" : "lg:col-span-8"} space-y-6 min-w-0`}>
+          <div className="lg:col-span-8 space-y-6 min-w-0">
             {/* Interactive Video Player Box */}
             <div
               ref={videoContainerRef}
-              className={`relative aspect-video rounded-2xl md:rounded-3xl bg-black border border-border/80 overflow-hidden shadow-2xl group transition-all duration-300 ${
-                isTheaterMode ? "w-full max-h-[78vh]" : ""
-              }`}
+              className="relative aspect-video rounded-2xl md:rounded-3xl bg-black border border-border/80 overflow-hidden shadow-2xl group"
             >
               {isPlaying ? (
                 <div className="relative w-full h-full">
@@ -272,45 +264,6 @@ export function LessonPlayer({
                     </p>
                   </div>
                 </div>
-              )}
-            </div>
-
-            {/* Quick Video Controls Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 rounded-2xl bg-bg-panel border border-border/70 text-xs shadow-sm">
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={toggleFullscreen}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-accent text-white font-bold hover:bg-accent-hover shadow-sm hover:scale-102 transition-all"
-                  title="Xem toàn màn hình che Taskbar và Trình duyệt"
-                >
-                  {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
-                  <span>{isFullscreen ? "Thu nhỏ màn hình (Esc)" : "⛶ Toàn Màn Hình Full (Ẩn Taskbar)"}</span>
-                </button>
-
-                <button
-                  onClick={() => setIsTheaterMode(!isTheaterMode)}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-all font-semibold ${
-                    isTheaterMode
-                      ? "bg-bg-elevated border-accent text-accent"
-                      : "bg-bg-elevated border-border text-text-secondary hover:text-text-primary"
-                  }`}
-                  title="Mở rộng kích thước video toàn chiều ngang trang web"
-                >
-                  <Tv className="w-3.5 h-3.5" />
-                  <span>{isTheaterMode ? "Thu gọn giao diện" : "📺 Chế độ Rạp chiếu phim"}</span>
-                </button>
-              </div>
-
-              {currentLesson.videoUrl && (
-                <a
-                  href={currentLesson.videoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-text-muted hover:text-accent font-medium transition-colors"
-                >
-                  <span>Mở trên YouTube</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
               )}
             </div>
 
