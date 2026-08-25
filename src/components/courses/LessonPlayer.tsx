@@ -51,9 +51,12 @@ function getEmbedUrl(url?: string | null): string | null {
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
   const match = url.match(regExp);
   if (match && match[2].length === 11) {
-    return `https://www.youtube.com/embed/${match[2]}?autoplay=1&rel=0&modestbranding=1`;
+    return `https://www.youtube-nocookie.com/embed/${match[2]}?autoplay=1&rel=0&fs=1&enablejsapi=1&modestbranding=1`;
   }
-  if (url.includes("embed/")) return `${url}?autoplay=1`;
+  if (url.includes("embed/")) {
+    const separator = url.includes("?") ? "&" : "?";
+    return `${url}${separator}autoplay=1&fs=1&enablejsapi=1`;
+  }
   return null;
 }
 
@@ -73,23 +76,63 @@ export function LessonPlayer({
   const [isTheaterMode, setIsTheaterMode] = React.useState(false);
   const videoContainerRef = React.useRef<HTMLDivElement>(null);
 
-  // Fullscreen change listener
+  // Fullscreen change listener & Keyboard Shortcuts (F = Fullscreen, T = Theater)
   React.useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(Boolean(document.fullscreenElement));
+      setIsFullscreen(Boolean(document.fullscreenElement || (document as any).webkitFullscreenElement));
     };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger if user is typing in an input
+      if (["INPUT", "TEXTAREA", "SELECT"].includes((e.target as HTMLElement)?.tagName)) {
+        return;
+      }
+      if (e.key === "f" || e.key === "F") {
+        e.preventDefault();
+        toggleFullscreen();
+      } else if (e.key === "t" || e.key === "T") {
+        e.preventDefault();
+        setIsTheaterMode((prev) => !prev);
+      }
+    };
+
     document.addEventListener("fullscreenchange", handleFullscreenChange);
-    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
 
   const toggleFullscreen = () => {
-    if (!videoContainerRef.current) return;
-    if (!document.fullscreenElement) {
-      videoContainerRef.current.requestFullscreen().catch((err) => {
-        console.error("Error attempting to enable full-screen mode:", err);
-      });
+    const elem = videoContainerRef.current;
+    if (!elem) return;
+
+    const isCurrentlyFull = Boolean(document.fullscreenElement || (document as any).webkitFullscreenElement);
+
+    if (!isCurrentlyFull) {
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+      } else if ((elem as any).webkitRequestFullscreen) {
+        (elem as any).webkitRequestFullscreen();
+      } else if ((elem as any).mozRequestFullScreen) {
+        (elem as any).mozRequestFullScreen();
+      } else if ((elem as any).msRequestFullscreen) {
+        (elem as any).msRequestFullscreen();
+      }
     } else {
-      document.exitFullscreen().catch(console.error);
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if ((document as any).webkitExitFullscreen) {
+        (document as any).webkitExitFullscreen();
+      } else if ((document as any).mozCancelFullScreen) {
+        (document as any).mozCancelFullScreen();
+      } else if ((document as any).msExitFullscreen) {
+        (document as any).msExitFullscreen();
+      }
     }
   };
 
