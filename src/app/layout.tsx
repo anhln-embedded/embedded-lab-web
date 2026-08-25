@@ -49,7 +49,10 @@ export const metadata: Metadata = {
   publisher: "Khoa Điện Tử 1 - Học viện Công nghệ Bưu chính Viễn thông",
   robots: "index, follow",
   icons: {
-    icon: "/images/logo.png",
+    icon: [
+      { url: "/images/logo.png", type: "image/png" },
+      { url: "/favicon.ico" },
+    ],
     shortcut: "/images/logo.png",
     apple: "/images/logo.png",
   },
