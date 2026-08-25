@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { highlightCode } from "@/lib/syntax-highlighter";
 import {
   X,
   Code,
@@ -48,18 +49,18 @@ void app_main(void) {
 
   const handleInsert = () => {
     if (!code.trim()) return;
-    const escapedCode = code
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
+    const highlightedCode = highlightCode(code, lang);
 
     const html = `
-<div class="code-block-container" style="background: #0d0e10; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 10px; margin: 20px 0; overflow: hidden; font-family: 'JetBrains Mono', monospace;">
-  <div style="background: #15171a; padding: 8px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
-    <span style="color: #5e6ad2; font-size: 12px; font-weight: 600; text-transform: uppercase;">${lang.toUpperCase()} • ${filename || "Code"}</span>
-    <span style="color: #8a8f98; font-size: 11px;">Embedded Lab</span>
+<div class="code-block-container" style="background: #0d1117; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; margin: 20px 0; overflow: hidden; font-family: 'JetBrains Mono', 'Fira Code', monospace; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+  <div style="background: #161b22; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #30363d;">
+    <span style="color: #f05a28; font-size: 12px; font-weight: 700; font-family: monospace; display: inline-flex; align-items: center; gap: 6px;">
+      <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #f05a28;"></span>
+      ${filename || "source." + lang} (${lang.toUpperCase()})
+    </span>
+    <span style="color: #8b949e; font-size: 11px; font-family: monospace;">Embedded Lab</span>
   </div>
-  <pre style="margin: 0; padding: 16px; overflow-x: auto; font-size: 13.5px; line-height: 1.6; color: #e2e8f0;"><code>${escapedCode}</code></pre>
+  <pre style="margin: 0; padding: 16px 20px; overflow-x: auto; font-size: 13.5px; line-height: 1.65; color: #e6edf3; background: #0d1117;"><code>${highlightedCode}</code></pre>
 </div>
 <p><br/></p>
 `;

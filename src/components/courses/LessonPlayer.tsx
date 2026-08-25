@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CourseData, LessonData } from "@/lib/content";
 import { useAuth } from "@/context/AuthContext";
 import { InlineLessonEditorModal } from "./InlineLessonEditorModal";
+import { CodeSnippetView } from "@/components/ui/CodeSnippetView";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -382,36 +383,14 @@ export function LessonPlayer({
             {/* Tab: Video & Practice */}
             {activeTab === "video" && (
               <div className="space-y-6">
-                {/* Code Snippet Box with Copy Button */}
+                {/* Code Snippet Box with Advanced Syntax Highlighting */}
                 {currentLessonState.codeSnippet && (
-                  <div className="rounded-2xl bg-bg-panel border border-border/80 overflow-hidden shadow-md">
-                    <div className="px-4 py-3 bg-bg-elevated border-b border-border/60 flex items-center justify-between">
-                      <span className="text-xs font-bold text-text-primary flex items-center gap-1.5 font-mono">
-                        <FileCode className="w-4 h-4 text-accent" />
-                        Mã nguồn mẫu thực hành (C/C++ Source Code):
-                      </span>
-                      <button
-                        onClick={() => handleCopyCode(currentLessonState.codeSnippet!)}
-                        className="px-3 py-1 rounded-lg bg-bg-elevated hover:bg-bg-code border border-border text-[11px] font-semibold text-text-secondary hover:text-accent transition-all flex items-center gap-1"
-                      >
-                        {copiedCode ? (
-                          <>
-                            <Check className="w-3.5 h-3.5 text-emerald-400" />
-                            <span className="text-emerald-400">Đã sao chép!</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-3.5 h-3.5" />
-                            <span>Sao chép code</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-
-                    <pre className="p-4 bg-slate-950 dark:bg-black text-xs font-mono text-emerald-400 overflow-x-auto leading-relaxed max-h-96">
-                      <code>{currentLessonState.codeSnippet}</code>
-                    </pre>
-                  </div>
+                  <CodeSnippetView
+                    code={currentLessonState.codeSnippet}
+                    language="c"
+                    filename="firmware_main.c"
+                    title="Mã nguồn mẫu thực hành (C/C++ Source Code)"
+                  />
                 )}
 
                 {/* Terminal Guide Box */}
