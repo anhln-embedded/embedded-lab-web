@@ -254,10 +254,6 @@ export function FanpageHeader() {
                     <MapPin className="w-3.5 h-3.5 text-accent" />
                     Sân B9 - Cơ sở Hà Đông
                   </span>
-                  <span className="flex items-center gap-1">
-                    <Users className="w-3.5 h-3.5 text-cyan-400" />
-                    1.2k Sinh viên & Kỹ sư theo dõi
-                  </span>
                 </div>
               </div>
             </div>
