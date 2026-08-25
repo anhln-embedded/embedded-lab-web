@@ -379,7 +379,7 @@ export default function EditCoursePage({ params }: PageProps) {
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-bg-code border border-border text-sm text-text-primary focus:outline-none focus:border-accent"
+                  className="w-full px-4 py-2.5 rounded-xl bg-bg-elevated/70 dark:bg-bg-elevated border border-border text-sm text-text-primary focus:outline-none focus:border-accent"
                 />
               </div>
 
@@ -391,7 +391,7 @@ export default function EditCoursePage({ params }: PageProps) {
                   type="text"
                   value={slug}
                   onChange={(e) => setSlug(e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl bg-bg-code border border-border text-xs text-text-primary font-mono"
+                  className="w-full px-4 py-2 rounded-xl bg-bg-elevated/70 dark:bg-bg-elevated border border-border text-xs text-text-primary font-mono"
                 />
               </div>
 
@@ -402,7 +402,7 @@ export default function EditCoursePage({ params }: PageProps) {
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value as CourseCategory)}
-                  className="w-full px-4 py-2 rounded-xl bg-bg-code border border-border text-xs text-text-primary focus:outline-none focus:border-accent"
+                  className="w-full px-4 py-2 rounded-xl bg-bg-elevated/70 dark:bg-bg-elevated border border-border text-xs text-text-primary focus:outline-none focus:border-accent"
                 >
                   {COURSE_CATEGORIES.map((cat) => (
                     <option key={cat.id} value={cat.id}>
@@ -419,7 +419,7 @@ export default function EditCoursePage({ params }: PageProps) {
                 <select
                   value={level}
                   onChange={(e) => setLevel(e.target.value as any)}
-                  className="w-full px-4 py-2 rounded-xl bg-bg-code border border-border text-xs text-text-primary focus:outline-none focus:border-accent"
+                  className="w-full px-4 py-2 rounded-xl bg-bg-elevated/70 dark:bg-bg-elevated border border-border text-xs text-text-primary focus:outline-none focus:border-accent"
                 >
                   <option value="beginner">Căn bản (Beginner)</option>
                   <option value="intermediate">Trung cấp (Intermediate)</option>
@@ -436,7 +436,7 @@ export default function EditCoursePage({ params }: PageProps) {
                   value={duration}
                   onChange={(e) => setDuration(e.target.value)}
                   placeholder="VD: 35 giờ"
-                  className="w-full px-4 py-2 rounded-xl bg-bg-code border border-border text-xs text-text-primary"
+                  className="w-full px-4 py-2 rounded-xl bg-bg-elevated/70 dark:bg-bg-elevated border border-border text-xs text-text-primary"
                 />
               </div>
 
@@ -448,7 +448,7 @@ export default function EditCoursePage({ params }: PageProps) {
                   type="text"
                   value={thumbnail}
                   onChange={(e) => setThumbnail(e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl bg-bg-code border border-border text-xs text-text-primary font-mono"
+                  className="w-full px-4 py-2 rounded-xl bg-bg-elevated/70 dark:bg-bg-elevated border border-border text-xs text-text-primary font-mono"
                 />
               </div>
 
@@ -461,7 +461,7 @@ export default function EditCoursePage({ params }: PageProps) {
                   value={githubRepo}
                   onChange={(e) => setGithubRepo(e.target.value)}
                   placeholder="https://github.com/embedded-aiot-ptit/..."
-                  className="w-full px-4 py-2 rounded-xl bg-bg-code border border-border text-xs text-text-primary font-mono"
+                  className="w-full px-4 py-2 rounded-xl bg-bg-elevated/70 dark:bg-bg-elevated border border-border text-xs text-text-primary font-mono"
                 />
               </div>
 
@@ -474,7 +474,7 @@ export default function EditCoursePage({ params }: PageProps) {
                   required
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-bg-code border border-border text-xs text-text-primary focus:outline-none focus:border-accent"
+                  className="w-full px-4 py-2.5 rounded-xl bg-bg-elevated/70 dark:bg-bg-elevated border border-border text-xs text-text-primary focus:outline-none focus:border-accent"
                 />
               </div>
             </div>
@@ -515,7 +515,7 @@ export default function EditCoursePage({ params }: PageProps) {
                         type="text"
                         value={mod.module}
                         onChange={(e) => handleUpdateModuleName(modIdx, e.target.value)}
-                        className="w-full px-3 py-1.5 rounded-lg bg-bg-code border border-border text-xs font-bold text-text-primary focus:outline-none focus:border-accent"
+                        className="w-full px-3 py-1.5 rounded-lg bg-bg-elevated/70 dark:bg-bg-elevated border border-border text-xs font-bold text-text-primary focus:outline-none focus:border-accent"
                       />
                     </div>
 
@@ -549,7 +549,7 @@ export default function EditCoursePage({ params }: PageProps) {
                               onChange={(e) =>
                                 handleUpdateLesson(modIdx, lessonIdx, "title", e.target.value)
                               }
-                              className="w-full px-3 py-1.5 rounded-lg bg-bg-code border border-border text-xs font-bold text-text-primary"
+                              className="w-full px-3 py-1.5 rounded-lg bg-bg-elevated/70 dark:bg-bg-elevated border border-border text-xs font-bold text-text-primary"
                             />
                           </div>
 
@@ -563,7 +563,7 @@ export default function EditCoursePage({ params }: PageProps) {
                               onChange={(e) =>
                                 handleUpdateLesson(modIdx, lessonIdx, "duration", e.target.value)
                               }
-                              className="w-full px-3 py-1.5 rounded-lg bg-bg-code border border-border text-xs"
+                              className="w-full px-3 py-1.5 rounded-lg bg-bg-elevated/70 dark:bg-bg-elevated border border-border text-xs"
                             />
                           </div>
 
@@ -592,7 +592,7 @@ export default function EditCoursePage({ params }: PageProps) {
                                 handleUpdateLesson(modIdx, lessonIdx, "videoUrl", e.target.value)
                               }
                               placeholder="https://www.youtube.com/watch?v=..."
-                              className="w-full px-3 py-1.5 rounded-lg bg-bg-code border border-border text-xs font-mono"
+                              className="w-full px-3 py-1.5 rounded-lg bg-bg-elevated/70 dark:bg-bg-elevated border border-border text-xs font-mono"
                             />
                           </div>
 
@@ -607,7 +607,7 @@ export default function EditCoursePage({ params }: PageProps) {
                                 handleUpdateLesson(modIdx, lessonIdx, "summary", e.target.value)
                               }
                               placeholder="Trọng tâm thực hành..."
-                              className="w-full px-3 py-1.5 rounded-lg bg-bg-code border border-border text-xs"
+                              className="w-full px-3 py-1.5 rounded-lg bg-bg-elevated/70 dark:bg-bg-elevated border border-border text-xs"
                             />
                           </div>
                         </div>
@@ -625,7 +625,7 @@ export default function EditCoursePage({ params }: PageProps) {
                               handleUpdateLesson(modIdx, lessonIdx, "codeSnippet", e.target.value)
                             }
                             placeholder="#include <stdint.h> ..."
-                            className="w-full px-3 py-2 rounded-lg bg-bg-code border border-border text-xs font-mono text-emerald-400 leading-relaxed"
+                            className="w-full px-3 py-2 rounded-lg bg-bg-elevated/70 dark:bg-bg-elevated border border-border text-xs font-mono text-emerald-400 leading-relaxed"
                           />
                         </div>
                       </div>

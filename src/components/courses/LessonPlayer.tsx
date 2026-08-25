@@ -296,15 +296,15 @@ export function LessonPlayer({
                     </button>
                   </div>
 
-                  <pre className="p-4 rounded-xl bg-bg-code border border-border text-xs font-mono text-emerald-400 overflow-x-auto leading-relaxed shadow-inner">
+                  <pre className="p-4 rounded-xl bg-slate-950 dark:bg-black border border-slate-800 text-xs font-mono text-emerald-400 overflow-x-auto leading-relaxed shadow-inner">
                     <code>{currentLesson.codeSnippet}</code>
                   </pre>
                 </div>
               )}
 
               {/* Terminal Guide Box */}
-              <div className="p-4 rounded-xl bg-bg-code border border-border/80 text-xs font-mono text-cyan-400 space-y-1.5">
-                <p className="text-text-muted">// Lệnh nạp và kiểm tra mã nguồn mẫu trên terminal:</p>
+              <div className="p-4 rounded-xl bg-slate-950 dark:bg-black border border-slate-800 text-xs font-mono text-cyan-400 space-y-1.5 shadow-inner">
+                <p className="text-slate-400">// Lệnh nạp và kiểm tra mã nguồn mẫu trên terminal:</p>
                 <p className="text-emerald-400">$ git clone {course.githubRepo || "https://github.com/embedded-aiot-ptit"}</p>
                 <p className="text-emerald-400">$ cd {course.slug}/lesson-{currentIndex + 1}</p>
                 <p className="text-emerald-400">$ make build && make flash</p>

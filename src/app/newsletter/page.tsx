@@ -39,7 +39,7 @@ export default function NewsletterPage() {
             name="email"
             placeholder="email.sinhvien@ptit.edu.vn"
             required
-            className="flex-1 px-4 py-3 bg-bg-code border border-transparent rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent text-sm"
+            className="flex-1 px-4 py-3 bg-bg-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent text-sm"
           />
           <Button type="submit" variant="primary" size="md" className="bg-accent hover:bg-accent-hover text-white font-semibold whitespace-nowrap">
             Đăng ký nhận tin
