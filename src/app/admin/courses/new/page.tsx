@@ -539,7 +539,7 @@ export default function NewCoursePage() {
                               handleUpdateLesson(modIdx, lessonIdx, "summary", e.target.value)
                             }
                             placeholder="Tóm tắt bài học ngắn gọn..."
-                            className="w-full px-2.5 py-1 bg-bg-elevated border border-border rounded-lg text-xs text-text-secondary focus:outline-none focus:border-cyan-500"
+                            className="w-full px-2.5 py-1.5 bg-bg-elevated border border-border rounded-lg text-xs text-text-secondary focus:outline-none focus:border-cyan-500"
                           />
 
                           <input
@@ -548,8 +548,31 @@ export default function NewCoursePage() {
                             onChange={(e) =>
                               handleUpdateLesson(modIdx, lessonIdx, "videoUrl", e.target.value)
                             }
-                            placeholder="Video URL (YouTube / Drive link nếu có)..."
-                            className="w-full px-2.5 py-1 bg-bg-elevated border border-border rounded-lg text-xs text-text-secondary focus:outline-none focus:border-cyan-500 font-mono"
+                            placeholder="Video URL (YouTube URL nếu có)..."
+                            className="w-full px-2.5 py-1.5 bg-bg-elevated border border-border rounded-lg text-xs text-text-secondary focus:outline-none focus:border-cyan-500 font-mono"
+                          />
+                        </div>
+
+                        {/* Code Snippet & Content HTML */}
+                        <div className="space-y-2 pt-1">
+                          <textarea
+                            rows={2}
+                            value={lesson.codeSnippet || ""}
+                            onChange={(e) =>
+                              handleUpdateLesson(modIdx, lessonIdx, "codeSnippet", e.target.value)
+                            }
+                            placeholder="Mã nguồn mẫu C/C++ thực hành (Code Snippet nếu có)..."
+                            className="w-full px-2.5 py-1.5 bg-bg-elevated border border-border rounded-lg text-xs font-mono text-emerald-400 focus:outline-none focus:border-cyan-500"
+                          />
+
+                          <textarea
+                            rows={3}
+                            value={lesson.contentHtml || ""}
+                            onChange={(e) =>
+                              handleUpdateLesson(modIdx, lessonIdx, "contentHtml", e.target.value)
+                            }
+                            placeholder="Nội dung giáo trình bài học chi tiết (Hỗ trợ HTML <h3>, <p>, <ul>, <code> hoặc văn bản)..."
+                            className="w-full px-2.5 py-1.5 bg-bg-elevated border border-border rounded-lg text-xs text-text-primary focus:outline-none focus:border-cyan-500 font-sans"
                           />
                         </div>
                       </div>

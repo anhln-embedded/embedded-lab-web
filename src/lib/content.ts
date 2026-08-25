@@ -42,6 +42,7 @@ export interface LessonData {
   summary?: string;
   codeSnippet?: string;
   videoUrl?: string;
+  contentHtml?: string;
 }
 
 export interface CourseModule {

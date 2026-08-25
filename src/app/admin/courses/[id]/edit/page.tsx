@@ -628,6 +628,35 @@ export default function EditCoursePage({ params }: PageProps) {
                             className="w-full px-3 py-2 rounded-lg bg-bg-elevated/70 dark:bg-bg-elevated border border-border text-xs font-mono text-emerald-400 leading-relaxed"
                           />
                         </div>
+
+                        {/* Rich HTML Content for Lesson */}
+                        <div>
+                          <div className="flex items-center justify-between mb-1">
+                            <label className="block text-[10px] font-bold text-text-muted flex items-center gap-1">
+                              <BookOpen className="w-3 h-3 text-accent" />
+                              Nội Dung Bài Học Chi Tiết & Lý Thuyết (HTML / Văn Bản):
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const sampleHtml = `<h3>🎯 Mục tiêu bài học</h3>\n<p>Nêu rõ kiến thức và kỹ năng sinh viên cần đạt được.</p>\n\n<h3>1. Lý thuyết trọng tâm</h3>\n<ul>\n  <li><strong>Khái niệm cốt lõi:</strong> Giải thích nguyên lý hoạt động phần cứng/firmware.</li>\n  <li><strong>Bản đồ thanh ghi:</strong> Cấu trúc các bit điều khiển.</li>\n</ul>\n\n<h3>2. Hướng dẫn thực hành Lab</h3>\n<p>Các bước cắm mạch, nạp code và đo kiểm tín hiệu.</p>`;
+                                handleUpdateLesson(modIdx, lessonIdx, "contentHtml", sampleHtml);
+                              }}
+                              className="text-[10px] text-accent hover:underline font-semibold"
+                            >
+                              + Chèn mẫu khung giáo trình
+                            </button>
+                          </div>
+                          <textarea
+                            rows={5}
+                            value={lesson.contentHtml || ""}
+                            onChange={(e) =>
+                              handleUpdateLesson(modIdx, lessonIdx, "contentHtml", e.target.value)
+                            }
+                            placeholder="Nhập nội dung bài giảng chi tiết, các thẻ <h3>, <p>, <ul>, <li> hoặc văn bản hướng dẫn..."
+                            className="w-full px-3 py-2 rounded-lg bg-bg-elevated/70 dark:bg-bg-elevated border border-border text-xs text-text-primary leading-relaxed font-sans"
+                          />
+                        </div>
                       </div>
                     ))}
 
