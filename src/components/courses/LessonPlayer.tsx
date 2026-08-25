@@ -3,6 +3,8 @@
 import * as React from "react";
 import Link from "next/link";
 import { CourseData, LessonData } from "@/lib/content";
+import { useAuth } from "@/context/AuthContext";
+import { InlineLessonEditorModal } from "./InlineLessonEditorModal";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -28,6 +30,7 @@ import {
   Volume2,
   Maximize2,
   Minimize2,
+  Edit3,
 } from "lucide-react";
 
 interface LessonPlayerProps {
@@ -66,12 +69,36 @@ export function LessonPlayer({
   prevLesson,
   nextLesson,
 }: LessonPlayerProps) {
+  const { user } = useAuth();
+  const isAuthorized = Boolean(user && (user.role === "admin" || user.role === "superadmin"));
+
+  const [courseState, setCourseState] = React.useState<CourseData>(course);
+  const [currentLessonState, setCurrentLessonState] = React.useState<
+    LessonData & {
+      moduleTitle: string;
+      contentHtml?: string;
+      videoUrl?: string;
+      codeSnippet?: string;
+    }
+  >(currentLesson);
+  const [isEditorOpen, setIsEditorOpen] = React.useState(false);
+
   const [completedLessons, setCompletedLessons] = React.useState<Set<string>>(new Set());
   const [isPlaying, setIsPlaying] = React.useState(false);
   const [copiedCode, setCopiedCode] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState<"video" | "text">("video");
   const [isFullscreen, setIsFullscreen] = React.useState(false);
   const videoContainerRef = React.useRef<HTMLDivElement>(null);
+
+  // Sync props to state if props update
+  React.useEffect(() => {
+    setCourseState(course);
+  }, [course]);
+
+  React.useEffect(() => {
+    setCurrentLessonState(currentLesson);
+    setIsPlaying(false);
+  }, [currentLesson]);
 
   // Fullscreen change listener & Keyboard Shortcuts (F = Fullscreen)
   React.useEffect(() => {
@@ -133,14 +160,14 @@ export function LessonPlayer({
   // Load completion state from localStorage
   React.useEffect(() => {
     try {
-      const saved = localStorage.getItem(`course_progress_${course.slug}`);
+      const saved = localStorage.getItem(`course_progress_${courseState.slug}`);
       if (saved) {
         setCompletedLessons(new Set(JSON.parse(saved)));
       }
     } catch (e) {
       console.error(e);
     }
-  }, [course.slug]);
+  }, [courseState.slug]);
 
   // Reset play state when lesson changes
   React.useEffect(() => {
@@ -170,11 +197,11 @@ export function LessonPlayer({
     setTimeout(() => setCopiedCode(false), 2000);
   };
 
-  const isCurrentCompleted = completedLessons.has(currentLesson.slug);
+  const isCurrentCompleted = completedLessons.has(currentLessonState.slug);
   const progressPercent = Math.round((completedLessons.size / allLessons.length) * 100);
 
   // Fallback embed video (YouTube tutorial for Embedded C / RTOS if lesson doesn't have a specific video URL)
-  const embedUrl = getEmbedUrl(currentLesson.videoUrl) || "https://www.youtube.com/embed/3V9eqskKs00?autoplay=1&rel=0";
+  const embedUrl = getEmbedUrl(currentLessonState.videoUrl) || "https://www.youtube-nocookie.com/embed/3V9eqskKs00?autoplay=1&rel=0&fs=1&enablejsapi=1";
 
   return (
     <div className="min-h-screen pb-20">
@@ -183,11 +210,11 @@ export function LessonPlayer({
         <div className="container py-3 flex flex-wrap items-center justify-between gap-4 text-xs">
           <div className="flex items-center gap-2">
             <Link
-              href={`/courses/${course.slug}`}
+              href={`/courses/${courseState.slug}`}
               className="inline-flex items-center gap-1.5 text-text-muted hover:text-accent transition-colors font-semibold"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              <span>Khóa học: {course.title}</span>
+              <span>Khóa học: {courseState.title}</span>
             </Link>
             <span className="text-border">•</span>
             <span className="text-accent font-mono font-bold">
@@ -196,8 +223,20 @@ export function LessonPlayer({
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="text-text-muted font-medium">Tiến độ hoàn thành: <strong className="text-accent">{progressPercent}%</strong></span>
-            <div className="w-28 h-2.5 bg-bg-code rounded-full overflow-hidden border border-border/80">
+            {isAuthorized && (
+              <Button
+                size="sm"
+                variant="primary"
+                onClick={() => setIsEditorOpen(true)}
+                className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-[11px] px-3 py-1.5 rounded-xl shadow-md flex items-center gap-1.5"
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                <span>Chỉnh sửa bài học này (Admin)</span>
+              </Button>
+            )}
+
+            <span className="text-text-muted font-medium">Tiến độ: <strong className="text-accent">{progressPercent}%</strong></span>
+            <div className="w-24 h-2 bg-bg-code rounded-full overflow-hidden border border-border/80">
               <div
                 className="h-full bg-gradient-to-r from-accent to-amber-500 transition-all duration-300 rounded-full"
                 style={{ width: `${Math.max(4, progressPercent)}%` }}
@@ -220,7 +259,7 @@ export function LessonPlayer({
                 <div className="relative w-full h-full">
                   <iframe
                     src={embedUrl}
-                    title={currentLesson.title}
+                    title={currentLessonState.title}
                     className="w-full h-full border-0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                     allowFullScreen
@@ -251,14 +290,14 @@ export function LessonPlayer({
 
                   <div className="relative z-10 mt-4 space-y-1.5 max-w-lg">
                     <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-accent/15 text-accent border border-accent/30 inline-block">
-                      {currentLesson.moduleTitle}
+                      {currentLessonState.moduleTitle}
                     </span>
                     <h3 className="text-base sm:text-xl font-extrabold text-text-primary group-hover:text-accent transition-colors line-clamp-2">
-                      {currentLesson.title}
+                      {currentLessonState.title}
                     </h3>
                     <p className="text-xs text-text-muted flex items-center justify-center gap-2 pt-1">
                       <Clock className="w-3.5 h-3.5 text-accent" />
-                      <span>Thời lượng: {currentLesson.duration}</span>
+                      <span>Thời lượng: {currentLessonState.duration}</span>
                       <span>•</span>
                       <span className="text-emerald-400 font-semibold">▶ Bấm để phát video bài giảng</span>
                     </p>
@@ -272,24 +311,37 @@ export function LessonPlayer({
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/60">
                 <div className="space-y-1">
                   <span className="text-xs font-mono font-bold text-accent uppercase tracking-wider block">
-                    {currentLesson.moduleTitle}
+                    {currentLessonState.moduleTitle}
                   </span>
                   <h1 className="text-xl sm:text-2xl font-extrabold text-text-primary">
-                    {currentLesson.title}
+                    {currentLessonState.title}
                   </h1>
                 </div>
 
-                <button
-                  onClick={() => toggleComplete(currentLesson.slug)}
-                  className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm flex-shrink-0 ${
-                    isCurrentCompleted
-                      ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/30"
-                      : "bg-accent hover:bg-accent-hover text-white hover:scale-102"
-                  }`}
-                >
-                  <CheckCircle2 className="h-4 w-4" />
-                  <span>{isCurrentCompleted ? "✓ Đã hoàn thành bài học" : "Đánh dấu hoàn thành"}</span>
-                </button>
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  {isAuthorized && (
+                    <button
+                      onClick={() => setIsEditorOpen(true)}
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30 hover:bg-amber-500 hover:text-slate-950 transition-all shadow-sm"
+                      title="Soạn thảo trực quan không cần viết thẻ HTML"
+                    >
+                      <Edit3 className="h-3.5 w-3.5" />
+                      <span>Chỉnh sửa (Admin)</span>
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => toggleComplete(currentLessonState.slug)}
+                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm flex-shrink-0 ${
+                      isCurrentCompleted
+                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/30"
+                        : "bg-accent hover:bg-accent-hover text-white hover:scale-102"
+                    }`}
+                  >
+                    <CheckCircle2 className="h-4 w-4" />
+                    <span>{isCurrentCompleted ? "✓ Đã hoàn thành bài học" : "Đánh dấu hoàn thành"}</span>
+                  </button>
+                </div>
               </div>
 
               {/* View Switcher Tabs */}
@@ -314,87 +366,114 @@ export function LessonPlayer({
                   }`}
                 >
                   <FileText className="w-3.5 h-3.5" />
-                  <span>Giáo Trình Lý Thuyết & Code Mẫu</span>
+                  <span>Lý Thuyết & Giáo Trình</span>
                 </button>
-              </div>
-            </div>
-
-            {/* Detailed Lesson Content / Theory HTML */}
-            <div className="p-6 md:p-8 rounded-2xl bg-bg-panel border border-border/80 shadow-md space-y-6">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-accent border-b border-border/60 pb-3">
-                <BookOpen className="w-4 h-4" />
-                <span>Nội Dung Bài Học Chi Tiết</span>
               </div>
 
               {/* Lesson Summary */}
-              {currentLesson.summary && (
+              {currentLessonState.summary && (
                 <div className="p-4 rounded-xl bg-accent-muted/40 border border-accent/20 text-xs text-text-secondary leading-relaxed space-y-1">
                   <strong className="text-text-primary font-bold block mb-1">📌 Tóm tắt trọng tâm bài học:</strong>
-                  <p>{currentLesson.summary}</p>
+                  <p>{currentLessonState.summary}</p>
                 </div>
               )}
-
-              {/* Render Rich HTML Content if available */}
-              {currentLesson.contentHtml ? (
-                <div
-                  className="prose dark:prose-invert max-w-none text-xs sm:text-sm text-text-secondary leading-relaxed space-y-4"
-                  dangerouslySetInnerHTML={{ __html: currentLesson.contentHtml }}
-                />
-              ) : (
-                <div className="text-xs text-text-secondary leading-relaxed space-y-3">
-                  <p>
-                    Bài học này tập trung vào kiến thức chuyên sâu và kỹ năng lập trình thực tế cho kỹ sư Nhúng.
-                    Hãy xem video bài giảng kết hợp thực hành các ví dụ mã nguồn bên dưới.
-                  </p>
-                </div>
-              )}
-
-              {/* Code Snippet Box with Copy Button */}
-              {currentLesson.codeSnippet && (
-                <div className="space-y-2 pt-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-text-primary flex items-center gap-1.5 font-mono">
-                      <FileCode className="w-4 h-4 text-accent" />
-                      Mã nguồn mẫu thực hành (C/C++ Source Code):
-                    </span>
-                    <button
-                      onClick={() => handleCopyCode(currentLesson.codeSnippet!)}
-                      className="px-3 py-1 rounded-lg bg-bg-elevated hover:bg-bg-code border border-border text-[11px] font-semibold text-text-secondary hover:text-accent transition-all flex items-center gap-1"
-                    >
-                      {copiedCode ? (
-                        <>
-                          <Check className="w-3.5 h-3.5 text-emerald-400" />
-                          <span className="text-emerald-400">Đã sao chép!</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-3.5 h-3.5" />
-                          <span>Sao chép code</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-
-                  <pre className="p-4 rounded-xl bg-slate-950 dark:bg-black border border-slate-800 text-xs font-mono text-emerald-400 overflow-x-auto leading-relaxed shadow-inner">
-                    <code>{currentLesson.codeSnippet}</code>
-                  </pre>
-                </div>
-              )}
-
-              {/* Terminal Guide Box */}
-              <div className="p-4 rounded-xl bg-slate-950 dark:bg-black border border-slate-800 text-xs font-mono text-cyan-400 space-y-1.5 shadow-inner">
-                <p className="text-slate-400">// Lệnh nạp và kiểm tra mã nguồn mẫu trên terminal:</p>
-                <p className="text-emerald-400">$ git clone {course.githubRepo || "https://github.com/embedded-aiot-ptit"}</p>
-                <p className="text-emerald-400">$ cd {course.slug}/lesson-{currentIndex + 1}</p>
-                <p className="text-emerald-400">$ make build && make flash</p>
-              </div>
             </div>
+
+            {/* Tab: Video & Practice */}
+            {activeTab === "video" && (
+              <div className="space-y-6">
+                {/* Code Snippet Box with Copy Button */}
+                {currentLessonState.codeSnippet && (
+                  <div className="rounded-2xl bg-bg-panel border border-border/80 overflow-hidden shadow-md">
+                    <div className="px-4 py-3 bg-bg-elevated border-b border-border/60 flex items-center justify-between">
+                      <span className="text-xs font-bold text-text-primary flex items-center gap-1.5 font-mono">
+                        <FileCode className="w-4 h-4 text-accent" />
+                        Mã nguồn mẫu thực hành (C/C++ Source Code):
+                      </span>
+                      <button
+                        onClick={() => handleCopyCode(currentLessonState.codeSnippet!)}
+                        className="px-3 py-1 rounded-lg bg-bg-elevated hover:bg-bg-code border border-border text-[11px] font-semibold text-text-secondary hover:text-accent transition-all flex items-center gap-1"
+                      >
+                        {copiedCode ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                            <span className="text-emerald-400">Đã sao chép!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>Sao chép code</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    <pre className="p-4 bg-slate-950 dark:bg-black text-xs font-mono text-emerald-400 overflow-x-auto leading-relaxed max-h-96">
+                      <code>{currentLessonState.codeSnippet}</code>
+                    </pre>
+                  </div>
+                )}
+
+                {/* Terminal Guide Box */}
+                <div className="p-4 rounded-xl bg-slate-950 dark:bg-black border border-slate-800 text-xs font-mono text-cyan-400 space-y-1.5 shadow-inner">
+                  <p className="text-slate-400">// Lệnh nạp và kiểm tra mã nguồn mẫu trên terminal:</p>
+                  <p className="text-emerald-400">$ git clone {courseState.githubRepo || "https://github.com/embedded-aiot-ptit"}</p>
+                  <p className="text-emerald-400">$ cd {courseState.slug}/lesson-{currentIndex + 1}</p>
+                  <p className="text-emerald-400">$ make build && make flash</p>
+                </div>
+              </div>
+            )}
+
+            {/* Tab: Theory HTML Content */}
+            {activeTab === "text" && (
+              <div className="p-6 md:p-8 rounded-2xl bg-bg-panel border border-border/80 shadow-md space-y-6">
+                <div className="flex items-center justify-between border-b border-border/60 pb-3">
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-accent">
+                    <BookOpen className="w-4 h-4" />
+                    <span>Giáo Trình Lý Thuyết & Kiến Trúc Hệ Thống</span>
+                  </div>
+                  {isAuthorized && (
+                    <button
+                      onClick={() => setIsEditorOpen(true)}
+                      className="text-xs text-amber-500 hover:underline font-bold flex items-center gap-1"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                      Sửa nội dung này
+                    </button>
+                  )}
+                </div>
+
+                {currentLessonState.contentHtml ? (
+                  <div
+                    className="prose dark:prose-invert max-w-none text-xs sm:text-sm text-text-secondary leading-relaxed space-y-4"
+                    dangerouslySetInnerHTML={{ __html: currentLessonState.contentHtml }}
+                  />
+                ) : (
+                  <div className="p-8 text-center space-y-3 rounded-2xl bg-bg-elevated/40 border border-dashed border-border">
+                    <BookOpen className="w-8 h-8 text-text-muted mx-auto" />
+                    <p className="text-xs text-text-muted">
+                      Chưa có bài viết lý thuyết chi tiết cho bài học này.
+                    </p>
+                    {isAuthorized && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setIsEditorOpen(true)}
+                        className="text-xs text-amber-500 border-amber-500/40 hover:bg-amber-500/10"
+                      >
+                        + Soạn thảo lý thuyết ngay (Admin)
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Bottom Navigation: Prev / Next Lesson */}
             <div className="pt-6 border-t border-border/80 flex items-center justify-between gap-4">
               {prevLesson ? (
                 <Link
-                  href={`/courses/${course.slug}/lesson/${prevLesson.slug}`}
+                  href={`/courses/${courseState.slug}/lesson/${prevLesson.slug}`}
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-bg-panel hover:bg-bg-elevated text-text-secondary hover:text-accent hover:border-accent/40 text-xs font-bold transition-all shadow-sm"
                 >
                   <ChevronLeft className="h-4 w-4" />
@@ -406,7 +485,7 @@ export function LessonPlayer({
 
               {nextLesson ? (
                 <Link
-                  href={`/courses/${course.slug}/lesson/${nextLesson.slug}`}
+                  href={`/courses/${courseState.slug}/lesson/${nextLesson.slug}`}
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent text-white hover:bg-accent-hover text-xs font-bold transition-all shadow-md hover:scale-102"
                 >
                   <span className="line-clamp-1">Bài tiếp theo: {nextLesson.title}</span>
@@ -414,7 +493,7 @@ export function LessonPlayer({
                 </Link>
               ) : (
                 <Link
-                  href={`/courses/${course.slug}`}
+                  href={`/courses/${courseState.slug}`}
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-500 text-xs font-bold transition-all shadow-md"
                 >
                   <CheckCircle2 className="h-4 w-4" />
@@ -438,19 +517,19 @@ export function LessonPlayer({
               </div>
 
               <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
-                {course.curriculum.map((mod, mIdx) => (
+                {courseState.curriculum.map((mod, mIdx) => (
                   <div key={mIdx} className="space-y-2">
                     <span className="text-[11px] font-bold text-text-muted uppercase block tracking-wider">
                       {mod.module}
                     </span>
                     <div className="space-y-1.5">
                       {mod.lessons.map((lesson) => {
-                        const isCurrent = lesson.slug === currentLesson.slug;
+                        const isCurrent = lesson.slug === currentLessonState.slug;
                         const isCompleted = completedLessons.has(lesson.slug);
                         return (
                           <Link
                             key={lesson.slug}
-                            href={`/courses/${course.slug}/lesson/${lesson.slug}`}
+                            href={`/courses/${courseState.slug}/lesson/${lesson.slug}`}
                             className={`p-2.5 rounded-xl text-xs transition-all flex items-center justify-between block ${
                               isCurrent
                                 ? "bg-accent text-white font-bold shadow-md shadow-accent/20"
@@ -479,6 +558,20 @@ export function LessonPlayer({
           </div>
         </div>
       </div>
+
+      {/* Admin Live Lesson Editor Modal */}
+      {isAuthorized && (
+        <InlineLessonEditorModal
+          isOpen={isEditorOpen}
+          onClose={() => setIsEditorOpen(false)}
+          course={courseState}
+          currentLesson={currentLessonState}
+          onLessonUpdated={(updatedLesson, updatedCourse) => {
+            setCurrentLessonState(updatedLesson);
+            setCourseState(updatedCourse);
+          }}
+        />
+      )}
     </div>
   );
 }
