@@ -7,6 +7,7 @@ import { CourseData } from "@/lib/content";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { useAuth } from "@/context/AuthContext";
 import {
   BookOpen,
   Clock,
@@ -20,6 +21,7 @@ import {
   ArrowLeft,
   GraduationCap,
   Sparkles,
+  Edit3,
 } from "lucide-react";
 
 interface CourseDetailProps {
@@ -27,8 +29,11 @@ interface CourseDetailProps {
 }
 
 export function CourseDetail({ course }: CourseDetailProps) {
+  const { user } = useAuth();
   const [expandedModules, setExpandedModules] = React.useState<Set<number>>(new Set([0]));
   const [completedLessons, setCompletedLessons] = React.useState<Set<string>>(new Set());
+
+  const isAuthorized = user && (user.role === "superadmin" || user.role === "admin");
 
   // Load progress from localStorage
   React.useEffect(() => {
@@ -129,7 +134,7 @@ export function CourseDetail({ course }: CourseDetailProps) {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           <Button
             variant="pill"
             size="lg"
@@ -141,6 +146,20 @@ export function CourseDetail({ course }: CourseDetailProps) {
               <span>{completedCount > 0 ? "Tiếp tục học" : "Bắt đầu học ngay"}</span>
             </Link>
           </Button>
+
+          {isAuthorized && (
+            <Button
+              variant="outline"
+              size="lg"
+              className="border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10 font-semibold px-5 rounded-pill"
+              asChild
+            >
+              <Link href={`/admin/courses/${course._id || course.slug}/edit`}>
+                <Edit3 className="h-4 w-4 mr-2" />
+                <span>Chỉnh sửa khóa học (Admin)</span>
+              </Link>
+            </Button>
+          )}
 
           {course.githubRepo && (
             <a

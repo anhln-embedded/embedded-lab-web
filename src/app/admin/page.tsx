@@ -562,17 +562,27 @@ export default function AdminDashboardPage() {
                         </span>
                       </td>
                       <td className="py-3.5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Link
+                            href={`/admin/courses/${course.slug || course._id}/edit`}
+                            className="p-1.5 rounded-lg bg-bg-elevated border border-border text-text-muted hover:text-cyan-400 hover:border-cyan-400 transition-all flex items-center gap-1 text-xs px-2.5 font-medium"
+                            title="Chỉnh sửa khóa học & bài giảng"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                            <span>Sửa</span>
+                          </Link>
                           <Link
                             href={`/courses/${course.slug}`}
                             target="_blank"
                             className="p-1.5 rounded-lg bg-bg-elevated border border-border text-text-muted hover:text-cyan-400"
+                            title="Xem trang khóa học"
                           >
                             <Eye className="w-3.5 h-3.5" />
                           </Link>
                           <button
                             onClick={() => handleDeleteCourse(course._id, course.title)}
                             className="p-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20"
+                            title="Xóa khóa học"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
