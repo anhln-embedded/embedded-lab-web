@@ -445,7 +445,7 @@ export function LessonPlayer({
 
                 {currentLessonState.contentHtml ? (
                   <div
-                    className="prose dark:prose-invert max-w-none text-xs sm:text-sm text-text-secondary leading-relaxed space-y-4"
+                    className="prose prose-slate dark:prose-invert max-w-none text-xs sm:text-sm text-text-primary leading-relaxed space-y-4"
                     dangerouslySetInnerHTML={{ __html: currentLessonState.contentHtml }}
                   />
                 ) : (

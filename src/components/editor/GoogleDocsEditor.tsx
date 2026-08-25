@@ -284,13 +284,22 @@ export function GoogleDocsEditor({
         <div className="flex items-center gap-1 border-r border-border/80 pr-1.5 mr-1">
           <div className="flex items-center gap-0.5" title="Màu chữ">
             <Palette className="w-3.5 h-3.5 text-text-muted mr-0.5" />
-            {["#ffffff", "#5e6ad2", "#10b981", "#fbbf24", "#ef4444", "#a855f7"].map((color) => (
+            {[
+              { label: "Đen / Đậm (Light mode)", color: "#0f172a" },
+              { label: "Trắng (Dark mode)", color: "#ffffff" },
+              { label: "Cam Lab", color: "#f05a28" },
+              { label: "Xanh ngọc", color: "#10b981" },
+              { label: "Xanh lam", color: "#3b82f6" },
+              { label: "Tím", color: "#a855f7" },
+              { label: "Vàng", color: "#eab308" },
+            ].map((c) => (
               <button
-                key={color}
+                key={c.color}
                 type="button"
-                onClick={() => execCmd("foreColor", color)}
+                title={`Màu chữ: ${c.label}`}
+                onClick={() => execCmd("foreColor", c.color)}
                 className="w-3.5 h-3.5 rounded-full border border-border/60 hover:scale-125 transition-transform"
-                style={{ backgroundColor: color }}
+                style={{ backgroundColor: c.color }}
               />
             ))}
           </div>
@@ -448,14 +457,14 @@ export function GoogleDocsEditor({
       </div>
 
       {/* --- GOOGLE DOCS DOCUMENT CANVAS ("TRANG GIẤY A4") --- */}
-      <div className="flex-1 bg-[#090a0c] p-4 md:p-8 overflow-y-auto min-h-[520px] flex justify-center">
+      <div className="flex-1 bg-bg-code/50 dark:bg-[#090a0c] p-4 md:p-8 overflow-y-auto min-h-[520px] flex justify-center">
         <div className="w-full max-w-4xl bg-bg-panel border border-border/80 rounded-2xl p-6 md:p-12 shadow-2xl min-h-[600px] text-text-primary focus-within:border-accent/50 transition-colors">
           <div
             ref={editorRef}
             contentEditable
             onInput={handleInput}
             onKeyDown={handleKeyDown}
-            className="outline-none min-h-[480px] prose prose-invert max-w-none text-base leading-relaxed text-text-secondary focus:text-text-primary"
+            className="outline-none min-h-[480px] prose prose-slate dark:prose-invert max-w-none text-base leading-relaxed text-text-primary"
             style={{
               fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
             }}

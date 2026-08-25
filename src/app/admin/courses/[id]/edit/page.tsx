@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { COURSE_CATEGORIES, updateCourse, deleteCourse as deleteLocalCourse } from "@/lib/courses-store";
-import { CourseModule, LessonData, CourseCategory } from "@/lib/content";
+import { CourseModule, LessonData, CourseCategory, CourseData } from "@/lib/content";
+import { InlineLessonEditorModal } from "@/components/courses/InlineLessonEditorModal";
 import {
   ArrowLeft,
   Sparkles,
@@ -21,7 +22,8 @@ import {
   CheckCircle2,
   Image as ImageIcon,
   GitBranch,
-  Eye
+  Eye,
+  Edit3,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
@@ -50,6 +52,11 @@ export default function EditCoursePage({ params }: PageProps) {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [editingLessonModal, setEditingLessonModal] = useState<{
+    modIdx: number;
+    lessonIdx: number;
+    lesson: LessonData & { moduleTitle: string };
+  } | null>(null);
 
   useEffect(() => {
     async function loadCourse() {
@@ -631,29 +638,49 @@ export default function EditCoursePage({ params }: PageProps) {
 
                         {/* Rich HTML Content for Lesson */}
                         <div>
-                          <div className="flex items-center justify-between mb-1">
+                          <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
                             <label className="block text-[10px] font-bold text-text-muted flex items-center gap-1">
                               <BookOpen className="w-3 h-3 text-accent" />
-                              Nội Dung Bài Học Chi Tiết & Lý Thuyết (HTML / Văn Bản):
+                              Nội Dung Bài Học Chi Tiết & Lý Thuyết:
                             </label>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const sampleHtml = `<h3>🎯 Mục tiêu bài học</h3>\n<p>Nêu rõ kiến thức và kỹ năng sinh viên cần đạt được.</p>\n\n<h3>1. Lý thuyết trọng tâm</h3>\n<ul>\n  <li><strong>Khái niệm cốt lõi:</strong> Giải thích nguyên lý hoạt động phần cứng/firmware.</li>\n  <li><strong>Bản đồ thanh ghi:</strong> Cấu trúc các bit điều khiển.</li>\n</ul>\n\n<h3>2. Hướng dẫn thực hành Lab</h3>\n<p>Các bước cắm mạch, nạp code và đo kiểm tín hiệu.</p>`;
-                                handleUpdateLesson(modIdx, lessonIdx, "contentHtml", sampleHtml);
-                              }}
-                              className="text-[10px] text-accent hover:underline font-semibold"
-                            >
-                              + Chèn mẫu khung giáo trình
-                            </button>
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setEditingLessonModal({
+                                    modIdx,
+                                    lessonIdx,
+                                    lesson: {
+                                      ...lesson,
+                                      moduleTitle: mod.module,
+                                    },
+                                  })
+                                }
+                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/15 text-amber-500 border border-amber-500/30 hover:bg-amber-500 hover:text-slate-950 text-[10px] font-bold transition-all"
+                              >
+                                <Edit3 className="w-3 h-3" />
+                                <span>✍️ Soạn Thảo Trực Quan (Google Docs Editor)</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const sampleHtml = `<h3>🎯 Mục tiêu bài học</h3>\n<p>Nêu rõ kiến thức và kỹ năng sinh viên cần đạt được.</p>\n\n<h3>1. Lý thuyết trọng tâm</h3>\n<ul>\n  <li><strong>Khái niệm cốt lõi:</strong> Giải thích nguyên lý hoạt động phần cứng/firmware.</li>\n  <li><strong>Bản đồ thanh ghi:</strong> Cấu trúc các bit điều khiển.</li>\n</ul>\n\n<h3>2. Hướng dẫn thực hành Lab</h3>\n<p>Các bước cắm mạch, nạp code và đo kiểm tín hiệu.</p>`;
+                                  handleUpdateLesson(modIdx, lessonIdx, "contentHtml", sampleHtml);
+                                }}
+                                className="text-[10px] text-accent hover:underline font-semibold"
+                              >
+                                + Chèn mẫu khung
+                              </button>
+                            </div>
                           </div>
                           <textarea
-                            rows={5}
+                            rows={4}
                             value={lesson.contentHtml || ""}
                             onChange={(e) =>
                               handleUpdateLesson(modIdx, lessonIdx, "contentHtml", e.target.value)
                             }
-                            placeholder="Nhập nội dung bài giảng chi tiết, các thẻ <h3>, <p>, <ul>, <li> hoặc văn bản hướng dẫn..."
+                            placeholder="Nhập nội dung bài giảng chi tiết (hoặc bấm nút Soạn Thảo Trực Quan ở trên)..."
                             className="w-full px-3 py-2 rounded-lg bg-bg-elevated/70 dark:bg-bg-elevated border border-border text-xs text-text-primary leading-relaxed font-sans"
                           />
                         </div>
@@ -694,6 +721,52 @@ export default function EditCoursePage({ params }: PageProps) {
           </div>
         </div>
       </form>
+
+      {/* Visual Lesson Editor Modal */}
+      {editingLessonModal && (
+        <InlineLessonEditorModal
+          isOpen={Boolean(editingLessonModal)}
+          onClose={() => setEditingLessonModal(null)}
+          course={{
+            _id: courseId,
+            title,
+            slug,
+            description,
+            category,
+            level,
+            duration,
+            lessons: modules.reduce((acc, m) => acc + (m.lessons?.length || 0), 0),
+            prerequisites: [],
+            tags: [],
+            price,
+            thumbnail,
+            githubRepo,
+            instructor: "Embedded-AIoT Lab",
+            featured,
+            curriculum: modules,
+            url: `/courses/${slug}`,
+            body: { raw: "" },
+          }}
+          currentLesson={editingLessonModal.lesson}
+          onLessonUpdated={(updatedLesson) => {
+            const updatedModules = [...modules];
+            const { modIdx, lessonIdx } = editingLessonModal;
+            if (updatedModules[modIdx] && updatedModules[modIdx].lessons[lessonIdx]) {
+              updatedModules[modIdx].lessons[lessonIdx] = {
+                ...updatedModules[modIdx].lessons[lessonIdx],
+                title: updatedLesson.title,
+                duration: updatedLesson.duration,
+                videoUrl: updatedLesson.videoUrl,
+                summary: updatedLesson.summary,
+                codeSnippet: updatedLesson.codeSnippet,
+                contentHtml: updatedLesson.contentHtml,
+              };
+              setModules(updatedModules);
+            }
+            setEditingLessonModal(null);
+          }}
+        />
+      )}
     </div>
   );
 }

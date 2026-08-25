@@ -39,6 +39,7 @@ export function InlineLessonEditorModal({
   const [codeSnippet, setCodeSnippet] = useState(currentLesson.codeSnippet || "");
   const [contentHtml, setContentHtml] = useState(currentLesson.contentHtml || "");
   const [isSaving, setIsSaving] = useState(false);
+  const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   // Sync state when currentLesson changes
   React.useEffect(() => {
@@ -48,6 +49,7 @@ export function InlineLessonEditorModal({
     setSummary(currentLesson.summary || "");
     setCodeSnippet(currentLesson.codeSnippet || "");
     setContentHtml(currentLesson.contentHtml || "");
+    setStatusMsg(null);
   }, [currentLesson]);
 
   if (!isOpen) return null;
@@ -55,11 +57,12 @@ export function InlineLessonEditorModal({
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
-      alert("Vui lòng nhập tiêu đề bài học.");
+      setStatusMsg({ type: "error", text: "Vui lòng nhập tiêu đề bài học." });
       return;
     }
 
     setIsSaving(true);
+    setStatusMsg(null);
 
     try {
       // 1. Tạo bản sao curriculum mới với bài giảng được cập nhật
@@ -128,11 +131,13 @@ export function InlineLessonEditorModal({
 
       onLessonUpdated(updatedLessonObj, updatedCourseObj);
       window.dispatchEvent(new CustomEvent("embedded_courses_updated"));
-      alert("🎉 Đã lưu thay đổi bài học thành công!");
-      onClose();
+      setStatusMsg({ type: "success", text: "🎉 Đã lưu bài học thành công vào hệ thống!" });
+      setTimeout(() => {
+        onClose();
+      }, 700);
     } catch (err: any) {
       console.error(err);
-      alert(`Có lỗi xảy ra khi lưu bài học: ${err.message}`);
+      setStatusMsg({ type: "error", text: `Lỗi: ${err.message}` });
     } finally {
       setIsSaving(false);
     }
@@ -167,6 +172,23 @@ export function InlineLessonEditorModal({
 
         {/* Form Body */}
         <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6">
+          {statusMsg && (
+            <div
+              className={`p-3.5 rounded-xl border text-xs font-semibold flex items-center gap-2 animate-fadeIn ${
+                statusMsg.type === "success"
+                  ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-400"
+                  : "bg-red-500/15 border-red-500/30 text-red-400"
+              }`}
+            >
+              {statusMsg.type === "success" ? (
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+              ) : (
+                <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+              )}
+              <span>{statusMsg.text}</span>
+            </div>
+          )}
+
           {/* Thông tin cơ bản bài học */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="sm:col-span-2">
