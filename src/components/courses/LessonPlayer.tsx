@@ -25,7 +25,9 @@ import {
   Video,
   FileText,
   RotateCcw,
-  Volume2
+  Volume2,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 
 interface LessonPlayerProps {
@@ -65,6 +67,28 @@ export function LessonPlayer({
   const [isPlaying, setIsPlaying] = React.useState(false);
   const [copiedCode, setCopiedCode] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState<"video" | "text">("video");
+  const [isFullscreen, setIsFullscreen] = React.useState(false);
+  const videoContainerRef = React.useRef<HTMLDivElement>(null);
+
+  // Fullscreen change listener
+  React.useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!videoContainerRef.current) return;
+    if (!document.fullscreenElement) {
+      videoContainerRef.current.requestFullscreen().catch((err) => {
+        console.error("Error attempting to enable full-screen mode:", err);
+      });
+    } else {
+      document.exitFullscreen().catch(console.error);
+    }
+  };
 
   // Load completion state from localStorage
   React.useEffect(() => {
@@ -148,15 +172,29 @@ export function LessonPlayer({
           {/* Main Lesson Player Section */}
           <div className="lg:col-span-8 space-y-6 min-w-0">
             {/* Interactive Video Player Box */}
-            <div className="relative aspect-video rounded-2xl md:rounded-3xl bg-black border border-border/80 overflow-hidden shadow-2xl group">
+            <div
+              ref={videoContainerRef}
+              className="relative aspect-video rounded-2xl md:rounded-3xl bg-black border border-border/80 overflow-hidden shadow-2xl group"
+            >
               {isPlaying ? (
-                <iframe
-                  src={embedUrl}
-                  title={currentLesson.title}
-                  className="w-full h-full border-0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                />
+                <div className="relative w-full h-full">
+                  <iframe
+                    src={embedUrl}
+                    title={currentLesson.title}
+                    className="w-full h-full border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+                    allowFullScreen
+                  />
+
+                  {/* Floating Fullscreen Toggle Button */}
+                  <button
+                    onClick={toggleFullscreen}
+                    className="absolute top-3 right-3 p-2 rounded-xl bg-black/60 hover:bg-black/90 text-white backdrop-blur-md border border-white/20 opacity-0 group-hover:opacity-100 transition-opacity z-20 shadow-lg"
+                    title={isFullscreen ? "Thu nhỏ (Esc)" : "Toàn màn hình"}
+                  >
+                    {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                  </button>
+                </div>
               ) : (
                 <div
                   onClick={() => setIsPlaying(true)}
