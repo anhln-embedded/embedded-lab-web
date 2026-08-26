@@ -46,6 +46,13 @@ yarn-error.log*
 # Testing & Coverage
 /coverage
 
+# Temporary files & Scratch data
+/tmp
+/tmp/
+tmp/
+*.tmp
+.tempmediaStorage
+
 # Vercel & Deployment tools
 .vercel
 
