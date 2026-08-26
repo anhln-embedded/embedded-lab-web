@@ -16,14 +16,18 @@ import {
   Code,
   CheckCircle2,
   FileCode,
-  Edit3
+  Edit3,
+  Zap
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { SmartMarkdownImporterModal } from "@/components/tutorials/SmartMarkdownImporterModal";
+import { ParsedPost } from "@/lib/markdown-importer";
 
 export default function NewTutorialTopicPage() {
   const router = useRouter();
   const { user } = useAuth();
 
+  const [isImporterOpen, setIsImporterOpen] = useState(false);
   const [categories, setCategories] = useState<Array<{ slug: string; name: string; icon: string }>>([
     { slug: "linux", name: "Embedded Linux", icon: "🐧" },
     { slug: "rtos", name: "Real-Time OS", icon: "⚡" },
@@ -269,16 +273,29 @@ export default function NewTutorialTopicPage() {
                 <span>Danh Sách Bài Viết Trong Chuyên Đề ({posts.length} bài)</span>
               </h2>
 
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleAddPost}
-                className="text-xs text-accent border-accent/40 hover:bg-accent/10 flex items-center gap-1"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Thêm Bài Mới</span>
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsImporterOpen(true)}
+                  className="text-xs text-emerald-400 border-emerald-500/40 hover:bg-emerald-500/10 flex items-center gap-1 font-bold"
+                >
+                  <Zap className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>⚡ Nhập Nhanh Từ Markdown / JSON</span>
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddPost}
+                  className="text-xs text-accent border-accent/40 hover:bg-accent/10 flex items-center gap-1 font-bold"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Thêm Bài Mới</span>
+                </Button>
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -394,6 +411,36 @@ export default function NewTutorialTopicPage() {
           </div>
         </div>
       </form>
+
+      {/* Smart Markdown Importer Modal */}
+      <SmartMarkdownImporterModal
+        isOpen={isImporterOpen}
+        onClose={() => setIsImporterOpen(false)}
+        onImport={(importedPosts) => {
+          setPosts(
+            importedPosts.map((p) => ({
+              title: p.title,
+              slug: p.slug,
+              readTime: p.readTime,
+              summary: p.summary,
+              contentHtml: p.contentHtml,
+              codeSnippet: p.codeSnippet,
+              codeLang: p.codeLang,
+              codeFilename: p.codeFilename,
+            }))
+          );
+          if (!title.trim()) {
+            setTitle("Lập Trình C & Embedded C Chuyên Sâu");
+            setSlug("lap-trinh-c-embedded-c-chuyen-sau");
+            setCategory("programming");
+            setCategoryName("Lập Trình C & Kỹ Năng");
+            setIcon("💻");
+            setDescription(
+              "Giáo trình lập trình C nhúng chuyên sâu: Memory Layout, Bitmasking, Volatile/Static, Function Pointer Callback, Structure Packing và Ring Buffer."
+            );
+          }
+        }}
+      />
     </div>
   );
 }
