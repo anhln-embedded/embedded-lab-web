@@ -21,6 +21,7 @@ export const siteConfig = {
     { label: "Trang chủ", href: "/" },
     { label: "Lộ trình học", href: "/roadmap" },
     { label: "Khóa học", href: "/courses" },
+    { label: "Chuyên đề", href: "/tutorials" },
     { label: "Bài viết", href: "/blog" },
   ],
 };

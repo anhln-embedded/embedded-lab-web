@@ -9,6 +9,7 @@ import { getAllCourses, deleteCourse } from "@/lib/courses-store";
 import { getAllRoadmapTracks, deleteRoadmapTrack } from "@/lib/roadmap-store";
 import { BlogPostData, CourseData } from "@/lib/content";
 import { RoadmapTrack } from "@/lib/roadmap-store";
+import { TUTORIAL_TOPICS, TutorialTopic } from "@/lib/tutorials-data";
 import {
   ShieldCheck,
   Edit3,
@@ -27,7 +28,8 @@ import {
   ArrowRight,
   BarChart3,
   Clock,
-  Tag
+  Tag,
+  Compass
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
@@ -35,9 +37,10 @@ export default function AdminDashboardPage() {
   const router = useRouter();
   const { user, allUsers, quickLogin } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<"overview" | "posts" | "courses" | "roadmap">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "posts" | "courses" | "tutorials" | "roadmap">("overview");
   const [posts, setPosts] = useState<BlogPostData[]>([]);
   const [courses, setCourses] = useState<CourseData[]>([]);
+  const [tutorials, setTutorials] = useState<TutorialTopic[]>([]);
   const [roadmapTracks, setRoadmapTracks] = useState<RoadmapTrack[]>([]);
   const [mounted, setMounted] = useState(false);
 
@@ -104,6 +107,19 @@ export default function AdminDashboardPage() {
       setCourses(getAllCourses());
     }
 
+    // 3. Fetch tutorials from SQLite
+    try {
+      const res = await fetch("/api/tutorials");
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data)) {
+        setTutorials(json.data);
+      } else {
+        setTutorials(TUTORIAL_TOPICS);
+      }
+    } catch {
+      setTutorials(TUTORIAL_TOPICS);
+    }
+
     setRoadmapTracks(getAllRoadmapTracks());
   };
 
@@ -117,11 +133,13 @@ export default function AdminDashboardPage() {
 
     window.addEventListener("embedded_posts_updated", handleUpdate);
     window.addEventListener("embedded_courses_updated", handleUpdate);
+    window.addEventListener("embedded_tutorials_updated", handleUpdate);
     window.addEventListener("embedded_roadmap_updated", handleUpdate);
 
     return () => {
       window.removeEventListener("embedded_posts_updated", handleUpdate);
       window.removeEventListener("embedded_courses_updated", handleUpdate);
+      window.removeEventListener("embedded_tutorials_updated", handleUpdate);
       window.removeEventListener("embedded_roadmap_updated", handleUpdate);
     };
   }, []);
@@ -181,6 +199,17 @@ export default function AdminDashboardPage() {
     }
   };
 
+  const handleDeleteTutorial = async (id: string, title: string) => {
+    if (confirm(`Bạn có chắc muốn xóa chuyên đề "${title}"?`)) {
+      try {
+        await fetch(`/api/tutorials/${id}`, { method: "DELETE" });
+      } catch (e) {
+        console.error(e);
+      }
+      loadData();
+    }
+  };
+
   const handleDeleteTrack = (id: string, title: string) => {
     if (confirm(`Bạn có chắc muốn xóa lộ trình "${title}"?`)) {
       deleteRoadmapTrack(id);
@@ -236,6 +265,13 @@ export default function AdminDashboardPage() {
             </Link>
           </Button>
 
+          <Button variant="primary" size="sm" asChild className="bg-amber-600 hover:bg-amber-700 text-white text-xs">
+            <Link href="/admin/tutorials/new">
+              <Compass className="w-3.5 h-3.5 mr-1.5" />
+              Tạo Chuyên Đề
+            </Link>
+          </Button>
+
           <Button variant="primary" size="sm" asChild className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs">
             <Link href="/admin/roadmap">
               <Sparkles className="w-3.5 h-3.5 mr-1.5" />
@@ -268,7 +304,7 @@ export default function AdminDashboardPage() {
           }`}
         >
           <FileText className="w-4 h-4" />
-          Quản Lý Bài Viết ({posts.length})
+          Bài Viết ({posts.length})
         </button>
 
         <button
@@ -280,7 +316,19 @@ export default function AdminDashboardPage() {
           }`}
         >
           <GraduationCap className="w-4 h-4" />
-          Quản Lý Khóa Học ({courses.length})
+          Khóa Học ({courses.length})
+        </button>
+
+        <button
+          onClick={() => setActiveTab("tutorials")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs md:text-sm font-semibold transition-all ${
+            activeTab === "tutorials"
+              ? "bg-bg-elevated text-accent shadow-sm border border-border"
+              : "text-text-muted hover:text-text-primary"
+          }`}
+        >
+          <Compass className="w-4 h-4" />
+          Chuyên Đề ({tutorials.length})
         </button>
 
         <button
@@ -292,7 +340,7 @@ export default function AdminDashboardPage() {
           }`}
         >
           <Sparkles className="w-4 h-4" />
-          Quản Lý Lộ Trình ({roadmapTracks.length})
+          Lộ Trình ({roadmapTracks.length})
         </button>
       </div>
 
@@ -597,7 +645,126 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* Tab 4: Roadmap Manager */}
+      {/* Tab 4: Tutorials Manager */}
+      {activeTab === "tutorials" && (
+        <div className="bg-bg-panel border border-border rounded-2xl p-6 shadow-md">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <h2 className="text-lg font-bold text-text-primary flex items-center gap-2">
+                <Compass className="w-5 h-5 text-amber-500" />
+                Chuyên Đề Kỹ Thuật Đang Quản Lý ({tutorials.length})
+              </h2>
+              <p className="text-xs text-text-muted mt-0.5">
+                Các chuyên đề kiến trúc hiển thị tại trang /tutorials
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" asChild className="text-xs">
+                <Link href="/tutorials" target="_blank">
+                  <Eye className="w-3.5 h-3.5 mr-1" />
+                  Xem Trang Chuyên Đề
+                </Link>
+              </Button>
+              <Button variant="primary" size="sm" asChild className="bg-amber-600 hover:bg-amber-700 text-white text-xs">
+                <Link href="/admin/tutorials/new">
+                  <Plus className="w-3.5 h-3.5 mr-1" />
+                  Tạo Chuyên Đề Mới
+                </Link>
+              </Button>
+            </div>
+          </div>
+
+          {tutorials.length === 0 ? (
+            <div className="text-center py-12 px-4 border-2 border-dashed border-border rounded-xl bg-bg-elevated/30">
+              <p className="text-text-muted text-xs mb-4">Chưa có chuyên đề kỹ thuật nào được tạo.</p>
+              <Button variant="primary" size="sm" asChild className="bg-amber-600 hover:bg-amber-700 text-white">
+                <Link href="/admin/tutorials/new">Tạo chuyên đề đầu tiên</Link>
+              </Button>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-border/80 text-[11px] font-bold text-text-muted uppercase tracking-wider bg-bg-elevated/40">
+                    <th className="py-3 px-4">Chuyên Đề</th>
+                    <th className="py-3 px-4">Nhóm / Lĩnh Vực</th>
+                    <th className="py-3 px-4">Trình Độ</th>
+                    <th className="py-3 px-4">Số Bài Viết</th>
+                    <th className="py-3 px-4 text-right">Thao Tác</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60">
+                  {tutorials.map((topic) => (
+                    <tr key={topic.id || topic.slug} className="hover:bg-bg-elevated/30 transition-colors">
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl p-1.5 rounded-xl bg-bg-elevated border border-border">
+                            {topic.icon}
+                          </span>
+                          <div>
+                            <Link
+                              href={`/tutorials/${topic.slug}`}
+                              target="_blank"
+                              className="font-bold text-text-primary hover:text-accent transition-colors text-sm line-clamp-1"
+                            >
+                              {topic.title}
+                            </Link>
+                            <span className="text-[11px] text-text-muted font-mono">
+                              /tutorials/{topic.slug}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30">
+                          {topic.categoryName}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-bg-elevated border border-border">
+                          {topic.level}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-xs font-semibold text-text-secondary">
+                        {topic.posts?.length || topic.totalArticles || 0} bài viết
+                      </td>
+                      <td className="py-3.5 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Link
+                            href={`/admin/tutorials/${topic.slug || topic.id}/edit`}
+                            className="p-1.5 rounded-lg bg-bg-elevated border border-border text-text-muted hover:text-amber-500 hover:border-amber-500 transition-all flex items-center gap-1 text-xs px-2.5 font-medium"
+                            title="Chỉnh sửa chuyên đề & bài viết"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                            <span>Sửa</span>
+                          </Link>
+                          <Link
+                            href={`/tutorials/${topic.slug}`}
+                            target="_blank"
+                            className="p-1.5 rounded-lg bg-bg-elevated border border-border text-text-muted hover:text-accent"
+                            title="Xem trang chuyên đề"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </Link>
+                          <button
+                            onClick={() => handleDeleteTutorial(topic.id || topic.slug, topic.title)}
+                            className="p-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20"
+                            title="Xóa chuyên đề"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Tab 5: Roadmap Manager */}
       {activeTab === "roadmap" && (
         <div className="bg-bg-panel border border-border rounded-2xl p-6 shadow-md">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
