@@ -45,31 +45,50 @@ export default function TutorialsPage() {
   const isAuthorized = user && (user.role === "superadmin" || user.role === "admin");
 
   const [categories, setCategories] = useState<TutorialCategoryItem[]>(INITIAL_CATEGORIES);
+  const [topics, setTopics] = useState<TutorialTopic[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedLevel, setSelectedLevel] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-  const loadCategories = async () => {
+  const loadData = async () => {
     try {
-      const res = await fetch("/api/tutorials/categories");
-      const json = await res.json();
-      if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-        setCategories(json.data);
+      // 1. Fetch categories
+      const catRes = await fetch("/api/tutorials/categories");
+      const catJson = await catRes.json();
+      if (catJson.success && Array.isArray(catJson.data) && catJson.data.length > 0) {
+        setCategories(catJson.data);
+      }
+
+      // 2. Fetch topics from database
+      const topicRes = await fetch("/api/tutorials");
+      const topicJson = await topicRes.json();
+      if (topicJson.success && Array.isArray(topicJson.data)) {
+        setTopics(topicJson.data);
       }
     } catch (e) {
-      console.error("Failed to load categories:", e);
+      console.error("Failed to load tutorials data:", e);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    loadCategories();
+    loadData();
+
+    const handleUpdate = () => {
+      loadData();
+    };
+
+    window.addEventListener("embedded_tutorials_updated", handleUpdate);
+    return () => window.removeEventListener("embedded_tutorials_updated", handleUpdate);
   }, []);
 
   // Lọc chuyên đề
   const filteredTopics = useMemo(() => {
-    return TUTORIAL_TOPICS.filter((topic) => {
+    return topics.filter((topic) => {
       const matchCat =
         selectedCategory === "all" || topic.category === selectedCategory;
       const matchLevel =
@@ -89,7 +108,7 @@ export default function TutorialsPage() {
 
       return matchCat && matchLevel && matchQuery;
     });
-  }, [selectedCategory, selectedLevel, searchQuery]);
+  }, [topics, selectedCategory, selectedLevel, searchQuery]);
 
   // Thu thập tất cả các bài viết con khớp với từ khóa tìm kiếm (Deep Search)
   const matchedArticles = useMemo(() => {
@@ -100,8 +119,8 @@ export default function TutorialsPage() {
       post: TutorialPost;
     }> = [];
 
-    TUTORIAL_TOPICS.forEach((topic) => {
-      topic.posts.forEach((post) => {
+    topics.forEach((topic) => {
+      topic.posts?.forEach((post) => {
         if (
           post.title.toLowerCase().includes(q) ||
           post.summary.toLowerCase().includes(q) ||
@@ -113,7 +132,7 @@ export default function TutorialsPage() {
     });
 
     return results;
-  }, [searchQuery]);
+  }, [topics, searchQuery]);
 
   // Từ khóa phổ biến gợi ý
   const POPULAR_KEYWORDS = [
@@ -122,13 +141,12 @@ export default function TutorialsPage() {
     { label: "UDS ISO 14229", query: "uds" },
     { label: "STM32 Register", query: "stm32" },
     { label: "Queue IPC", query: "queue" },
-    { label: "Major/Minor", query: "minor" },
   ];
 
   // Tính tổng số bài viết trong toàn bộ hệ thống
   const totalSystemArticles = useMemo(() => {
-    return TUTORIAL_TOPICS.reduce((acc, t) => acc + t.posts.length, 0);
-  }, []);
+    return topics.reduce((acc, t) => acc + (t.posts?.length || 0), 0);
+  }, [topics]);
 
   return (
     <div className="container py-8 sm:py-12 max-w-7xl mx-auto px-4 space-y-8">
@@ -147,7 +165,7 @@ export default function TutorialsPage() {
               Chuyên Đề <span className="text-accent">Hệ Thống Nhúng</span> & AIoT
             </h1>
             <p className="text-xs sm:text-sm text-text-secondary leading-relaxed">
-              Tổng hợp {TUTORIAL_TOPICS.length} chuyên đề lớn và {totalSystemArticles} bài giảng kỹ thuật chi tiết: Linux Device Driver, FreeRTOS, Automotive UDS/CAN Bus và Vi điều khiển Bare-Metal.
+              Tổng hợp {topics.length} chuyên đề lớn và {totalSystemArticles} bài giảng kỹ thuật chi tiết: Linux Device Driver, FreeRTOS, Automotive UDS/CAN Bus và Vi điều khiển Bare-Metal.
             </p>
           </div>
 
@@ -155,7 +173,7 @@ export default function TutorialsPage() {
           <div className="flex items-center gap-3 self-start md:self-auto bg-bg-panel/80 border border-border p-3.5 rounded-2xl shadow-sm">
             <div className="text-center px-3 border-r border-border">
               <div className="text-xl font-extrabold text-accent font-mono">
-                {TUTORIAL_TOPICS.length}
+                {topics.length}
               </div>
               <div className="text-[10px] font-bold text-text-muted uppercase">Chủ đề</div>
             </div>
@@ -322,13 +340,13 @@ export default function TutorialsPage() {
                     : "bg-bg-elevated text-text-muted"
                 }`}
               >
-                {TUTORIAL_TOPICS.length}
+                {topics.length}
               </span>
             </button>
 
             {/* Các nhóm chuyên đề động */}
             {categories.map((cat) => {
-              const count = TUTORIAL_TOPICS.filter((t) => t.category === cat.slug).length;
+              const count = topics.filter((t) => t.category === cat.slug).length;
               const isActive = selectedCategory === cat.slug;
 
               return (
@@ -454,7 +472,7 @@ export default function TutorialsPage() {
             </h2>
 
             <span className="text-xs text-text-muted font-medium">
-              Hiển thị {filteredTopics.length} / {TUTORIAL_TOPICS.length} chuyên đề
+              Hiển thị {filteredTopics.length} / {topics.length} chuyên đề
             </span>
           </div>
 
@@ -508,7 +526,7 @@ export default function TutorialsPage() {
 
                     {/* Posts inside topic */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {topic.posts.map((post) => (
+                      {topic.posts?.map((post) => (
                         <Link
                           key={post.slug}
                           href={`/tutorials/${topic.slug}/${post.slug}`}
@@ -548,7 +566,7 @@ export default function TutorialsPage() {
                 }}
                 className="text-xs text-accent font-bold hover:underline cursor-pointer"
               >
-                Xóa bộ lọc & xem tất cả ({TUTORIAL_TOPICS.length} chuyên đề)
+                Xóa bộ lọc & xem tất cả ({topics.length} chuyên đề)
               </button>
             </div>
           )}
@@ -561,7 +579,7 @@ export default function TutorialsPage() {
         onClose={() => setIsCategoryModalOpen(false)}
         categories={categories}
         onUpdated={() => {
-          loadCategories();
+          loadData();
         }}
       />
     </div>
