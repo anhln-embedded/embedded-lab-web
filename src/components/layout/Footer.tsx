@@ -131,9 +131,14 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/blog" className="hover:text-accent transition-colors flex items-center gap-1.5">
-                  <span>Bảng tin & Fanpage Lab</span>
-                  <span className="px-1.5 py-0.2 rounded text-[10px] bg-accent/15 text-accent font-semibold">Mới</span>
+                <Link href="/tutorials" className="hover:text-accent transition-colors flex items-center gap-1.5 font-semibold text-text-primary">
+                  <span>Chuyên đề Kỹ thuật</span>
+                  <span className="px-1.5 py-0.2 rounded text-[10px] bg-amber-500/15 text-amber-500 font-semibold">Hot</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/roadmap" className="hover:text-accent transition-colors">
+                  Lộ trình Kỹ sư Chuyên nghiệp
                 </Link>
               </li>
               <li>
@@ -142,8 +147,8 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/roadmap" className="hover:text-accent transition-colors">
-                  Lộ trình Kỹ sư Chuyên nghiệp
+                <Link href="/blog" className="hover:text-accent transition-colors flex items-center gap-1.5">
+                  <span>Bảng tin & Fanpage Lab</span>
                 </Link>
               </li>
               <li>

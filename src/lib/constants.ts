@@ -19,9 +19,9 @@ export const siteConfig = {
   location: "Hà Nội, Việt Nam",
   navItems: [
     { label: "Trang chủ", href: "/" },
+    { label: "Chuyên đề", href: "/tutorials" },
     { label: "Lộ trình học", href: "/roadmap" },
     { label: "Khóa học", href: "/courses" },
-    { label: "Chuyên đề", href: "/tutorials" },
     { label: "Bài viết", href: "/blog" },
   ],
 };
