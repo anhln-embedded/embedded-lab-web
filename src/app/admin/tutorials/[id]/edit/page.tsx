@@ -31,6 +31,15 @@ export default function EditTutorialTopicPage({ params }: PageProps) {
   const { user } = useAuth();
 
   const [isLoading, setIsLoading] = useState(true);
+  const [categories, setCategories] = useState<Array<{ slug: string; name: string; icon: string }>>([
+    { slug: "linux", name: "Embedded Linux", icon: "🐧" },
+    { slug: "rtos", name: "Real-Time OS", icon: "⚡" },
+    { slug: "automotive", name: "Automotive & EV", icon: "🚗" },
+    { slug: "mcu", name: "Microcontrollers", icon: "🎛️" },
+    { slug: "programming", name: "Lập Trình C & Kỹ Năng", icon: "💻" },
+    { slug: "hardware", name: "Phần Cứng PCB & FPGA", icon: "📐" },
+  ]);
+
   const [topicId, setTopicId] = useState("");
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
@@ -62,6 +71,17 @@ export default function EditTutorialTopicPage({ params }: PageProps) {
   useEffect(() => {
     async function loadTopic() {
       try {
+        // Load categories
+        try {
+          const catRes = await fetch("/api/tutorials/categories");
+          const catJson = await catRes.json();
+          if (catJson.success && Array.isArray(catJson.data) && catJson.data.length > 0) {
+            setCategories(catJson.data);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+
         const res = await fetch(`/api/tutorials/${resolvedParams.id}`);
         const json = await res.json();
         if (json.success && json.data) {
@@ -302,28 +322,20 @@ export default function EditTutorialTopicPage({ params }: PageProps) {
               <select
                 value={category}
                 onChange={(e) => {
+                  const selected = categories.find((c) => c.slug === e.target.value);
                   setCategory(e.target.value);
-                  const map: Record<string, { name: string; icon: string }> = {
-                    linux: { name: "Embedded Linux", icon: "🐧" },
-                    rtos: { name: "Real-Time OS", icon: "⚡" },
-                    automotive: { name: "Automotive & EV", icon: "🚗" },
-                    mcu: { name: "Microcontrollers", icon: "🎛️" },
-                    programming: { name: "Lập Trình C & Kỹ Năng", icon: "💻" },
-                    hardware: { name: "Phần Cứng PCB & FPGA", icon: "📐" },
-                  };
-                  if (map[e.target.value]) {
-                    setCategoryName(map[e.target.value].name);
-                    setIcon(map[e.target.value].icon);
+                  if (selected) {
+                    setCategoryName(selected.name);
+                    setIcon(selected.icon);
                   }
                 }}
                 className="w-full px-3.5 py-2.5 rounded-xl bg-bg-elevated/70 dark:bg-bg-elevated border border-border text-xs text-text-primary focus:outline-none focus:border-accent"
               >
-                <option value="linux">🐧 Embedded Linux & Kernel</option>
-                <option value="rtos">⚡ Real-Time OS (RTOS)</option>
-                <option value="automotive">🚗 Automotive & CAN/UDS</option>
-                <option value="mcu">🎛️ Vi Điều Khiển & SoC</option>
-                <option value="programming">💻 Lập Trình C & Kỹ Năng Kỹ Sư</option>
-                <option value="hardware">📐 Phần Cứng PCB & FPGA</option>
+                {categories.map((cat) => (
+                  <option key={cat.slug} value={cat.slug}>
+                    {cat.icon} {cat.name}
+                  </option>
+                ))}
               </select>
             </div>
 

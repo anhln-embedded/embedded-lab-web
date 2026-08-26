@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { TUTORIAL_TOPICS, TUTORIAL_CATEGORIES, TutorialTopic, TutorialPost } from "@/lib/tutorials-data";
+import { TUTORIAL_TOPICS, TutorialTopic, TutorialPost } from "@/lib/tutorials-data";
 import { TutorialTopicCard } from "@/components/tutorials/TutorialTopicCard";
+import { CategoryManagerModal, TutorialCategoryItem } from "@/components/tutorials/CategoryManagerModal";
+import { useAuth } from "@/context/AuthContext";
 import {
   BookOpen,
   Search,
@@ -23,15 +25,47 @@ import {
   List,
   X,
   Flame,
-  ArrowUpRight
+  ArrowUpRight,
+  Settings,
+  Plus
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
+const INITIAL_CATEGORIES = [
+  { slug: "linux", name: "Embedded Linux & Kernel", icon: "🐧", order: 1 },
+  { slug: "rtos", name: "Real-Time OS (RTOS)", icon: "⚡", order: 2 },
+  { slug: "automotive", name: "Automotive & CAN/UDS", icon: "🚗", order: 3 },
+  { slug: "mcu", name: "Vi Điều Khiển & SoC", icon: "🎛️", order: 4 },
+  { slug: "programming", name: "Lập Trình C & Kỹ Năng", icon: "💻", order: 5 },
+  { slug: "hardware", name: "Phần Cứng PCB & FPGA", icon: "📐", order: 6 },
+];
+
 export default function TutorialsPage() {
+  const { user } = useAuth();
+  const isAuthorized = user && (user.role === "superadmin" || user.role === "admin");
+
+  const [categories, setCategories] = useState<TutorialCategoryItem[]>(INITIAL_CATEGORIES);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedLevel, setSelectedLevel] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
+  const loadCategories = async () => {
+    try {
+      const res = await fetch("/api/tutorials/categories");
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+        setCategories(json.data);
+      }
+    } catch (e) {
+      console.error("Failed to load categories:", e);
+    }
+  };
+
+  useEffect(() => {
+    loadCategories();
+  }, []);
 
   // Lọc chuyên đề
   const filteredTopics = useMemo(() => {
@@ -249,24 +283,59 @@ export default function TutorialsPage() {
               <Layers className="w-4 h-4 text-accent" />
               <span>Danh Mục Chuyên Sâu</span>
             </h2>
-            <span className="text-[10px] font-mono font-bold text-accent bg-accent/15 px-2 py-0.5 rounded-full">
-              {TUTORIAL_CATEGORIES.length - 1} nhóm
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-mono font-bold text-accent bg-accent/15 px-2 py-0.5 rounded-full">
+                {categories.length} nhóm
+              </span>
+              {isAuthorized && (
+                <button
+                  type="button"
+                  onClick={() => setIsCategoryModalOpen(true)}
+                  className="p-1 rounded-lg text-text-muted hover:text-accent hover:bg-bg-elevated transition-colors"
+                  title="Quản lý danh mục nhóm (Admin)"
+                >
+                  <Settings className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="space-y-1.5">
-            {TUTORIAL_CATEGORIES.map((cat) => {
-              const count =
-                cat.id === "all"
-                  ? TUTORIAL_TOPICS.length
-                  : TUTORIAL_TOPICS.filter((t) => t.category === cat.id).length;
-              const isActive = selectedCategory === cat.id;
+            {/* Mục Tất cả */}
+            <button
+              type="button"
+              onClick={() => setSelectedCategory("all")}
+              className={`w-full flex items-center justify-between p-2.5 rounded-2xl text-xs font-bold transition-all text-left cursor-pointer ${
+                selectedCategory === "all"
+                  ? "bg-accent text-white shadow-md shadow-accent/20"
+                  : "text-text-secondary hover:text-text-primary hover:bg-bg-elevated"
+              }`}
+            >
+              <div className="flex items-center gap-2.5 truncate">
+                <span className="text-base flex-shrink-0">📚</span>
+                <span className="truncate">Tất cả chuyên đề</span>
+              </div>
+              <span
+                className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${
+                  selectedCategory === "all"
+                    ? "bg-white/20 text-white"
+                    : "bg-bg-elevated text-text-muted"
+                }`}
+              >
+                {TUTORIAL_TOPICS.length}
+              </span>
+            </button>
+
+            {/* Các nhóm chuyên đề động */}
+            {categories.map((cat) => {
+              const count = TUTORIAL_TOPICS.filter((t) => t.category === cat.slug).length;
+              const isActive = selectedCategory === cat.slug;
 
               return (
                 <button
-                  key={cat.id}
+                  key={cat.slug}
                   type="button"
-                  onClick={() => setSelectedCategory(cat.id)}
+                  onClick={() => setSelectedCategory(cat.slug)}
                   className={`w-full flex items-center justify-between p-2.5 rounded-2xl text-xs font-bold transition-all text-left cursor-pointer ${
                     isActive
                       ? "bg-accent text-white shadow-md shadow-accent/20"
@@ -275,7 +344,7 @@ export default function TutorialsPage() {
                 >
                   <div className="flex items-center gap-2.5 truncate">
                     <span className="text-base flex-shrink-0">{cat.icon}</span>
-                    <span className="truncate">{cat.label}</span>
+                    <span className="truncate">{cat.name}</span>
                   </div>
                   <span
                     className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${
@@ -290,6 +359,20 @@ export default function TutorialsPage() {
               );
             })}
           </div>
+
+          {/* Admin Fast Category Management Button */}
+          {isAuthorized && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsCategoryModalOpen(true)}
+              className="w-full text-xs text-accent border-accent/40 hover:bg-accent/10 flex items-center justify-center gap-1.5 py-2 rounded-2xl font-bold"
+            >
+              <Settings className="w-3.5 h-3.5" />
+              <span>Chỉnh Sửa Nhóm Danh Mục</span>
+            </Button>
+          )}
 
           {/* Quick Help Callout */}
           <div className="p-3.5 rounded-2xl bg-bg-elevated/50 border border-border/80 text-[11px] text-text-muted space-y-1.5 pt-3">
@@ -365,7 +448,7 @@ export default function TutorialsPage() {
               <span>
                 {selectedCategory === "all"
                   ? "Tất Cả Chuyên Đề"
-                  : TUTORIAL_CATEGORIES.find((c) => c.id === selectedCategory)?.label}{" "}
+                  : categories.find((c) => c.slug === selectedCategory)?.name || "Chuyên Đề"}{" "}
                 ({filteredTopics.length} chuyên đề)
               </span>
             </h2>
@@ -471,6 +554,16 @@ export default function TutorialsPage() {
           )}
         </div>
       </div>
+
+      {/* Modal Quản lý danh mục nhóm (Admin) */}
+      <CategoryManagerModal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
+        categories={categories}
+        onUpdated={() => {
+          loadCategories();
+        }}
+      />
     </div>
   );
 }
