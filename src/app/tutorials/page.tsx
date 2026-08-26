@@ -301,21 +301,16 @@ export default function TutorialsPage() {
               <Layers className="w-4 h-4 text-accent" />
               <span>Danh Mục Chuyên Sâu</span>
             </h2>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-mono font-bold text-accent bg-accent/15 px-2 py-0.5 rounded-full">
-                {categories.length} nhóm
-              </span>
-              {isAuthorized && (
-                <button
-                  type="button"
-                  onClick={() => setIsCategoryModalOpen(true)}
-                  className="p-1 rounded-lg text-text-muted hover:text-accent hover:bg-bg-elevated transition-colors"
-                  title="Quản lý danh mục nhóm (Admin)"
-                >
-                  <Settings className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
+            {isAuthorized && (
+              <button
+                type="button"
+                onClick={() => setIsCategoryModalOpen(true)}
+                className="p-1 rounded-lg text-text-muted hover:text-accent hover:bg-bg-elevated transition-colors"
+                title="Quản lý danh mục nhóm (Admin)"
+              >
+                <Settings className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
 
           <div className="space-y-1.5">
