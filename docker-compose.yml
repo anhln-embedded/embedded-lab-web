@@ -1,8 +1,6 @@
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/anhln-embedded/embedded-lab-web:latest
     container_name: embedded_lab_web
     restart: unless-stopped
     ports:

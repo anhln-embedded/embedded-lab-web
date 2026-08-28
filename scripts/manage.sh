@@ -35,12 +35,22 @@ check_docker() {
     fi
 }
 
+pull_image() {
+    echo -e "${CYAN}[📦] Đang tải Docker image mới nhất từ GitHub Registry (GHCR)...${NC}"
+    if ! docker compose pull app; then
+        echo -e "${YELLOW}[!] Lưu ý: Nếu báo unauthorized, bạn có thể:${NC}"
+        echo -e "  1. Chuyển GitHub Package sang chế độ Public (khuyên dùng, không cần login)."
+        echo -e "  2. Hoặc login GHCR một lần duy nhất bằng lệnh:"
+        echo -e "     ${CYAN}echo <YOUR_GITHUB_TOKEN> | docker login ghcr.io -u anhln-embedded --password-stdin${NC}"
+    fi
+}
+
 ensure_containers_up() {
-    echo -e "${CYAN}[📦] Đang khởi chạy / Rebuild container web...${NC}"
-    if ! docker compose up -d --build --remove-orphans; then
+    echo -e "${CYAN}[🚀] Đang khởi chạy container...${NC}"
+    if ! docker compose up -d --remove-orphans; then
         echo -e "${YELLOW}[!] Phát hiện xung đột container cũ, đang dọn dẹp...${NC}"
         docker rm -f embedded_lab_web 2>/dev/null || true
-        docker compose up -d --build --remove-orphans
+        docker compose up -d --remove-orphans
     fi
 }
 
@@ -51,6 +61,7 @@ sync_database() {
 
 start_app() {
     echo -e "${GREEN}[+] Đang khởi chạy hệ thống Embedded Lab Web...${NC}"
+    pull_image
     ensure_containers_up
     sync_database
     echo -e "${GREEN}[✔] Khởi chạy thành công!${NC}"
@@ -84,12 +95,14 @@ restart_app() {
             export IS_REEXECUTED="true"
             exec "$0" restart
         fi
-        echo -e "${GREEN}[🔄] Đang build và khởi chạy lại container với code mới...${NC}"
+        echo -e "${GREEN}[🔄] Đang kéo image mới và khởi chạy lại container...${NC}"
+        pull_image
         ensure_containers_up
         sync_database
         echo -e "${GREEN}[✔] Đã cập nhật và chạy phiên bản mới thành công!${NC}"
     else
-        echo -e "${GREEN}[ℹ] Code local đã là mới nhất. Đang build & restart container...${NC}"
+        echo -e "${GREEN}[ℹ] Code local đã là mới nhất. Đang cập nhật container...${NC}"
+        pull_image
         ensure_containers_up
         sync_database
         echo -e "${GREEN}[✔] Đã restart các container thành công!${NC}"
