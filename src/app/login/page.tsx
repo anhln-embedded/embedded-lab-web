@@ -48,14 +48,23 @@ function LoginFormContent() {
 
     if (oauthSuccess) {
       try {
-        const decoded = JSON.parse(
-          Buffer.from(oauthSuccess, "base64url").toString("utf-8")
-        );
-        loginWithOAuth(decoded);
-        setSuccessMsg(`Đăng nhập thành công với tài khoản Google (${decoded.email})!`);
-        setTimeout(() => {
-          router.push(redirectUrl);
-        }, 800);
+        let decodedStr = "";
+        if (typeof window !== "undefined" && typeof atob !== "undefined") {
+          // Chuẩn hóa base64url sang base64
+          let base64 = oauthSuccess.replace(/-/g, "+").replace(/_/g, "/");
+          while (base64.length % 4) base64 += "=";
+          decodedStr = decodeURIComponent(escape(atob(base64)));
+        } else if (typeof Buffer !== "undefined") {
+          decodedStr = Buffer.from(oauthSuccess, "base64url").toString("utf-8");
+        }
+        if (decodedStr) {
+          const decoded = JSON.parse(decodedStr);
+          loginWithOAuth(decoded);
+          setSuccessMsg(`Đăng nhập thành công với tài khoản Google (${decoded.email})!`);
+          setTimeout(() => {
+            router.push(redirectUrl);
+          }, 800);
+        }
       } catch (e) {
         console.error("Failed to parse OAuth success data:", e);
       }

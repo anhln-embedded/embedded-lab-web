@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { GoogleDocsEditor } from "@/components/editor/GoogleDocsEditor";
+import { TechMarkdownEditor } from "@/components/editor/TechMarkdownEditor";
 import {
   ArrowLeft,
   Sparkles,
@@ -14,7 +15,9 @@ import {
   Tag,
   Clock,
   Layers,
-  FileText
+  FileText,
+  Code,
+  Edit3
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
@@ -50,6 +53,7 @@ export default function EditPostPage() {
   const postId = params.id as string;
   const { user } = useAuth();
 
+  const [editorType, setEditorType] = useState<"markdown" | "wysiwyg">("markdown");
   const [isLoading, setIsLoading] = useState(true);
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
@@ -341,12 +345,55 @@ export default function EditPostPage() {
           </div>
         </div>
 
-        {/* GOOGLE DOCS WYSIWYG EDITOR */}
-        <div className="space-y-2">
-          <GoogleDocsEditor
-            value={contentHtml}
-            onChange={(html) => setContentHtml(html)}
-          />
+        {/* --- DUAL EDITOR: TECH MARKDOWN PRO vs GOOGLE DOCS --- */}
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-xs font-bold text-text-primary flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-accent" />
+              <span>Nội Dung Bài Viết Lab</span>
+            </span>
+
+            <div className="flex items-center bg-bg-panel p-1 rounded-xl border border-border gap-1">
+              <button
+                type="button"
+                onClick={() => setEditorType("markdown")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  editorType === "markdown"
+                    ? "bg-accent text-white shadow-sm"
+                    : "text-text-muted hover:text-text-primary"
+                }`}
+              >
+                <Code className="w-3.5 h-3.5" />
+                <span>Tech Markdown Pro</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditorType("wysiwyg")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  editorType === "wysiwyg"
+                    ? "bg-accent text-white shadow-sm"
+                    : "text-text-muted hover:text-text-primary"
+                }`}
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                <span>Google Docs WYSIWYG</span>
+              </button>
+            </div>
+          </div>
+
+          {editorType === "markdown" ? (
+            <TechMarkdownEditor
+              value={contentHtml}
+              onChange={(val) => setContentHtml(val)}
+              draftKey={`edit_blog_post_${postId}`}
+              minHeight="540px"
+            />
+          ) : (
+            <GoogleDocsEditor
+              value={contentHtml}
+              onChange={(html) => setContentHtml(html)}
+            />
+          )}
         </div>
 
         {/* Submit */}

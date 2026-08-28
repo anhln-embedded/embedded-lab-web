@@ -158,6 +158,8 @@
 
 html {
   scroll-behavior: smooth;
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 body {
@@ -166,6 +168,8 @@ body {
   font-family: var(--font-sans);
   font-size: var(--text-body);
   line-height: 1.6;
+  max-width: 100%;
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -175,6 +179,11 @@ body {
 ::selection {
   background-color: rgba(240, 90, 40, 0.3);
   color: #ffffff;
+}
+
+/* Typography Prose Full-Width Expansion */
+.prose, .prose * {
+  max-width: 100% !important;
 }
 
 /* Scrollbar */
@@ -324,4 +333,63 @@ body {
   max-height: 100% !important;
   border: none !important;
   border-radius: 0 !important;
+}
+
+/* ============================================
+   MDXEDITOR DARK & LIGHT THEME STYLING
+   ============================================ */
+.lab-mdxeditor-wrapper .mdxeditor {
+  background-color: transparent !important;
+  color: var(--text-primary) !important;
+  font-family: var(--font-sans) !important;
+}
+
+.lab-mdxeditor-wrapper .mdxeditor-toolbar {
+  background-color: var(--bg-elevated) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+.lab-mdxeditor-wrapper button {
+  color: var(--text-secondary) !important;
+  border-radius: 6px !important;
+}
+
+.lab-mdxeditor-wrapper button:hover {
+  background-color: var(--bg-elevated) !important;
+  color: var(--accent) !important;
+}
+
+.lab-mdxeditor-wrapper button[data-state="on"] {
+  background-color: var(--accent) !important;
+  color: #ffffff !important;
+}
+
+.lab-mdxeditor-wrapper select,
+.lab-mdxeditor-wrapper input {
+  background-color: var(--bg-panel) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+}
+
+.lab-mdxeditor-wrapper .cm-editor {
+  background-color: #0b101b !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  color: #38bdf8 !important;
+  font-family: var(--font-mono) !important;
+  font-size: 12.5px !important;
+}
+
+.lab-mdxeditor-wrapper table {
+  border-collapse: collapse !important;
+  width: 100% !important;
+  margin: 1rem 0 !important;
+  border: 1px solid var(--border) !important;
+}
+
+.lab-mdxeditor-wrapper th,
+.lab-mdxeditor-wrapper td {
+  border: 1px solid var(--border) !important;
+  padding: 8px 12px !important;
 }

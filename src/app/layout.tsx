@@ -109,10 +109,10 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
-      <body className="min-h-full flex flex-col bg-bg-primary text-text-primary bg-grid-pattern selection:bg-accent/30 selection:text-white">
+      <body className="min-h-full flex flex-col bg-bg-primary text-text-primary bg-grid-pattern selection:bg-accent/30 selection:text-white w-full max-w-full">
         <AuthProvider>
           <Header />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 min-h-[calc(100vh-4.5rem)] w-full max-w-full">{children}</main>
           <Footer />
         </AuthProvider>
       </body>

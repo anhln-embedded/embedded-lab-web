@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { GoogleDocsEditor } from "@/components/editor/GoogleDocsEditor";
+import { TechMarkdownEditor } from "@/components/editor/TechMarkdownEditor";
 import { LAB_PRESET_IMAGES } from "@/components/editor/EditorModals";
 import {
   ArrowLeft,
@@ -15,7 +16,9 @@ import {
   Clock,
   Layers,
   FileText,
-  CheckCircle2
+  CheckCircle2,
+  Code,
+  Edit3
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
@@ -49,6 +52,7 @@ export default function NewPostPage() {
   const router = useRouter();
   const { user } = useAuth();
 
+  const [editorType, setEditorType] = useState<"markdown" | "wysiwyg">("markdown");
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [excerpt, setExcerpt] = useState("");
@@ -58,16 +62,25 @@ export default function NewPostPage() {
   const [coverImage, setCoverImage] = useState("/images/logo.png");
   const [readingTime, setReadingTime] = useState(5);
   const [series, setSeries] = useState("");
-  const [contentHtml, setContentHtml] = useState(`
-<h2>1. Giới thiệu & Động lực nghiên cứu</h2>
-<p>Trình bày bối cảnh, lý do thực hiện nghiên cứu và mục tiêu giải quyết bài toán kỹ thuật tại <strong>Embedded-AIoT Lab</strong>.</p>
+  const [contentHtml, setContentHtml] = useState(`## 1. Giới thiệu & Động lực nghiên cứu
+Trình bày bối cảnh, lý do thực hiện nghiên cứu và mục tiêu giải quyết bài toán kỹ thuật tại **Embedded-AIoT Lab**.
 
-<h2>2. Kiến trúc Hệ thống & Phần Cứng</h2>
-<p>Mô tả sơ đồ khối, các linh kiện vi điều khiển / IC được sử dụng:</p>
-<ul>
-  <li>Vi điều khiển chính: STM32H7 / ESP32-S3 / Xilinx FPGA</li>
-  <li>Cảm biến & Ngoại vi giao tiếp: SPI / I2C / DMA</li>
-</ul>
+## 2. Kiến trúc Hệ thống & Phần Cứng
+Mô tả sơ đồ khối, các linh kiện vi điều khiển / IC được sử dụng:
+- Vi điều khiển chính: STM32H7 / ESP32-S3 / Xilinx FPGA
+- Cảm biến & Ngoại vi giao tiếp: SPI / I2C / DMA
+
+> [!TIP]
+> Luôn thiết kế đường mạch nguồn riêng cho khối Analog và Digital để tránh nhiễu chéo.
+
+\`\`\`c filename="hardware_init.c"
+// Embedded-AIoT Lab - C Sample
+#include <stdio.h>
+
+void sys_init(void) {
+    printf("Hardware System Initialized!\\n");
+}
+\`\`\`
 `);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -357,22 +370,56 @@ export default function NewPostPage() {
           </div>
         </div>
 
-        {/* --- GOOGLE DOCS WYSIWYG EDITOR COMPONENT --- */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-text-secondary uppercase tracking-wider">
-              Nội dung bài viết (Chỉnh sửa trực quan như Google Docs)
+        {/* --- DUAL EDITOR: TECH MARKDOWN PRO vs GOOGLE DOCS --- */}
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-xs font-bold text-text-primary flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-accent" />
+              <span>Nội Dung Bài Viết Lab</span>
             </span>
-            <span className="text-[11px] text-text-muted">
-              💡 Bôi đen văn bản để đổi kiểu hoặc sử dụng các nút chèn phía trên
-            </span>
+
+            <div className="flex items-center bg-bg-panel p-1 rounded-xl border border-border gap-1">
+              <button
+                type="button"
+                onClick={() => setEditorType("markdown")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  editorType === "markdown"
+                    ? "bg-accent text-white shadow-sm"
+                    : "text-text-muted hover:text-text-primary"
+                }`}
+              >
+                <Code className="w-3.5 h-3.5" />
+                <span>Tech Markdown Pro (Khuyên Dùng)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditorType("wysiwyg")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  editorType === "wysiwyg"
+                    ? "bg-accent text-white shadow-sm"
+                    : "text-text-muted hover:text-text-primary"
+                }`}
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                <span>Google Docs WYSIWYG</span>
+              </button>
+            </div>
           </div>
 
-          <GoogleDocsEditor
-            value={contentHtml}
-            onChange={(html) => setContentHtml(html)}
-            onTemplateSelect={handleTemplateSelected}
-          />
+          {editorType === "markdown" ? (
+            <TechMarkdownEditor
+              value={contentHtml}
+              onChange={(val) => setContentHtml(val)}
+              draftKey="new_blog_post"
+              minHeight="540px"
+            />
+          ) : (
+            <GoogleDocsEditor
+              value={contentHtml}
+              onChange={(html) => setContentHtml(html)}
+              onTemplateSelect={handleTemplateSelected}
+            />
+          )}
         </div>
 
         {/* Action Buttons */}

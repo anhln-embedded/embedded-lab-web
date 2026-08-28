@@ -4,6 +4,7 @@
  */
 
 export interface TutorialPost {
+  id?: string;
   slug: string;
   title: string;
   order: number;
@@ -11,6 +12,7 @@ export interface TutorialPost {
   updatedAt: string;
   summary: string;
   contentHtml: string;
+  draft?: boolean;
   codeSnippet?: {
     code: string;
     language: string;

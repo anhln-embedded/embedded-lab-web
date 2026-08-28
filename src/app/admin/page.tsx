@@ -9,7 +9,7 @@ import { getAllCourses, deleteCourse } from "@/lib/courses-store";
 import { getAllRoadmapTracks, deleteRoadmapTrack } from "@/lib/roadmap-store";
 import { BlogPostData, CourseData } from "@/lib/content";
 import { RoadmapTrack } from "@/lib/roadmap-store";
-import { TUTORIAL_TOPICS, TutorialTopic } from "@/lib/tutorials-data";
+import { TutorialTopic } from "@/lib/tutorials-data";
 import {
   ShieldCheck,
   Edit3,
@@ -29,9 +29,13 @@ import {
   BarChart3,
   Clock,
   Tag,
-  Compass
+  Compass,
+  Settings,
+  FolderKanban,
+  LayoutGrid
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { CategoryManagerModal, TutorialCategoryItem } from "@/components/tutorials/CategoryManagerModal";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -41,6 +45,8 @@ export default function AdminDashboardPage() {
   const [posts, setPosts] = useState<BlogPostData[]>([]);
   const [courses, setCourses] = useState<CourseData[]>([]);
   const [tutorials, setTutorials] = useState<TutorialTopic[]>([]);
+  const [categories, setCategories] = useState<TutorialCategoryItem[]>([]);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [roadmapTracks, setRoadmapTracks] = useState<RoadmapTrack[]>([]);
   const [mounted, setMounted] = useState(false);
 
@@ -73,10 +79,10 @@ export default function AdminDashboardPage() {
           }))
         );
       } else {
-        setPosts(getAllPosts());
+        setPosts([]);
       }
     } catch {
-      setPosts(getAllPosts());
+      setPosts([]);
     }
 
     // 2. Fetch courses from SQLite
@@ -113,11 +119,20 @@ export default function AdminDashboardPage() {
       const json = await res.json();
       if (json.success && Array.isArray(json.data)) {
         setTutorials(json.data);
-      } else {
-        setTutorials(TUTORIAL_TOPICS);
       }
-    } catch {
-      setTutorials(TUTORIAL_TOPICS);
+    } catch (e) {
+      console.error("Failed to fetch tutorials:", e);
+    }
+
+    // 4. Fetch categories from SQLite
+    try {
+      const res = await fetch("/api/tutorials/categories");
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data)) {
+        setCategories(json.data);
+      }
+    } catch (e) {
+      console.error("Failed to fetch tutorial categories:", e);
     }
 
     setRoadmapTracks(getAllRoadmapTracks());
@@ -178,12 +193,21 @@ export default function AdminDashboardPage() {
   const handleDeletePost = async (id: string, title: string) => {
     if (confirm(`Bạn có chắc muốn xóa bài viết "${title}"?`)) {
       try {
-        await fetch(`/api/posts/${id}`, { method: "DELETE" });
-      } catch (e) {
+        const res = await fetch(`/api/posts/${id}`, { method: "DELETE" });
+        const json = await res.json();
+        if (json.success) {
+          deletePost(id);
+          window.dispatchEvent(new CustomEvent("embedded_posts_updated"));
+          alert("🗑️ Đã xóa bài viết thành công!");
+        } else {
+          alert(json.error || "Không thể xóa bài viết");
+        }
+      } catch (e: any) {
         console.error(e);
+        deletePost(id);
+        window.dispatchEvent(new CustomEvent("embedded_posts_updated"));
       }
-      deletePost(id);
-      loadData();
+      await loadData();
     }
   };
 
@@ -200,13 +224,22 @@ export default function AdminDashboardPage() {
   };
 
   const handleDeleteTutorial = async (id: string, title: string) => {
-    if (confirm(`Bạn có chắc muốn xóa chuyên đề "${title}"?`)) {
+    if (confirm(`Bạn có chắc chắn muốn xóa chuyên đề "${title}" cùng toàn bộ bài viết trong chuyên đề này?`)) {
       try {
-        await fetch(`/api/tutorials/${id}`, { method: "DELETE" });
-      } catch (e) {
+        const res = await fetch(`/api/tutorials/${id}`, { method: "DELETE" });
+        const json = await res.json();
+        if (json.success) {
+          setTutorials((prev) => prev.filter((t) => t.id !== id && t.slug !== id));
+          window.dispatchEvent(new CustomEvent("embedded_tutorials_updated"));
+          alert("🗑️ Đã xóa chuyên đề thành công!");
+        } else {
+          alert(json.error || "Không thể xóa chuyên đề");
+        }
+      } catch (e: any) {
         console.error(e);
+        alert(e.message || "Lỗi khi gửi yêu cầu xóa đến máy chủ");
       }
-      loadData();
+      await loadData();
     }
   };
 
@@ -347,7 +380,7 @@ export default function AdminDashboardPage() {
       {/* Tab 1: Overview */}
       {activeTab === "overview" && (
         <div className="space-y-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="p-5 rounded-2xl bg-bg-panel border border-border/80 shadow-sm">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-semibold uppercase text-text-muted">Tổng bài viết</span>
@@ -367,6 +400,17 @@ export default function AdminDashboardPage() {
               <div className="text-2xl font-bold text-text-primary">{courses.length}</div>
               <Link href="/admin/courses/new" className="text-[11px] text-cyan-400 font-medium hover:underline mt-1 inline-block">
                 + Thêm khóa học mới
+              </Link>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-bg-panel border border-border/80 shadow-sm">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold uppercase text-text-muted">Tổng chuyên đề</span>
+                <Compass className="w-4 h-4 text-amber-500" />
+              </div>
+              <div className="text-2xl font-bold text-text-primary">{tutorials.length}</div>
+              <Link href="/admin/tutorials/new" className="text-[11px] text-amber-500 font-medium hover:underline mt-1 inline-block">
+                + Thêm chuyên đề mới
               </Link>
             </div>
 
@@ -394,44 +438,122 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Quick Action Guides */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 rounded-2xl bg-bg-panel border border-border shadow-md">
-              <h3 className="font-bold text-text-primary mb-2 flex items-center gap-2">
-                <FileText className="w-4 h-4 text-accent" />
-                1. Quản lý Bài Viết (Blog)
-              </h3>
-              <p className="text-xs text-text-secondary leading-relaxed mb-4">
-                Soạn thảo bài viết kỹ thuật với trình biên soạn Markdown chuyên sâu, hỗ trợ chèn code C/C++, Python và xem trước Live Preview.
-              </p>
-              <Button variant="primary" size="sm" asChild className="bg-accent text-white w-full text-xs">
-                <Link href="/admin/posts/new">Đăng bài viết mới</Link>
-              </Button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* 1. Quản lý Bài Viết */}
+            <div className="p-6 rounded-2xl bg-bg-panel border border-border shadow-md flex flex-col justify-between">
+              <div>
+                <h3 className="font-bold text-text-primary mb-2 flex items-center gap-2 text-sm">
+                  <FileText className="w-4 h-4 text-accent" />
+                  1. Quản lý Bài Viết (Blog)
+                </h3>
+                <p className="text-xs text-text-secondary leading-relaxed mb-4">
+                  Soạn thảo bài viết kỹ thuật với trình biên soạn Markdown chuyên sâu, hỗ trợ chèn code C/C++, Python và xem trước Live Preview.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 pt-2">
+                <Button variant="primary" size="sm" asChild className="bg-accent hover:bg-accent-hover text-white flex-1 text-xs font-bold">
+                  <Link href="/admin/posts/new">Đăng bài viết mới</Link>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setActiveTab("posts")}
+                  className="text-xs border-accent/40 text-accent hover:bg-accent/10 px-2.5 flex-shrink-0"
+                  title="Quản lý danh sách bài viết"
+                >
+                  <FolderKanban className="w-3.5 h-3.5" />
+                </Button>
+              </div>
             </div>
 
-            <div className="p-6 rounded-2xl bg-bg-panel border border-border shadow-md">
-              <h3 className="font-bold text-text-primary mb-2 flex items-center gap-2">
-                <GraduationCap className="w-4 h-4 text-cyan-400" />
-                2. Quản lý Khóa Học
-              </h3>
-              <p className="text-xs text-text-secondary leading-relaxed mb-4">
-                Tạo khóa học theo từng học phần (Modules) và từng bài giảng (Lessons) có kèm video URL, tóm tắt lý thuyết và code snippet.
-              </p>
-              <Button variant="primary" size="sm" asChild className="bg-cyan-600 hover:bg-cyan-700 text-white w-full text-xs">
-                <Link href="/admin/courses/new">Tạo khóa học mới</Link>
-              </Button>
+            {/* 2. Quản lý Khóa Học */}
+            <div className="p-6 rounded-2xl bg-bg-panel border border-border shadow-md flex flex-col justify-between">
+              <div>
+                <h3 className="font-bold text-text-primary mb-2 flex items-center gap-2 text-sm">
+                  <GraduationCap className="w-4 h-4 text-cyan-400" />
+                  2. Quản lý Khóa Học
+                </h3>
+                <p className="text-xs text-text-secondary leading-relaxed mb-4">
+                  Tạo khóa học theo từng học phần (Modules) và từng bài giảng (Lessons) có kèm video URL, tóm tắt lý thuyết và code snippet.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 pt-2">
+                <Button variant="primary" size="sm" asChild className="bg-cyan-600 hover:bg-cyan-700 text-white flex-1 text-xs font-bold">
+                  <Link href="/admin/courses/new">Tạo khóa học mới</Link>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setActiveTab("courses")}
+                  className="text-xs border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10 px-2.5 flex-shrink-0"
+                  title="Quản lý danh sách khóa học"
+                >
+                  <FolderKanban className="w-3.5 h-3.5" />
+                </Button>
+              </div>
             </div>
 
-            <div className="p-6 rounded-2xl bg-bg-panel border border-border shadow-md">
-              <h3 className="font-bold text-text-primary mb-2 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-emerald-400" />
-                3. Quản lý Lộ Trình Học
-              </h3>
-              <p className="text-xs text-text-secondary leading-relaxed mb-4">
-                Tạo các lộ trình học (Tracks) và các mốc kỹ năng (Milestones/Steps) để sinh viên theo dõi tiến độ và đánh dấu hoàn thành.
-              </p>
-              <Button variant="primary" size="sm" asChild className="bg-emerald-600 hover:bg-emerald-700 text-white w-full text-xs">
-                <Link href="/admin/roadmap">Thiết lập lộ trình</Link>
-              </Button>
+            {/* 3. Quản lý Chuyên Đề */}
+            <div className="p-6 rounded-2xl bg-bg-panel border border-border shadow-md flex flex-col justify-between">
+              <div>
+                <h3 className="font-bold text-text-primary mb-2 flex items-center gap-2 text-sm">
+                  <Compass className="w-4 h-4 text-amber-500" />
+                  3. Quản lý Chuyên Đề
+                </h3>
+                <p className="text-xs text-text-secondary leading-relaxed mb-4">
+                  Xây dựng giáo trình chuyên sâu (C, Linux, RTOS, Automotive, MCU), nạp hàng loạt từ thư mục Markdown và quản lý nhóm lĩnh vực.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 pt-2">
+                <Button variant="primary" size="sm" asChild className="bg-amber-600 hover:bg-amber-700 text-white flex-1 text-xs font-bold">
+                  <Link href="/admin/tutorials/new">Tạo chuyên đề</Link>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setActiveTab("tutorials")}
+                  className="text-xs border-amber-500/40 text-amber-500 hover:bg-amber-500/10 px-2.5 flex-shrink-0"
+                  title="Quản lý danh sách chuyên đề"
+                >
+                  <FolderKanban className="w-3.5 h-3.5" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsCategoryModalOpen(true)}
+                  className="text-xs border-amber-500/40 text-amber-500 hover:bg-amber-500/10 px-2.5 flex-shrink-0"
+                  title="Quản lý nhóm danh mục"
+                >
+                  <Settings className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+            </div>
+
+            {/* 4. Quản lý Lộ Trình Học */}
+            <div className="p-6 rounded-2xl bg-bg-panel border border-border shadow-md flex flex-col justify-between">
+              <div>
+                <h3 className="font-bold text-text-primary mb-2 flex items-center gap-2 text-sm">
+                  <Sparkles className="w-4 h-4 text-emerald-400" />
+                  4. Quản lý Lộ Trình Học
+                </h3>
+                <p className="text-xs text-text-secondary leading-relaxed mb-4">
+                  Tạo các lộ trình học (Tracks) và các mốc kỹ năng (Milestones/Steps) để sinh viên theo dõi tiến độ và đánh dấu hoàn thành.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 pt-2">
+                <Button variant="primary" size="sm" asChild className="bg-emerald-600 hover:bg-emerald-700 text-white flex-1 text-xs font-bold">
+                  <Link href="/admin/roadmap">Thiết lập lộ trình</Link>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setActiveTab("roadmap")}
+                  className="text-xs border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 px-2.5 flex-shrink-0"
+                  title="Quản lý danh sách lộ trình"
+                >
+                  <FolderKanban className="w-3.5 h-3.5" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -658,14 +780,23 @@ export default function AdminDashboardPage() {
                 Các chuyên đề kiến trúc hiển thị tại trang /tutorials
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsCategoryModalOpen(true)}
+                className="text-xs border-amber-500/40 text-amber-500 hover:bg-amber-500/10 font-semibold"
+              >
+                <Settings className="w-3.5 h-3.5 mr-1.5" />
+                Quản Lý Nhóm Danh Mục ({categories.length})
+              </Button>
               <Button variant="outline" size="sm" asChild className="text-xs">
                 <Link href="/tutorials" target="_blank">
                   <Eye className="w-3.5 h-3.5 mr-1" />
                   Xem Trang Chuyên Đề
                 </Link>
               </Button>
-              <Button variant="primary" size="sm" asChild className="bg-amber-600 hover:bg-amber-700 text-white text-xs">
+              <Button variant="primary" size="sm" asChild className="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold">
                 <Link href="/admin/tutorials/new">
                   <Plus className="w-3.5 h-3.5 mr-1" />
                   Tạo Chuyên Đề Mới
@@ -827,6 +958,14 @@ export default function AdminDashboardPage() {
           )}
         </div>
       )}
+
+      {/* Category Manager Modal */}
+      <CategoryManagerModal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
+        categories={categories}
+        onUpdated={loadData}
+      />
     </div>
   );
 }

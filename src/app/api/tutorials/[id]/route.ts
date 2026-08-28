@@ -41,10 +41,12 @@ export async function GET(request: Request, { params }: RouteParams) {
       authorTitle: topic.authorTitle || "Mentor Lab",
       coverImage: topic.coverImage || "/images/logo.png",
       posts: topic.articles.map((a) => ({
+        id: a.id,
         slug: a.slug,
         title: a.title,
         order: a.order,
         readTime: a.readTime,
+        draft: a.draft ?? false,
         updatedAt: a.updatedAt.toISOString().split("T")[0],
         summary: a.summary || "",
         contentHtml: a.contentHtml || "",
@@ -91,6 +93,9 @@ export async function PUT(request: Request, { params }: RouteParams) {
       where: {
         OR: [{ id }, { slug: id }],
       },
+      include: {
+        articles: true,
+      },
     });
 
     if (!existing) {
@@ -100,41 +105,112 @@ export async function PUT(request: Request, { params }: RouteParams) {
       );
     }
 
-    // Xóa các article cũ và tạo lại danh sách mới
-    await prisma.tutorialArticle.deleteMany({
-      where: { topicId: existing.id },
-    });
+    // Thuật toán Upsert / Diff-Sync: Giữ nguyên ID của các bài viết cũ để BẢO TOÀN LỊCH SỬ CHỈNH SỬA (ArticleEditHistory)
+    const existingArticles = existing.articles;
+    const retainedArticleIds: string[] = [];
+    const usedSlugs = new Set<string>();
 
+    for (let idx = 0; idx < posts.length; idx++) {
+      const p = posts[idx];
+      let articleSlug = (p.slug || "").trim().toLowerCase();
+      if (!articleSlug) {
+        articleSlug = `bai-${idx + 1}`;
+      }
+      if (usedSlugs.has(articleSlug)) {
+        articleSlug = `${articleSlug}-${idx + 1}`;
+      }
+      usedSlugs.add(articleSlug);
+
+      // Tìm bài viết cũ khớp theo ID hoặc Slug
+      const match = existingArticles.find(
+        (ea) => (p.id && ea.id === p.id) || ea.slug === articleSlug || ea.slug === p.slug
+      );
+
+      const articleData = {
+        title: p.title || `Bài ${idx + 1}`,
+        slug: articleSlug,
+        readTime: p.readTime || "10 phút",
+        summary: p.summary || "",
+        contentHtml: p.contentHtml || "",
+        codeSnippet: p.codeSnippet?.code || p.codeSnippet || null,
+        codeLang: p.codeSnippet?.language || p.codeLang || "c",
+        codeFilename: p.codeSnippet?.filename || p.codeFilename || "main.c",
+        order: idx + 1,
+        draft: Boolean(p.draft),
+      };
+
+      let processedArt;
+      try {
+        if (match) {
+          // CẬP NHẬT bài viết hiện có -> Giữ nguyên ID và bảo toàn ArticleEditHistory
+          processedArt = await prisma.tutorialArticle.update({
+            where: { id: match.id },
+            data: articleData,
+          });
+        } else {
+          // TẠO MỚI bài viết
+          processedArt = await prisma.tutorialArticle.create({
+            data: {
+              ...articleData,
+              topicId: existing.id,
+            },
+          });
+        }
+      } catch (artErr: any) {
+        if (artErr?.message && artErr.message.includes("draft")) {
+          const { draft, ...fallbackData } = articleData;
+          if (match) {
+            processedArt = await prisma.tutorialArticle.update({
+              where: { id: match.id },
+              data: fallbackData,
+            });
+          } else {
+            processedArt = await prisma.tutorialArticle.create({
+              data: {
+                ...fallbackData,
+                topicId: existing.id,
+              },
+            });
+          }
+        } else {
+          throw artErr;
+        }
+      }
+      retainedArticleIds.push(processedArt.id);
+    }
+
+    // Xóa những bài viết cũ mà người dùng đã chủ động bỏ khỏi chuyên đề
+    const articlesToDelete = existingArticles.filter((ea) => !retainedArticleIds.includes(ea.id));
+    if (articlesToDelete.length > 0) {
+      const deleteIds = articlesToDelete.map((a) => a.id);
+      await prisma.articleEditHistory.deleteMany({
+        where: { articleId: { in: deleteIds } },
+      });
+      await prisma.tutorialArticle.deleteMany({
+        where: { id: { in: deleteIds } },
+      });
+    }
+
+    // Cập nhật thông tin chuyên đề
     const updated = await prisma.tutorialTopic.update({
       where: { id: existing.id },
       data: {
-        title,
-        slug,
-        category,
-        categoryName,
-        icon,
-        badge,
-        level,
-        description,
-        author,
-        authorTitle,
-        coverImage,
-        articles: {
-          create: posts.map((p: any, idx: number) => ({
-            title: p.title,
-            slug: p.slug || `bai-${idx + 1}`,
-            readTime: p.readTime || "10 phút",
-            summary: p.summary || "",
-            contentHtml: p.contentHtml || "",
-            codeSnippet: p.codeSnippet?.code || p.codeSnippet || null,
-            codeLang: p.codeSnippet?.language || "c",
-            codeFilename: p.codeSnippet?.filename || "main.c",
-            order: idx + 1,
-          })),
-        },
+        ...(title !== undefined && { title }),
+        ...(slug !== undefined && { slug }),
+        ...(category !== undefined && { category }),
+        ...(categoryName !== undefined && { categoryName }),
+        ...(icon !== undefined && { icon }),
+        ...(badge !== undefined && { badge }),
+        ...(level !== undefined && { level }),
+        ...(description !== undefined && { description }),
+        ...(author !== undefined && { author }),
+        ...(authorTitle !== undefined && { authorTitle }),
+        ...(coverImage !== undefined && { coverImage }),
       },
       include: {
-        articles: true,
+        articles: {
+          orderBy: { order: "asc" },
+        },
       },
     });
 
@@ -155,15 +231,36 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       where: {
         OR: [{ id }, { slug: id }],
       },
+      include: {
+        articles: {
+          select: { id: true },
+        },
+      },
     });
 
     if (!existing) {
-      return NextResponse.json(
-        { success: false, error: "Không tìm thấy chuyên đề để xóa" },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: true, message: "Chuyên đề đã được dọn sạch" });
     }
 
+    const articleIds = existing.articles.map((a) => a.id);
+
+    // 1. Xóa toàn bộ lịch sử sửa bài của các bài viết trong chuyên đề
+    if (articleIds.length > 0) {
+      await prisma.articleEditHistory.deleteMany({
+        where: {
+          articleId: { in: articleIds },
+        },
+      });
+    }
+
+    // 2. Xóa toàn bộ bài viết trong chuyên đề
+    await prisma.tutorialArticle.deleteMany({
+      where: {
+        topicId: existing.id,
+      },
+    });
+
+    // 3. Xóa chuyên đề chính
     await prisma.tutorialTopic.delete({
       where: { id: existing.id },
     });

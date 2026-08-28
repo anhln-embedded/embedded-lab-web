@@ -69,7 +69,7 @@ export function Header() {
   const navItems = siteConfig.navItems;
 
   return (
-    <header className="sticky top-0 z-50 bg-bg-panel/90 backdrop-blur-md border-b border-border/80 transition-colors">
+    <header className="relative lg:sticky lg:top-0 z-50 bg-bg-panel/95 lg:backdrop-blur-md border-b border-border/80 transition-colors">
       <div className="container">
         <div className="flex items-center justify-between h-16 md:h-18 gap-4">
           {/* Left: Logo & PTIT Branding */}
@@ -160,128 +160,130 @@ export function Header() {
               )}
             </button>
 
-            {/* User Auth Profile / Login Button */}
-            {user ? (
-              <div className="relative" ref={userMenuRef}>
-                <button
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl border border-border bg-bg-elevated hover:border-accent/50 transition-all text-xs"
-                >
-                  <span className="text-base">{user.avatar || "👤"}</span>
-                  <div className="hidden sm:flex flex-col text-left">
-                    <span className="font-semibold text-text-primary line-clamp-1 max-w-[110px]">
-                      {user.name}
-                    </span>
-                    <span
-                      className="text-[9px] font-bold uppercase tracking-wider"
-                      style={{
-                        color:
-                          user.role === "superadmin"
-                            ? "#a855f7"
-                            : user.role === "admin"
-                            ? "#f05a28"
-                            : "#10b981",
-                      }}
-                    >
-                      {user.role === "superadmin"
-                        ? "Superadmin"
-                        : user.role === "admin"
-                        ? "Admin"
-                        : "Sinh viên"}
-                    </span>
-                  </div>
-                  <ChevronDown className="w-3.5 h-3.5 text-text-muted" />
-                </button>
-
-                {/* Dropdown Menu */}
-                {userMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-bg-panel border border-border shadow-2xl p-2 z-50 animate-fade-in text-xs">
-                    <div className="px-3 py-2.5 border-b border-border/80 mb-1">
-                      <div className="font-bold text-text-primary">{user.name}</div>
-                      <div className="text-[11px] text-text-muted font-mono truncate">{user.email}</div>
+            {/* User Auth Profile / Login Button (Chỉ hiện trên Desktop lg:, trên Mobile được đưa vào menu 3 gạch) */}
+            <div className="hidden lg:block">
+              {user ? (
+                <div className="relative" ref={userMenuRef}>
+                  <button
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl border border-border bg-bg-elevated hover:border-accent/50 transition-all text-xs cursor-pointer"
+                  >
+                    <span className="text-base">{user.avatar || "👤"}</span>
+                    <div className="flex flex-col text-left">
+                      <span className="font-semibold text-text-primary line-clamp-1 max-w-[110px]">
+                        {user.name}
+                      </span>
+                      <span
+                        className="text-[9px] font-bold uppercase tracking-wider"
+                        style={{
+                          color:
+                            user.role === "superadmin"
+                              ? "#a855f7"
+                              : user.role === "admin"
+                              ? "#f05a28"
+                              : "#10b981",
+                        }}
+                      >
+                        {user.role === "superadmin"
+                          ? "Superadmin"
+                          : user.role === "admin"
+                          ? "Admin"
+                          : "Sinh viên"}
+                      </span>
                     </div>
+                    <ChevronDown className="w-3.5 h-3.5 text-text-muted" />
+                  </button>
 
-                    {(user.role === "superadmin" || user.role === "admin") && (
+                  {/* Dropdown Menu */}
+                  {userMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-bg-panel border border-border shadow-2xl p-2 z-50 animate-fade-in text-xs">
+                      <div className="px-3 py-2.5 border-b border-border/80 mb-1">
+                        <div className="font-bold text-text-primary">{user.name}</div>
+                        <div className="text-[11px] text-text-muted font-mono truncate">{user.email}</div>
+                      </div>
+
+                      {(user.role === "superadmin" || user.role === "admin") && (
+                        <Link
+                          href="/admin"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors"
+                        >
+                          <LayoutDashboard className="w-4 h-4 text-accent" />
+                          <span>Bảng Quản Trị Admin</span>
+                        </Link>
+                      )}
+
+                      {(user.role === "superadmin" || user.role === "admin") && (
+                        <Link
+                          href="/admin/posts/new"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors"
+                        >
+                          <Edit3 className="w-4 h-4 text-accent" />
+                          <span>Đăng Bài Viết Mới</span>
+                        </Link>
+                      )}
+
+                      {user.role === "superadmin" && (
+                        <Link
+                          href="/admin/users"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors"
+                        >
+                          <ShieldCheck className="w-4 h-4 text-purple-400" />
+                          <span>Quản Lý Thành Viên</span>
+                        </Link>
+                      )}
+
                       <Link
-                        href="/admin"
+                        href="/roadmap"
                         onClick={() => setUserMenuOpen(false)}
                         className="flex items-center gap-2 px-3 py-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors"
                       >
-                        <LayoutDashboard className="w-4 h-4 text-accent" />
-                        <span>Bảng Quản Trị Admin</span>
+                        <Award className="w-4 h-4 text-emerald-400" />
+                        <span>Lộ Trình Của Tôi</span>
                       </Link>
-                    )}
 
-                    {(user.role === "superadmin" || user.role === "admin") && (
                       <Link
-                        href="/admin/posts/new"
+                        href="/login"
                         onClick={() => setUserMenuOpen(false)}
-                        className="flex items-center gap-2 px-3 py-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors"
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors border-t border-border/60 mt-1"
                       >
-                        <Edit3 className="w-4 h-4 text-accent" />
-                        <span>Đăng Bài Viết Mới</span>
+                        <UserCheck className="w-4 h-4 text-text-muted" />
+                        <span>Đổi Tài Khoản / Vai Trò</span>
                       </Link>
-                    )}
 
-                    {user.role === "superadmin" && (
-                      <Link
-                        href="/admin/users"
-                        onClick={() => setUserMenuOpen(false)}
-                        className="flex items-center gap-2 px-3 py-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors"
+                      <button
+                        onClick={() => {
+                          logout();
+                          setUserMenuOpen(false);
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors mt-1 cursor-pointer"
                       >
-                        <ShieldCheck className="w-4 h-4 text-purple-400" />
-                        <span>Quản Lý Thành Viên</span>
-                      </Link>
-                    )}
-
-                    <Link
-                      href="/roadmap"
-                      onClick={() => setUserMenuOpen(false)}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors"
-                    >
-                      <Award className="w-4 h-4 text-emerald-400" />
-                      <span>Lộ Trình Của Tôi</span>
-                    </Link>
-
-                    <Link
-                      href="/login"
-                      onClick={() => setUserMenuOpen(false)}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors border-t border-border/60 mt-1"
-                    >
-                      <UserCheck className="w-4 h-4 text-text-muted" />
-                      <span>Đổi Tài Khoản / Vai Trò</span>
-                    </Link>
-
-                    <button
-                      onClick={() => {
-                        logout();
-                        setUserMenuOpen(false);
-                      }}
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors mt-1"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      <span>Đăng xuất</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <Button
-                variant="pill"
-                size="sm"
-                className="bg-gradient-to-r from-accent to-accent-hover text-white shadow-sm hover:shadow-accent font-medium text-xs px-3.5"
-                asChild
-              >
-                <Link href="/login">
-                  <LogIn className="w-3.5 h-3.5 mr-1" />
-                  Đăng nhập
-                </Link>
-              </Button>
-            )}
+                        <LogOut className="w-4 h-4" />
+                        <span>Đăng xuất</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Button
+                  variant="pill"
+                  size="sm"
+                  className="bg-gradient-to-r from-accent to-accent-hover text-white shadow-sm hover:shadow-accent font-medium text-xs px-3.5"
+                  asChild
+                >
+                  <Link href="/login">
+                    <LogIn className="w-3.5 h-3.5 mr-1" />
+                    Đăng nhập
+                  </Link>
+                </Button>
+              )}
+            </div>
 
             {/* Mobile Menu Button */}
             <button
-              className="lg:hidden p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated border border-border/60"
+              className="lg:hidden p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated border border-border/60 cursor-pointer"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-expanded={mobileMenuOpen}
               aria-label="Mở menu"
@@ -295,65 +297,155 @@ export function Header() {
 
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="lg:hidden py-4 border-t border-border bg-bg-panel/95 animate-slide-up">
-            <nav className="flex flex-col gap-1.5" aria-label="Mobile navigation">
-              {navItems.map((item) => {
-                const isActive =
-                  item.href === "/"
-                    ? pathname === "/"
-                    : pathname === item.href || pathname.startsWith(`${item.href}/`);
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      "px-3 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-between",
-                      isActive
-                        ? "text-accent bg-accent-muted/40 font-semibold"
-                        : "text-text-secondary hover:text-text-primary hover:bg-bg-elevated"
-                    )}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <span>{item.label}</span>
-                    {isActive && <span className="w-1.5 h-1.5 rounded-full bg-accent" />}
-                  </Link>
-                );
-              })}
-
-              {user ? (
-                <div className="pt-3 mt-2 border-t border-border space-y-2">
-                  <div className="px-3 py-1 flex items-center justify-between text-xs text-text-muted">
-                    <span>Đã đăng nhập: <strong>{user.name}</strong></span>
-                    <span className="uppercase text-accent font-bold">({user.role})</span>
+          <div className="lg:hidden py-4 border-t border-border bg-bg-panel/95 animate-slide-up space-y-4">
+            {/* User Profile Card inside Mobile Drawer */}
+            {user ? (
+              <div className="p-3.5 rounded-2xl bg-bg-elevated/70 border border-border space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-accent/20 border border-accent/40 flex items-center justify-center text-xl flex-shrink-0">
+                    {user.avatar || "👤"}
                   </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-sm font-bold text-text-primary truncate">
+                        {user.name}
+                      </h4>
+                      <span
+                        className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider"
+                        style={{
+                          backgroundColor:
+                            user.role === "superadmin"
+                              ? "rgba(168, 85, 247, 0.15)"
+                              : user.role === "admin"
+                              ? "rgba(240, 90, 40, 0.15)"
+                              : "rgba(16, 185, 129, 0.15)",
+                          color:
+                            user.role === "superadmin"
+                              ? "#a855f7"
+                              : user.role === "admin"
+                              ? "#f05a28"
+                              : "#10b981",
+                        }}
+                      >
+                        {user.role === "superadmin"
+                          ? "Superadmin"
+                          : user.role === "admin"
+                          ? "Admin"
+                          : "Sinh viên"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-text-muted font-mono truncate mt-0.5">
+                      {user.email}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Account Action Buttons */}
+                <div className="grid grid-cols-1 gap-1.5 pt-2 border-t border-border/70 text-xs">
                   {(user.role === "superadmin" || user.role === "admin") && (
-                    <Button variant="outline" className="w-full text-xs" asChild>
-                      <Link href="/admin" onClick={() => setMobileMenuOpen(false)}>
-                        Vào Bảng Quản Trị Admin
-                      </Link>
-                    </Button>
+                    <Link
+                      href="/admin"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-2 p-2 rounded-xl text-text-secondary hover:text-accent hover:bg-bg-panel transition-colors font-semibold"
+                    >
+                      <LayoutDashboard className="w-4 h-4 text-accent" />
+                      <span>Bảng Quản Trị Admin</span>
+                    </Link>
                   )}
-                  <Button
-                    variant="ghost"
-                    className="w-full text-xs text-red-400"
+
+                  {(user.role === "superadmin" || user.role === "admin") && (
+                    <Link
+                      href="/admin/posts/new"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-2 p-2 rounded-xl text-text-secondary hover:text-accent hover:bg-bg-panel transition-colors font-semibold"
+                    >
+                      <Edit3 className="w-4 h-4 text-accent" />
+                      <span>Đăng Bài Viết Mới</span>
+                    </Link>
+                  )}
+
+                  {user.role === "superadmin" && (
+                    <Link
+                      href="/admin/users"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-2 p-2 rounded-xl text-text-secondary hover:text-accent hover:bg-bg-panel transition-colors font-semibold"
+                    >
+                      <ShieldCheck className="w-4 h-4 text-purple-400" />
+                      <span>Quản Lý Thành Viên</span>
+                    </Link>
+                  )}
+
+                  <Link
+                    href="/roadmap"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2 p-2 rounded-xl text-text-secondary hover:text-accent hover:bg-bg-panel transition-colors font-semibold"
+                  >
+                    <Award className="w-4 h-4 text-emerald-400" />
+                    <span>Lộ Trình Của Tôi</span>
+                  </Link>
+
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2 p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-bg-panel transition-colors"
+                  >
+                    <UserCheck className="w-4 h-4 text-text-muted" />
+                    <span>Đổi Tài Khoản / Vai Trò</span>
+                  </Link>
+
+                  <button
                     onClick={() => {
                       logout();
                       setMobileMenuOpen(false);
                     }}
+                    className="flex items-center gap-2 p-2 rounded-xl text-red-400 hover:bg-red-500/10 transition-colors font-semibold text-left mt-1 cursor-pointer"
                   >
-                    Đăng xuất
-                  </Button>
+                    <LogOut className="w-4 h-4" />
+                    <span>Đăng xuất</span>
+                  </button>
                 </div>
-              ) : (
-                <div className="pt-3 mt-2 border-t border-border">
-                  <Button variant="pill" className="w-full bg-accent text-white" asChild>
-                    <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
-                      Đăng nhập / Đăng ký
+              </div>
+            ) : (
+              <div className="p-3.5 rounded-2xl bg-bg-elevated/70 border border-border">
+                <Button variant="pill" className="w-full bg-accent text-white font-bold" asChild>
+                  <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                    <LogIn className="w-4 h-4 mr-1.5" />
+                    Đăng nhập / Đăng ký
+                  </Link>
+                </Button>
+              </div>
+            )}
+
+            {/* Navigation Links */}
+            <div className="space-y-1">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-text-muted px-2 block mb-1">
+                Danh Mục Điều Hướng
+              </span>
+              <nav className="flex flex-col gap-1" aria-label="Mobile navigation">
+                {navItems.map((item) => {
+                  const isActive =
+                    item.href === "/"
+                      ? pathname === "/"
+                      : pathname === item.href || pathname.startsWith(`${item.href}/`);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={cn(
+                        "px-3 py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center justify-between",
+                        isActive
+                          ? "text-accent bg-accent-muted/40 font-bold border border-accent/30"
+                          : "text-text-secondary hover:text-text-primary hover:bg-bg-elevated"
+                      )}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <span>{item.label}</span>
+                      {isActive && <span className="w-1.5 h-1.5 rounded-full bg-accent" />}
                     </Link>
-                  </Button>
-                </div>
-              )}
-            </nav>
+                  );
+                })}
+              </nav>
+            </div>
           </div>
         )}
       </div>

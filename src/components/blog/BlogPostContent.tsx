@@ -147,7 +147,7 @@ export function BlogPostContent({ post }: BlogPostContentProps) {
 
       {/* Header Banner */}
       <div className="border-b border-border/80 bg-gradient-to-b from-bg-panel to-bg-primary py-12 md:py-16">
-        <div className="container max-w-4xl">
+        <div className="container max-w-6xl">
           <div className="flex items-center justify-between mb-6">
             <Link
               href="/blog"
@@ -177,26 +177,23 @@ export function BlogPostContent({ post }: BlogPostContentProps) {
           )}
 
           {/* Title */}
-          <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight text-text-primary mb-6 leading-tight">
+          <h1 className="text-2xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-text-primary mb-6 leading-tight">
             {post.title}
           </h1>
 
-          {/* Excerpt */}
-          <p className="text-base md:text-lg text-text-secondary leading-relaxed mb-8">
-            {post.excerpt}
-          </p>
-
-          {/* Metadata Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-4 pt-6 border-t border-border/60 text-xs text-text-muted">
-            <div className="flex flex-wrap items-center gap-4">
-              <span className="flex items-center gap-1.5 font-medium text-text-secondary">
-                <Calendar className="h-4 w-4 text-accent" />
-                {formatDate(post.date)}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Clock className="h-4 w-4 text-amber-400" />
-                {post.readingTime} phút đọc
-              </span>
+          {/* Metadata */}
+          <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-text-muted">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5">
+                <Calendar className="h-3.5 w-3.5 text-accent" />
+                <time dateTime={post.date}>{formatDate(post.date)}</time>
+              </div>
+              <span>•</span>
+              <div className="flex items-center gap-1.5">
+                <Clock className="h-3.5 w-3.5 text-accent" />
+                <span>{post.readingTime} phút đọc</span>
+              </div>
+              <span>•</span>
               <span className="hidden sm:inline-block px-2.5 py-0.5 rounded bg-bg-elevated text-text-secondary font-mono">
                 {post.author}
               </span>
@@ -241,19 +238,19 @@ export function BlogPostContent({ post }: BlogPostContentProps) {
       </div>
 
       {/* Main Content Layout */}
-      <div className="container max-w-5xl py-12">
+      <div className="container max-w-6xl py-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           {/* Main Article Body */}
           <div className="lg:col-span-8 space-y-8">
             {/* Rich Document Content Container */}
-            <div className="bg-bg-panel border border-border/80 rounded-2xl p-6 md:p-10 shadow-xl">
+            <div className="bg-bg-panel border border-border/80 rounded-3xl p-6 sm:p-10 lg:p-12 shadow-2xl">
               {isHtml ? (
                 <div
-                  className="prose prose-invert max-w-none text-text-secondary leading-relaxed text-base space-y-4 article-rich-content"
+                  className="prose prose-invert !max-w-none w-full text-text-primary leading-[1.85] text-base sm:text-lg space-y-6 article-rich-content"
                   dangerouslySetInnerHTML={{ __html: htmlContent }}
                 />
               ) : (
-                <div className="text-text-secondary leading-relaxed whitespace-pre-wrap text-base space-y-4 font-sans">
+                <div className="text-text-primary leading-[1.85] whitespace-pre-wrap text-base sm:text-lg space-y-6 font-sans">
                   {htmlContent}
                 </div>
               )}

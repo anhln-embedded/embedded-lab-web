@@ -35,7 +35,7 @@ export function TutorialTopicCard({ topic }: TutorialTopicCardProps) {
                 {topic.categoryName}
               </span>
               <span className="text-xs font-semibold text-text-muted">
-                {topic.posts.length} bài viết chi tiết
+                {(topic.posts || []).length} bài viết chi tiết
               </span>
             </div>
           </div>
@@ -58,21 +58,23 @@ export function TutorialTopicCard({ topic }: TutorialTopicCardProps) {
         </p>
 
         {/* Featured Posts Preview List */}
-        <div className="space-y-1.5 pt-3 border-t border-border/60 mb-4">
-          <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block">
-            Bài viết nổi bật trong chuỗi:
-          </span>
-          {topic.posts.slice(0, 2).map((post) => (
-            <Link
-              key={post.slug}
-              href={`/tutorials/${topic.slug}/${post.slug}`}
-              className="flex items-center gap-2 text-xs text-text-secondary hover:text-accent transition-colors py-1 group/post"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-accent/50 group-hover/post:bg-accent flex-shrink-0" />
-              <span className="truncate">{post.title}</span>
-            </Link>
-          ))}
-        </div>
+        {(topic.posts || []).length > 0 && (
+          <div className="space-y-1.5 pt-3 border-t border-border/60 mb-4">
+            <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block">
+              Bài viết nổi bật trong chuỗi:
+            </span>
+            {(topic.posts || []).slice(0, 2).map((post) => (
+              <Link
+                key={post.slug}
+                href={`/tutorials/${topic.slug}/${post.slug}`}
+                className="flex items-center gap-2 text-xs text-text-secondary hover:text-accent transition-colors py-1 group/post"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-accent/50 group-hover/post:bg-accent flex-shrink-0" />
+                <span className="truncate">{post.title}</span>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Footer / CTA */}

@@ -1,329 +1,313 @@
 /**
- * Embedded-AIoT Lab - Syntax Highlighter Engine
- * Hỗ trợ syntax highlighting chuẩn TextMate/VS Code Dark+ cho các ngôn ngữ:
- * C, C++, Python, Rust, Verilog, Bash/Makefile, JSON, Assembly
+ * Embedded-AIoT Lab - Token-Based Syntax Highlighter Engine
+ * Hỗ trợ Dual-Theme (VS Code Dark+ & GitHub Light) cho C/C++, Python, Rust, Verilog, Bash.
+ * Sử dụng cơ chế Tokenizer Lexer không bao giờ bị lỗi vỡ HTML hay lồng thẻ span.
  */
 
 export interface HighlightToken {
-  type: "keyword" | "type" | "string" | "comment" | "number" | "function" | "preprocessor" | "macro" | "operator" | "punctuation" | "register" | "plain";
+  type:
+    | "keyword"
+    | "type"
+    | "string"
+    | "comment"
+    | "number"
+    | "function"
+    | "preprocessor"
+    | "macro"
+    | "register"
+    | "operator"
+    | "punctuation"
+    | "plain";
   text: string;
 }
 
-export type SupportedLanguage = "c" | "cpp" | "python" | "rust" | "verilog" | "bash" | "json" | "asm";
+export type CodeTheme = "dark" | "light";
 
-// Bảng màu chuẩn VS Code Dark+ / JetBrains cho từng loại token
-export const TOKEN_STYLES: Record<HighlightToken["type"], { light: string; dark: string; style?: string }> = {
-  keyword: { light: "#8b5cf6", dark: "#c586c0", style: "font-weight: 600;" }, // tím keyword
-  type: { light: "#0284c7", dark: "#4ec9b0", style: "font-weight: 600;" }, // xanh ngọc kiểu dữ liệu (uint32_t, void...)
-  function: { light: "#d97706", dark: "#dcdcaa", style: "font-weight: 500;" }, // vàng hàm (printf, app_main...)
-  string: { light: "#16a34a", dark: "#ce9178" }, // cam đất / xanh chuỗi ("...")
-  comment: { light: "#64748b", dark: "#6a9955", style: "font-style: italic;" }, // xanh lá / xám ghi chú (// ...)
-  number: { light: "#ea580c", dark: "#b5cea8" }, // xanh nhạt / cam số và hex (0x4002...)
-  preprocessor: { light: "#9333ea", dark: "#9cdcfe", style: "font-weight: 600;" }, // #include, #define
-  macro: { light: "#c026d3", dark: "#d16969", style: "font-weight: bold;" }, // CONSTANT_NAME
-  register: { light: "#f05a28", dark: "#4fc1ff", style: "font-weight: 700;" }, // RCC, GPIOA, USART1
-  operator: { light: "#0f172a", dark: "#d4d4d4" },
-  punctuation: { light: "#64748b", dark: "#808080" },
-  plain: { light: "#1e293b", dark: "#d4d4d4" },
+const escapeHtml = (str: string) =>
+  str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+/**
+ * Bảng màu VS Code Dark+
+ */
+const COLOR_MAP_DARK: Record<HighlightToken["type"], string> = {
+  keyword: "#c586c0; font-weight: 600", // Tím
+  type: "#4ec9b0; font-weight: 600", // Xanh ngọc
+  function: "#dcdcaa; font-weight: 500", // Vàng
+  string: "#ce9178", // Cam đất
+  comment: "#6a9955; font-style: italic", // Xanh lá
+  number: "#b5cea8", // Xanh nhạt
+  preprocessor: "#c586c0; font-weight: 600", // Tím đậm
+  macro: "#4fc1ff; font-weight: bold", // Xanh dương sáng
+  register: "#4fc1ff; font-weight: 700", // Xanh dương đậm
+  operator: "#d4d4d4",
+  punctuation: "#808080",
+  plain: "#e6edf3",
 };
 
 /**
- * Phân tích và highlight mã nguồn C/C++ chuyên sâu cho Hệ thống Nhúng
+ * Bảng màu GitHub Light / VS Code Light+ (Tương phản cao trên nền trắng)
  */
-export function highlightCCpp(code: string): string {
-  // 1. Thoát các ký tự HTML nguy hiểm
-  const escapeHtml = (str: string) =>
-    str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const COLOR_MAP_LIGHT: Record<HighlightToken["type"], string> = {
+  keyword: "#cf222e; font-weight: 700", // Đỏ mận đậm
+  type: "#0550ae; font-weight: 700", // Xanh dương đậm sắc nét
+  function: "#8250df; font-weight: 600", // Tím hàm
+  string: "#0a3069; font-weight: 500", // Xanh navy chuỗi
+  comment: "#57606a; font-style: italic", // Xám ghi chú
+  number: "#0969da; font-weight: 600", // Xanh số / hex
+  preprocessor: "#cf222e; font-weight: 700", // Đỏ directive
+  macro: "#953800; font-weight: bold", // Cam cháy hằng số
+  register: "#116329; font-weight: bold", // Xanh lá đậm thanh ghi vi điều khiển
+  operator: "#24292f",
+  punctuation: "#57606a",
+  plain: "#1f2328",
+};
 
-  const lines = code.split("\n");
-  const highlightedLines = lines.map((line) => {
-    // Xử lý comment cả dòng
-    if (line.trim().startsWith("//")) {
-      return `<span style="color: #6a9955; font-style: italic;">${escapeHtml(line)}</span>`;
+function renderTokensToHtml(tokens: HighlightToken[], theme: CodeTheme = "dark"): string {
+  const colorMap = theme === "light" ? COLOR_MAP_LIGHT : COLOR_MAP_DARK;
+
+  return tokens
+    .map((t) => {
+      const escaped = escapeHtml(t.text);
+      if (t.type === "plain") return escaped;
+      const style = colorMap[t.type] || "";
+      return style ? `<span style="color: ${style};">${escaped}</span>` : escaped;
+    })
+    .join("");
+}
+
+// C/C++ Keywords & Types
+const C_TYPES = new Set([
+  "uint8_t", "uint16_t", "uint32_t", "uint64_t",
+  "int8_t", "int16_t", "int32_t", "int64_t",
+  "size_t", "ssize_t", "uintptr_t", "intptr_t",
+  "void", "char", "short", "int", "long", "float", "double",
+  "bool", "boolean", "true", "false",
+  "volatile", "const", "static", "inline", "extern", "register", "auto", "restrict",
+  "struct", "union", "enum", "typedef", "sizeof",
+  "GPIO_TypeDef", "RCC_TypeDef", "USART_TypeDef", "SPI_TypeDef", "I2C_TypeDef", "TIM_TypeDef",
+  "TaskHandle_t", "QueueHandle_t", "SemaphoreHandle_t", "BaseType_t", "TickType_t",
+  "esp_err_t", "gpio_config_t", "gpio_num_t"
+]);
+
+const C_KEYWORDS = new Set([
+  "if", "else", "switch", "case", "default", "break", "continue",
+  "while", "do", "for", "goto", "return",
+  "class", "namespace", "public", "private", "protected", "template", "typename",
+  "new", "delete", "try", "catch", "throw", "virtual", "override", "final"
+]);
+
+const HARDWARE_REGISTERS = new Set([
+  "RCC", "GPIOA", "GPIOB", "GPIOC", "GPIOD", "GPIOE", "GPIOF", "GPIOG",
+  "USART1", "USART2", "USART3", "UART4", "UART5", "USART6",
+  "SPI1", "SPI2", "SPI3", "I2C1", "I2C2", "I2C3",
+  "TIM1", "TIM2", "TIM3", "TIM4", "TIM5", "TIM6", "TIM7", "TIM8",
+  "NVIC", "SCB", "SysTick", "EXTI", "SYSCFG", "PWR", "FLASH", "ADC1", "ADC2", "DMA1", "DMA2",
+  "GPIOA_ODR", "GPIOA_MODER", "GPIOA_IDR", "GPIOA_BSRR",
+  "GPIOB_ODR", "GPIOB_MODER", "GPIOC_ODR", "GPIOC_MODER",
+  "AHB1ENR", "APB1ENR", "APB2ENR", "CR1", "CR2", "SR", "DR"
+]);
+
+/**
+ * Tokenizer chuyên sâu cho C / C++
+ */
+export function tokenizeCCppLine(line: string): HighlightToken[] {
+  const tokens: HighlightToken[] = [];
+  let i = 0;
+  const len = line.length;
+
+  while (i < len) {
+    // 1. Line comment //...
+    if (line[i] === "/" && line[i + 1] === "/") {
+      tokens.push({ type: "comment", text: line.slice(i) });
+      break;
     }
-    // Xử lý preprocessor directive (#include, #define, #pragma, #ifdef, #endif...)
-    if (line.trim().startsWith("#")) {
-      const match = line.match(/^(\s*#\w+)(.*)$/);
-      if (match) {
-        const prep = match[1];
-        const rest = match[2];
-        const highlightedRest = escapeHtml(rest)
-          .replace(/(&lt;[\w\.\/]+&gt;)/g, '<span style="color: #ce9178;">$1</span>')
-          .replace(/(".*?")/g, '<span style="color: #ce9178;">$1</span>');
-        return `<span style="color: #c586c0; font-weight: 600;">${escapeHtml(prep)}</span>${highlightedRest}`;
+
+    // 2. Preprocessor directive #include <...>, #define ...
+    if (i === 0 || (tokens.length === 1 && tokens[0].text.trim() === "")) {
+      if (line[i] === "#") {
+        let directiveEnd = i + 1;
+        while (directiveEnd < len && /[a-zA-Z0-9_]/.test(line[directiveEnd])) {
+          directiveEnd++;
+        }
+        tokens.push({ type: "preprocessor", text: line.slice(i, directiveEnd) });
+        i = directiveEnd;
+
+        // Xử lý phần còn lại của dòng include / define
+        while (i < len) {
+          if (line[i] === "/" && line[i + 1] === "/") {
+            tokens.push({ type: "comment", text: line.slice(i) });
+            i = len;
+            break;
+          }
+          if (line[i] === "<") {
+            const closeAngle = line.indexOf(">", i);
+            if (closeAngle !== -1) {
+              tokens.push({ type: "string", text: line.slice(i, closeAngle + 1) });
+              i = closeAngle + 1;
+              continue;
+            }
+          }
+          if (line[i] === '"') {
+            let strEnd = i + 1;
+            while (strEnd < len && line[strEnd] !== '"') strEnd++;
+            if (strEnd < len) strEnd++;
+            tokens.push({ type: "string", text: line.slice(i, strEnd) });
+            i = strEnd;
+            continue;
+          }
+          tokens.push({ type: "plain", text: line[i] });
+          i++;
+        }
+        break;
       }
     }
 
-    // Tokenize từng dòng code
-    let processed = escapeHtml(line);
-
-    // Chuỗi & Ký tự
-    processed = processed.replace(/(".*?"|'.*?')/g, '<span style="color: #ce9178;">$1</span>');
-
-    // Số Hex, Nhị phân và Thập phân (vd: 0x40021000, 0b1010, 100UL, 3.14)
-    processed = processed.replace(
-      /\b(0x[0-9a-fA-F]+[uUlL]*|0b[01]+|(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?[uUlLfF]*)\b/g,
-      '<span style="color: #b5cea8;">$1</span>'
-    );
-
-    // Kiểu dữ liệu Nhúng & C/C++ chuẩn
-    const types = [
-      "uint8_t", "uint16_t", "uint32_t", "uint64_t",
-      "int8_t", "int16_t", "int32_t", "int64_t",
-      "size_t", "ssize_t", "uintptr_t", "intptr_t",
-      "void", "char", "short", "int", "long", "float", "double",
-      "bool", "boolean", "true", "false",
-      "volatile", "const", "static", "inline", "extern", "register", "auto", "restrict",
-      "struct", "union", "enum", "typedef", "sizeof",
-      "GPIO_TypeDef", "RCC_TypeDef", "USART_TypeDef", "SPI_TypeDef", "I2C_TypeDef", "TIM_TypeDef",
-      "TaskHandle_t", "QueueHandle_t", "SemaphoreHandle_t", "BaseType_t", "TickType_t",
-      "esp_err_t", "gpio_config_t", "gpio_num_t"
-    ];
-    const typeRegex = new RegExp(`\\b(${types.join("|")})\\b`, "g");
-    processed = processed.replace(typeRegex, '<span style="color: #4ec9b0; font-weight: 600;">$1</span>');
-
-    // Từ khóa điều khiển luồng (Control Flow)
-    const keywords = [
-      "if", "else", "switch", "case", "default", "break", "continue",
-      "while", "do", "for", "goto", "return",
-      "class", "namespace", "public", "private", "protected", "template", "typename",
-      "new", "delete", "try", "catch", "throw", "virtual", "override", "final"
-    ];
-    const keywordRegex = new RegExp(`\\b(${keywords.join("|")})\\b`, "g");
-    processed = processed.replace(keywordRegex, '<span style="color: #c586c0; font-weight: 600;">$1</span>');
-
-    // Thanh ghi Vi điều khiển (Hardware Registers STM32 / ESP32)
-    const registers = [
-      "RCC", "GPIOA", "GPIOB", "GPIOC", "GPIOD", "GPIOE", "GPIOF", "GPIOG",
-      "USART1", "USART2", "USART3", "UART4", "UART5", "USART6",
-      "SPI1", "SPI2", "SPI3", "I2C1", "I2C2", "I2C3",
-      "TIM1", "TIM2", "TIM3", "TIM4", "TIM5", "TIM6", "TIM7", "TIM8",
-      "NVIC", "SCB", "SysTick", "EXTI", "SYSCFG", "PWR", "FLASH", "ADC1", "ADC2", "DMA1", "DMA2",
-      "MODER", "OTYPER", "OSPEEDR", "PUPDR", "IDR", "ODR", "BSRR", "LCKR", "AFR",
-      "CR1", "CR2", "CR3", "SR", "DR", "BRR", "AHB1ENR", "APB1ENR", "APB2ENR"
-    ];
-    const regRegex = new RegExp(`\\b(${registers.join("|")})\\b`, "g");
-    processed = processed.replace(regRegex, '<span style="color: #4fc1ff; font-weight: 700;">$1</span>');
-
-    // Tên hàm được gọi (Functions: abc(...))
-    processed = processed.replace(
-      /\b([a-zA-Z_]\w*)\s*(?=\()/g,
-      '<span style="color: #dcdcaa;">$1</span>'
-    );
-
-    // Comment đuôi dòng (// ...)
-    processed = processed.replace(
-      /(\/\/[^<]*)$/,
-      '<span style="color: #6a9955; font-style: italic;">$1</span>'
-    );
-
-    return processed;
-  });
-
-  return highlightedLines.join("\n");
-}
-
-/**
- * Phân tích và highlight Python (TinyML, Edge AI, Scripts)
- */
-export function highlightPython(code: string): string {
-  const escapeHtml = (str: string) =>
-    str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-  const lines = code.split("\n");
-  const highlightedLines = lines.map((line) => {
-    if (line.trim().startsWith("#")) {
-      return `<span style="color: #6a9955; font-style: italic;">${escapeHtml(line)}</span>`;
+    // 3. String literals "..." or '...'
+    if (line[i] === '"' || line[i] === "'") {
+      const quote = line[i];
+      let strEnd = i + 1;
+      while (strEnd < len) {
+        if (line[strEnd] === "\\") {
+          strEnd += 2;
+          continue;
+        }
+        if (line[strEnd] === quote) {
+          strEnd++;
+          break;
+        }
+        strEnd++;
+      }
+      tokens.push({ type: "string", text: line.slice(i, strEnd) });
+      i = strEnd;
+      continue;
     }
 
-    let processed = escapeHtml(line);
-
-    // Chuỗi ("..." hoặc '...')
-    processed = processed.replace(/(".*?"|'.*?'|""".*?""")/g, '<span style="color: #ce9178;">$1</span>');
-
-    // Số
-    processed = processed.replace(/\b(\d+\.?\d*|0x[0-9a-fA-F]+)\b/g, '<span style="color: #b5cea8;">$1</span>');
-
-    // Keywords
-    const keywords = [
-      "def", "class", "return", "import", "from", "as", "if", "elif", "else",
-      "while", "for", "in", "try", "except", "finally", "with", "raise",
-      "assert", "yield", "lambda", "global", "nonlocal", "pass", "break", "continue",
-      "True", "False", "None", "async", "await"
-    ];
-    const kwRegex = new RegExp(`\\b(${keywords.join("|")})\\b`, "g");
-    processed = processed.replace(kwRegex, '<span style="color: #c586c0; font-weight: 600;">$1</span>');
-
-    // Built-in & Types
-    const builtins = [
-      "self", "print", "len", "range", "enumerate", "zip", "isinstance", "type",
-      "int", "float", "str", "list", "dict", "set", "tuple", "bytearray", "bytes"
-    ];
-    const biRegex = new RegExp(`\\b(${builtins.join("|")})\\b`, "g");
-    processed = processed.replace(biRegex, '<span style="color: #4ec9b0; font-weight: 600;">$1</span>');
-
-    // Decorators (@...)
-    processed = processed.replace(/(@\w+)/g, '<span style="color: #dcdcaa; font-weight: 600;">$1</span>');
-
-    // Functions
-    processed = processed.replace(/\b([a-zA-Z_]\w*)\s*(?=\()/g, '<span style="color: #dcdcaa;">$1</span>');
-
-    // Comment đuôi dòng
-    processed = processed.replace(/(#[^<]*)$/, '<span style="color: #6a9955; font-style: italic;">$1</span>');
-
-    return processed;
-  });
-
-  return highlightedLines.join("\n");
-}
-
-/**
- * Phân tích và highlight Rust
- */
-export function highlightRust(code: string): string {
-  const escapeHtml = (str: string) =>
-    str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-  const lines = code.split("\n");
-  const highlightedLines = lines.map((line) => {
-    if (line.trim().startsWith("//")) {
-      return `<span style="color: #6a9955; font-style: italic;">${escapeHtml(line)}</span>`;
+    // 4. Hex numbers & regular numbers (0x40020014UL, 0b1010, 100UL, 3.14)
+    if (
+      /\d/.test(line[i]) ||
+      (line[i] === "0" && (line[i + 1] === "x" || line[i + 1] === "X" || line[i + 1] === "b" || line[i + 1] === "B"))
+    ) {
+      let numEnd = i;
+      while (numEnd < len && /[0-9a-fA-F_xXbBuUlLfF\.]/.test(line[numEnd])) {
+        numEnd++;
+      }
+      tokens.push({ type: "number", text: line.slice(i, numEnd) });
+      i = numEnd;
+      continue;
     }
 
-    let processed = escapeHtml(line);
+    // 5. Identifiers, Keywords, Types, Registers, Functions
+    if (/[a-zA-Z_]/.test(line[i])) {
+      let idEnd = i;
+      while (idEnd < len && /[a-zA-Z0-9_]/.test(line[idEnd])) {
+        idEnd++;
+      }
+      const word = line.slice(i, idEnd);
 
-    // Chuỗi
-    processed = processed.replace(/(".*?"|'.*?')/g, '<span style="color: #ce9178;">$1</span>');
+      // Kiểm tra có phải hàm (function call) không
+      let isFunc = false;
+      let nextCharIdx = idEnd;
+      while (nextCharIdx < len && /\s/.test(line[nextCharIdx])) {
+        nextCharIdx++;
+      }
+      if (nextCharIdx < len && line[nextCharIdx] === "(" && !C_KEYWORDS.has(word) && !C_TYPES.has(word)) {
+        isFunc = true;
+      }
 
-    // Số
-    processed = processed.replace(/\b(0x[0-9a-fA-F]+|\d+(_\d+)*(u8|u16|u32|u64|usize|i8|i16|i32|i64|isize|f32|f64)?)\b/g, '<span style="color: #b5cea8;">$1</span>');
+      if (C_KEYWORDS.has(word)) {
+        tokens.push({ type: "keyword", text: word });
+      } else if (C_TYPES.has(word)) {
+        tokens.push({ type: "type", text: word });
+      } else if (HARDWARE_REGISTERS.has(word)) {
+        tokens.push({ type: "register", text: word });
+      } else if (isFunc) {
+        tokens.push({ type: "function", text: word });
+      } else if (word === word.toUpperCase() && word.length > 2 && /^[A-Z0-9_]+$/.test(word)) {
+        tokens.push({ type: "macro", text: word });
+      } else {
+        tokens.push({ type: "plain", text: word });
+      }
 
-    // Keywords
-    const keywords = [
-      "fn", "let", "mut", "pub", "struct", "enum", "impl", "trait", "match", "use",
-      "mod", "crate", "unsafe", "const", "static", "type", "where", "async", "await",
-      "if", "else", "loop", "while", "for", "in", "return", "break", "continue", "move"
-    ];
-    const kwRegex = new RegExp(`\\b(${keywords.join("|")})\\b`, "g");
-    processed = processed.replace(kwRegex, '<span style="color: #c586c0; font-weight: 600;">$1</span>');
-
-    // Types
-    const types = ["u8", "u16", "u32", "u64", "u128", "usize", "i8", "i16", "i32", "i64", "isize", "bool", "str", "String", "Option", "Result", "Some", "None", "Ok", "Err", "Vec"];
-    const typeRegex = new RegExp(`\\b(${types.join("|")})\\b`, "g");
-    processed = processed.replace(typeRegex, '<span style="color: #4ec9b0; font-weight: 600;">$1</span>');
-
-    // Macros (println!, vec!...)
-    processed = processed.replace(/(\b\w+!)/g, '<span style="color: #4fc1ff; font-weight: 600;">$1</span>');
-
-    // Functions
-    processed = processed.replace(/\b([a-zA-Z_]\w*)\s*(?=\()/g, '<span style="color: #dcdcaa;">$1</span>');
-
-    // Comments
-    processed = processed.replace(/(\/\/[^<]*)$/, '<span style="color: #6a9955; font-style: italic;">$1</span>');
-
-    return processed;
-  });
-
-  return highlightedLines.join("\n");
-}
-
-/**
- * Phân tích và highlight Verilog / SystemVerilog (FPGA / Digital Design)
- */
-export function highlightVerilog(code: string): string {
-  const escapeHtml = (str: string) =>
-    str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-  const lines = code.split("\n");
-  const highlightedLines = lines.map((line) => {
-    if (line.trim().startsWith("//")) {
-      return `<span style="color: #6a9955; font-style: italic;">${escapeHtml(line)}</span>`;
+      i = idEnd;
+      continue;
     }
 
-    let processed = escapeHtml(line);
-
-    // Chuỗi
-    processed = processed.replace(/(".*?")/g, '<span style="color: #ce9178;">$1</span>');
-
-    // Verilog Numbers (vd: 8'hFF, 1'b0, 32'd100)
-    processed = processed.replace(/\b(\d+'[bBoOdDhH][0-9a-fA-F_xXzZ]+|\d+)\b/g, '<span style="color: #b5cea8;">$1</span>');
-
-    // Keywords
-    const keywords = [
-      "module", "endmodule", "input", "output", "inout", "wire", "reg", "logic",
-      "always", "always_comb", "always_ff", "posedge", "negedge", "begin", "end",
-      "assign", "if", "else", "case", "endcase", "parameter", "localparam",
-      "initial", "generate", "endgenerate", "function", "endfunction", "task", "endtask"
-    ];
-    const kwRegex = new RegExp(`\\b(${keywords.join("|")})\\b`, "g");
-    processed = processed.replace(kwRegex, '<span style="color: #c586c0; font-weight: 600;">$1</span>');
-
-    // Comments
-    processed = processed.replace(/(\/\/[^<]*)$/, '<span style="color: #6a9955; font-style: italic;">$1</span>');
-
-    return processed;
-  });
-
-  return highlightedLines.join("\n");
-}
-
-/**
- * Phân tích và highlight Bash / Makefile / Shell Script
- */
-export function highlightBash(code: string): string {
-  const escapeHtml = (str: string) =>
-    str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-  const lines = code.split("\n");
-  const highlightedLines = lines.map((line) => {
-    if (line.trim().startsWith("#")) {
-      return `<span style="color: #6a9955; font-style: italic;">${escapeHtml(line)}</span>`;
+    // 6. Operators & Punctuations
+    if (/[+\-*/%=&|<>!^~?:;,.]/.test(line[i])) {
+      tokens.push({ type: "operator", text: line[i] });
+      i++;
+      continue;
     }
 
-    let processed = escapeHtml(line);
+    // 7. Brackets & Whitespaces
+    tokens.push({ type: "plain", text: line[i] });
+    i++;
+  }
 
-    // Chuỗi
-    processed = processed.replace(/(".*?"|'.*?')/g, '<span style="color: #ce9178;">$1</span>');
+  return tokens;
+}
 
-    // Commands phổ biến trong lập trình Nhúng
-    const commands = [
-      "make", "gcc", "arm-none-eabi-gcc", "arm-none-eabi-gdb", "openocd", "st-flash",
-      "idf.py", "git", "echo", "cd", "mkdir", "rm", "cp", "mv", "chmod", "curl", "source"
-    ];
-    const cmdRegex = new RegExp(`\\b(${commands.join("|")})\\b`, "g");
-    processed = processed.replace(cmdRegex, '<span style="color: #4ec9b0; font-weight: 600;">$1</span>');
+export function highlightCCpp(code: string, theme: CodeTheme = "dark"): string {
+  const lines = code.split("\n");
+  return lines.map((l) => renderTokensToHtml(tokenizeCCppLine(l), theme)).join("\n");
+}
 
-    // Flags (-Wall, -O2, -g...)
-    processed = processed.replace(/(\s-[a-zA-Z0-9_\-]+)/g, '<span style="color: #b5cea8;">$1</span>');
+export function highlightPython(code: string, theme: CodeTheme = "dark"): string {
+  const lines = code.split("\n");
+  const commentColor = theme === "light" ? "#57606a" : "#6a9955";
+  return lines
+    .map((line) => {
+      if (line.trim().startsWith("#")) {
+        return `<span style="color: ${commentColor}; font-style: italic;">${escapeHtml(line)}</span>`;
+      }
+      return renderTokensToHtml(tokenizeCCppLine(line), theme);
+    })
+    .join("\n");
+}
 
-    // Variables ($VAR, ${VAR}, $@, $<)
-    processed = processed.replace(/(\$[\w\(\)\{\}\@\<\^\?]+)/g, '<span style="color: #4fc1ff; font-weight: 600;">$1</span>');
+export function highlightRust(code: string, theme: CodeTheme = "dark"): string {
+  const lines = code.split("\n");
+  return lines.map((l) => renderTokensToHtml(tokenizeCCppLine(l), theme)).join("\n");
+}
 
-    return processed;
-  });
+export function highlightVerilog(code: string, theme: CodeTheme = "dark"): string {
+  const lines = code.split("\n");
+  return lines.map((l) => renderTokensToHtml(tokenizeCCppLine(l), theme)).join("\n");
+}
 
-  return highlightedLines.join("\n");
+export function highlightBash(code: string, theme: CodeTheme = "dark"): string {
+  const lines = code.split("\n");
+  const commentColor = theme === "light" ? "#57606a" : "#6a9955";
+  return lines
+    .map((line) => {
+      if (line.trim().startsWith("#")) {
+        return `<span style="color: ${commentColor}; font-style: italic;">${escapeHtml(line)}</span>`;
+      }
+      return renderTokensToHtml(tokenizeCCppLine(line), theme);
+    })
+    .join("\n");
 }
 
 /**
- * Universal Highlighter Dispatcher
+ * Universal Highlighter Dispatcher hỗ trợ Theme Dark / Light
  */
-export function highlightCode(code: string, language: string = "c"): string {
+export function highlightCode(code: string, language: string = "c", theme: CodeTheme = "dark"): string {
+  if (!code) return "";
   const lang = language.toLowerCase();
   if (lang === "c" || lang === "cpp" || lang === "h" || lang === "hpp") {
-    return highlightCCpp(code);
+    return highlightCCpp(code, theme);
   }
   if (lang === "python" || lang === "py") {
-    return highlightPython(code);
+    return highlightPython(code, theme);
   }
   if (lang === "rust" || lang === "rs") {
-    return highlightRust(code);
+    return highlightRust(code, theme);
   }
   if (lang === "verilog" || lang === "sv" || lang === "systemverilog") {
-    return highlightVerilog(code);
+    return highlightVerilog(code, theme);
   }
   if (lang === "bash" || lang === "sh" || lang === "shell" || lang === "makefile") {
-    return highlightBash(code);
+    return highlightBash(code, theme);
   }
-  return highlightCCpp(code);
+  return highlightCCpp(code, theme);
 }
