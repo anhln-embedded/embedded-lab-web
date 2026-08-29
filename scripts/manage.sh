@@ -2,6 +2,7 @@
 
 # ==============================================================================
 # Script quản lý Docker & Tự động cập nhật (CI/CD Local) cho Embedded Lab Web
+# Tên miền: embedded-aiot.com
 # ==============================================================================
 
 # Colors
@@ -49,13 +50,15 @@ ensure_containers_up() {
     echo -e "${CYAN}[🚀] Đang khởi chạy container...${NC}"
     if ! docker compose up -d --remove-orphans; then
         echo -e "${YELLOW}[!] Phát hiện xung đột container cũ, đang dọn dẹp...${NC}"
-        docker rm -f embedded_lab_web 2>/dev/null || true
+        docker rm -f embedded_lab_web embedded_lab_cloudflared 2>/dev/null || true
         docker compose up -d --remove-orphans
     fi
 }
 
 sync_database() {
     echo -e "${CYAN}[🗄️] Đang đồng bộ hóa Database Schema (Prisma db push)...${NC}"
+    # Đợi container app sẵn sàng
+    sleep 2
     docker exec -u 0 -e HOME=/tmp embedded_lab_web npx prisma db push --skip-generate --accept-data-loss 2>/dev/null || true
 }
 
@@ -120,7 +123,7 @@ logs_app() {
 }
 
 backup_app() {
-    echo -e "${CYAN}[📦] Đang tạo bản sao lưu dữ liệu Embedded Lab...${NC}"
+    echo -e "${CYAN}[📦] Đang tạo bản sao lưu dữ liệu toàn diện cho Embedded Lab...${NC}"
 
     BACKUP_DIR="$PROJECT_DIR/backups"
     TIMESTAMP=$(date +%Y%m%d_%H%M%S)
@@ -128,24 +131,42 @@ backup_app() {
     BACKUP_NAME="embedded_backup_${TIMESTAMP}"
 
     mkdir -p "$BACKUP_DIR"
+    mkdir -p "$TEMP_DIR/prisma"
+    mkdir -p "$TEMP_DIR/uploads"
 
-    # 1. Sao lưu SQLite Database (dev.db)
-    echo -e "${CYAN}  [1/3] Đang sao lưu Database SQLite...${NC}"
-    if [ -f "$PROJECT_DIR/prisma/dev.db" ]; then
-        cp "$PROJECT_DIR/prisma/dev.db" "$TEMP_DIR/dev.db"
-        echo -e "${GREEN}  [✔] Database SQLite đã sao lưu (${PROJECT_DIR}/prisma/dev.db)${NC}"
-    else
-        # Thử lấy từ container nếu local chưa mount
-        docker cp embedded_lab_web:/app/prisma/dev.db "$TEMP_DIR/dev.db" 2>/dev/null || true
-        if [ -f "$TEMP_DIR/dev.db" ]; then
-            echo -e "${GREEN}  [✔] Database SQLite đã sao lưu từ container${NC}"
-        else
-            echo -e "${YELLOW}  [!] Không tìm thấy file dev.db, bỏ qua DB${NC}"
-        fi
+    # 1. Sao lưu SQLite Database (dev.db, dev.db-wal, dev.db-shm)
+    echo -e "${CYAN}  [1/4] Đang sao lưu Database SQLite...${NC}"
+    db_found=false
+
+    # Ưu tiên lấy từ container/volume nếu có
+    if docker cp embedded_lab_web:/app/prisma/dev.db "$TEMP_DIR/prisma/dev.db" 2>/dev/null; then
+        docker cp embedded_lab_web:/app/prisma/dev.db-wal "$TEMP_DIR/prisma/dev.db-wal" 2>/dev/null || true
+        docker cp embedded_lab_web:/app/prisma/dev.db-shm "$TEMP_DIR/prisma/dev.db-shm" 2>/dev/null || true
+        db_found=true
+        echo -e "${GREEN}  [✔] Database SQLite đã sao lưu từ container volume (/app/prisma/dev.db)${NC}"
+    elif [ -f "$PROJECT_DIR/prisma/dev.db" ]; then
+        cp "$PROJECT_DIR"/prisma/dev.db* "$TEMP_DIR/prisma/" 2>/dev/null || true
+        db_found=true
+        echo -e "${GREEN}  [✔] Database SQLite đã sao lưu từ thư mục local (${PROJECT_DIR}/prisma/dev.db)${NC}"
     fi
 
-    # 2. Sao lưu file cấu hình .env
-    echo -e "${CYAN}  [2/3] Đang sao lưu file cấu hình .env...${NC}"
+    if [ "$db_found" = false ]; then
+        echo -e "${YELLOW}  [!] Chưa có file dev.db (database mới tinh), bỏ qua DB${NC}"
+    fi
+
+    # 2. Sao lưu uploads (nếu có bài viết tải ảnh lên)
+    echo -e "${CYAN}  [2/4] Đang sao lưu thư mục uploads...${NC}"
+    if docker cp embedded_lab_web:/app/public/uploads/. "$TEMP_DIR/uploads/" 2>/dev/null; then
+        echo -e "${GREEN}  [✔] Thư mục uploads đã sao lưu từ container${NC}"
+    elif [ -d "$PROJECT_DIR/public/uploads" ] && [ "$(ls -A "$PROJECT_DIR/public/uploads" 2>/dev/null)" ]; then
+        cp -r "$PROJECT_DIR/public/uploads/"* "$TEMP_DIR/uploads/" 2>/dev/null || true
+        echo -e "${GREEN}  [✔] Thư mục uploads đã sao lưu từ local${NC}"
+    else
+        echo -e "${GREEN}  [✔] Thư mục uploads trống${NC}"
+    fi
+
+    # 3. Sao lưu file cấu hình .env
+    echo -e "${CYAN}  [3/4] Đang sao lưu file cấu hình .env...${NC}"
     if [ -f "$PROJECT_DIR/.env" ]; then
         cp "$PROJECT_DIR/.env" "$TEMP_DIR/.env"
         echo -e "${GREEN}  [✔] .env đã sao lưu${NC}"
@@ -153,8 +174,8 @@ backup_app() {
         echo -e "${YELLOW}  [!] Không tìm thấy file .env, bỏ qua${NC}"
     fi
 
-    # 3. Sao lưu thư mục .cloudflared (nếu có)
-    echo -e "${CYAN}  [3/3] Đang sao lưu thư mục .cloudflared/...${NC}"
+    # 4. Sao lưu thư mục .cloudflared (gồm config.yml, credentials json, cert.pem)
+    echo -e "${CYAN}  [4/4] Đang sao lưu thư mục .cloudflared/...${NC}"
     if [ -d "$PROJECT_DIR/.cloudflared" ]; then
         cp -r "$PROJECT_DIR/.cloudflared" "$TEMP_DIR/.cloudflared"
         echo -e "${GREEN}  [✔] .cloudflared/ đã sao lưu${NC}"
@@ -162,7 +183,7 @@ backup_app() {
         echo -e "${YELLOW}  [!] Không tìm thấy thư mục .cloudflared/, bỏ qua${NC}"
     fi
 
-    # 4. Nén tất cả thành 1 file tar.gz
+    # 5. Nén tất cả thành 1 file tar.gz
     BACKUP_FILE="$BACKUP_DIR/${BACKUP_NAME}.tar.gz"
     tar -czf "$BACKUP_FILE" -C "$TEMP_DIR" .
     rm -rf "$TEMP_DIR"
@@ -174,6 +195,15 @@ backup_app() {
     echo -e "${GREEN}  File: ${BACKUP_FILE}${NC}"
     echo -e "${GREEN}  Kích thước: ${FILESIZE}${NC}"
     echo -e "${GREEN}=====================================================${NC}"
+    echo -e ""
+    echo -e "${CYAN}Hướng dẫn di chuyển sang Server mới:${NC}"
+    echo -e "  1. Copy file backup sang server mới qua SCP/Rsync:"
+    echo -e "     ${YELLOW}scp ${BACKUP_FILE} user@new-server:~/${NC}"
+    echo -e "  2. Trên server mới (đã cài Docker):"
+    echo -e "     ${YELLOW}git clone https://github.com/anhln-embedded/embedded-lab-web.git && cd embedded-lab-web${NC}"
+    echo -e "     ${YELLOW}mkdir -p backups && cp ~/$(basename "$BACKUP_FILE") backups/${NC}"
+    echo -e "     ${YELLOW}./scripts/manage.sh restore backups/$(basename "$BACKUP_FILE")${NC}"
+    echo -e "     ${YELLOW}./scripts/manage.sh start${NC}"
 }
 
 restore_app() {
@@ -182,7 +212,7 @@ restore_app() {
     if [ -z "$BACKUP_FILE" ]; then
         echo -e "${RED}[!] Thiếu tham số file backup!${NC}"
         echo -e "Cách dùng: ${YELLOW}./scripts/manage.sh restore backups/embedded_backup_YYYYMMDD_HHMMSS.tar.gz${NC}"
-        if [ -d "$PROJECT_DIR/backups" ] && [ "$(ls -A $PROJECT_DIR/backups/*.tar.gz 2>/dev/null)" ]; then
+        if [ -d "$PROJECT_DIR/backups" ] && [ "$(ls -A "$PROJECT_DIR/backups/"*.tar.gz 2>/dev/null)" ]; then
             echo -e ""
             echo -e "${CYAN}Các bản backup có sẵn:${NC}"
             ls -lh "$PROJECT_DIR/backups/"*.tar.gz 2>/dev/null | awk '{print "  " $NF " (" $5 ")"}'
@@ -202,27 +232,46 @@ restore_app() {
 
     # 1. Restore .env
     if [ -f "$TEMP_DIR/.env" ]; then
-        echo -e "${CYAN}  [1/3] Đang khôi phục file .env...${NC}"
+        echo -e "${CYAN}  [1/4] Đang khôi phục file .env...${NC}"
         cp "$TEMP_DIR/.env" "$PROJECT_DIR/.env"
         echo -e "${GREEN}  [✔] .env đã khôi phục${NC}"
     fi
 
     # 2. Restore .cloudflared/
     if [ -d "$TEMP_DIR/.cloudflared" ]; then
-        echo -e "${CYAN}  [2/3] Đang khôi phục thư mục .cloudflared/...${NC}"
+        echo -e "${CYAN}  [2/4] Đang khôi phục thư mục .cloudflared/...${NC}"
         mkdir -p "$PROJECT_DIR/.cloudflared"
         cp -r "$TEMP_DIR/.cloudflared/"* "$PROJECT_DIR/.cloudflared/"
         echo -e "${GREEN}  [✔] .cloudflared/ đã khôi phục${NC}"
     fi
 
-    # 3. Restore Database SQLite
-    if [ -f "$TEMP_DIR/dev.db" ]; then
-        echo -e "${CYAN}  [3/3] Đang khôi phục SQLite database...${NC}"
+    # 3. Khởi tạo container và volume trước khi restore DB & Uploads
+    echo -e "${CYAN}  [3/4] Khởi tạo container volume để nạp dữ liệu...${NC}"
+    docker compose create app 2>/dev/null || true
+
+    # 4. Restore Database SQLite
+    if [ -f "$TEMP_DIR/prisma/dev.db" ]; then
+        echo -e "${CYAN}  [4/4] Đang khôi phục SQLite database...${NC}"
+        mkdir -p "$PROJECT_DIR/prisma"
+        cp -r "$TEMP_DIR/prisma/"* "$PROJECT_DIR/prisma/" 2>/dev/null || true
+        # Nạp trực tiếp vào Docker volume
+        docker cp "$TEMP_DIR/prisma/dev.db" embedded_lab_web:/app/prisma/dev.db 2>/dev/null || true
+        [ -f "$TEMP_DIR/prisma/dev.db-wal" ] && docker cp "$TEMP_DIR/prisma/dev.db-wal" embedded_lab_web:/app/prisma/dev.db-wal 2>/dev/null || true
+        [ -f "$TEMP_DIR/prisma/dev.db-shm" ] && docker cp "$TEMP_DIR/prisma/dev.db-shm" embedded_lab_web:/app/prisma/dev.db-shm 2>/dev/null || true
+        echo -e "${GREEN}  [✔] Database SQLite đã khôi phục thành công!${NC}"
+    elif [ -f "$TEMP_DIR/dev.db" ]; then # Tương thích backup cũ
         mkdir -p "$PROJECT_DIR/prisma"
         cp "$TEMP_DIR/dev.db" "$PROJECT_DIR/prisma/dev.db"
-        # Đẩy vào container nếu container đang chạy
         docker cp "$TEMP_DIR/dev.db" embedded_lab_web:/app/prisma/dev.db 2>/dev/null || true
         echo -e "${GREEN}  [✔] Database SQLite đã khôi phục thành công!${NC}"
+    fi
+
+    # 5. Restore uploads
+    if [ -d "$TEMP_DIR/uploads" ] && [ "$(ls -A "$TEMP_DIR/uploads" 2>/dev/null)" ]; then
+        mkdir -p "$PROJECT_DIR/public/uploads"
+        cp -r "$TEMP_DIR/uploads/"* "$PROJECT_DIR/public/uploads/" 2>/dev/null || true
+        docker cp "$TEMP_DIR/uploads/." embedded_lab_web:/app/public/uploads/ 2>/dev/null || true
+        echo -e "${GREEN}  [✔] Thư mục uploads đã khôi phục thành công!${NC}"
     fi
 
     rm -rf "$TEMP_DIR"
@@ -230,20 +279,20 @@ restore_app() {
     echo -e ""
     echo -e "${GREEN}=====================================================${NC}"
     echo -e "${GREEN}[✔] Khôi phục hoàn tất!${NC}"
-    echo -e "  Chạy: ./scripts/manage.sh start để khởi chạy ứng dụng${NC}"
+    echo -e "  Chạy: ${CYAN}./scripts/manage.sh start${NC} để khởi chạy ứng dụng"
     echo -e "${GREEN}=====================================================${NC}"
 }
 
 show_menu() {
     print_header
     echo -e " Vui lòng chọn thao tác:"
-    echo -e " ${GREEN}1)${NC} Start (Khởi chạy Docker Web)"
+    echo -e " ${GREEN}1)${NC} Start (Khởi chạy Docker Web & Cloudflare Tunnel)"
     echo -e " ${YELLOW}2)${NC} Stop (Tạm dừng container)"
-    echo -e " ${CYAN}3)${NC} Restart & Update (Kéo code master mới & rebuild)"
+    echo -e " ${CYAN}3)${NC} Restart & Update (Kéo code master mới & restart)"
     echo -e " ${RED}4)${NC} Down (Dừng và xóa container)"
     echo -e " ${CYAN}5)${NC} Status (Kiểm tra trạng thái)"
     echo -e " ${CYAN}6)${NC} Logs (Xem log ứng dụng web)"
-    echo -e " ${GREEN}7)${NC} Backup (Sao lưu SQLite DB + .env)"
+    echo -e " ${GREEN}7)${NC} Backup (Sao lưu DB SQLite + Uploads + .env + .cloudflared)"
     echo -e " ${YELLOW}8)${NC} Restore (Khôi phục từ file backup)"
     echo -e " ${RED}0)${NC} Thoát"
     echo -e "${CYAN}-----------------------------------------------------${NC}"

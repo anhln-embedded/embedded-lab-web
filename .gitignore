@@ -25,6 +25,9 @@ tsconfig.tsbuildinfo
 .env.test.local
 .env.production.local
 *.pem
+.cloudflared/
+backups/
+*.tar.gz
 
 # Allow committing sample environment file
 !.env.example
