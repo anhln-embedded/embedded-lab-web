@@ -191,8 +191,17 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
       opacity: 0.85,
     });
 
+    const MAX_FOODS = 6;
     let foodIdCounter = 0;
     const spawnFood = (x: number, y: number) => {
+      // Giới hạn số lượng mồi tối đa để tránh lag và xung đột quỹ đạo
+      while (foods.length >= MAX_FOODS) {
+        const oldest = foods.shift();
+        if (oldest) {
+          foodGroup.remove(oldest.mesh);
+        }
+      }
+
       const fGroup = new THREE.Group();
 
       const core = new THREE.Mesh(foodCoreGeo, foodCoreMat.clone());
@@ -343,14 +352,42 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
 
     const handleClick = (e: MouseEvent) => {
       const worldPos = get3DWorldPos(e.clientX, e.clientY);
-
       // Spawn Food Target + Ripple Wave at exact click position
       spawnFood(worldPos.x, worldPos.y);
       spawnRipple(worldPos.x, worldPos.y, 0x00ff88);
     };
 
+    // --- Hỗ trợ Chạm & Vuốt Mượt mà trên Điện thoại / Mobile ---
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        const touch = e.touches[0];
+        const worldPos = get3DWorldPos(touch.clientX, touch.clientY);
+        mouse.targetX = worldPos.x;
+        mouse.targetY = worldPos.y;
+        mouse.isMoving = true;
+        lastMouseMoveTime = performance.now();
+
+        // Tạo mồi ngay tại điểm chạm ngón tay
+        spawnFood(worldPos.x, worldPos.y);
+        spawnRipple(worldPos.x, worldPos.y, 0x00ff88);
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        const touch = e.touches[0];
+        const worldPos = get3DWorldPos(touch.clientX, touch.clientY);
+        mouse.targetX = worldPos.x;
+        mouse.targetY = worldPos.y;
+        mouse.isMoving = true;
+        lastMouseMoveTime = performance.now();
+      }
+    };
+
     window.addEventListener("mousemove", handleMouseMove, { passive: true });
     window.addEventListener("click", handleClick, { passive: true });
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: true });
 
     const handleResize = () => {
       if (!container) return;
@@ -555,10 +592,16 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
       let targetY = mouse.targetY;
       let isHunting = false;
 
-      // Clean up / Animate Food Orbs
+      // Clean up / Animate Food Orbs (Tự động tan biến mồi sau 20s)
       for (let i = foods.length - 1; i >= 0; i--) {
         const food = foods[i];
         const age = (performance.now() - food.birthTime) * 0.001;
+
+        if (age > 20.0) {
+          foodGroup.remove(food.mesh);
+          foods.splice(i, 1);
+          continue;
+        }
 
         // Floating hover and ring spin
         food.mesh.position.y = food.pos.y + Math.sin(age * 3.5) * 0.08;
@@ -569,6 +612,10 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
         const scale = 1.0 + Math.sin(age * 6.0) * 0.12;
         food.mesh.scale.set(scale, scale, scale);
       }
+
+      // Xác định màn hình mobile để tối ưu bán kính đớp mồi
+      const isMobile = window.innerWidth < 768;
+      const eatHitRadius = isMobile ? 0.95 : 0.82; // Bán kính đớp mồi rộng rãi, không bao giờ bị trượt
 
       // If food is present, prioritize nearest food
       if (foods.length > 0) {
@@ -587,18 +634,25 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
         targetX = targetFood.mesh.position.x;
         targetY = targetFood.mesh.position.y;
 
+        // Lực hút từ tính miệng rắn khi ở cự ly gần (< 1.2 unit)
+        if (closestDist < 1.2) {
+          const pull = (1.2 - closestDist) * 0.18;
+          targetFood.mesh.position.x = THREE.MathUtils.lerp(targetFood.mesh.position.x, headPos.x, pull);
+          targetFood.mesh.position.y = THREE.MathUtils.lerp(targetFood.mesh.position.y, headPos.y, pull);
+        }
+
         // --- CHECK EAT COLLISION ---
-        if (closestDist < 0.35) {
+        if (closestDist < eatHitRadius) {
           // EAT FOOD!
           const foodIdx = foods.findIndex((f) => f.id === targetFood.id);
           if (foodIdx !== -1) {
             foodGroup.remove(targetFood.mesh);
             foods.splice(foodIdx, 1);
 
-            // Trigger feast visual feedback:
+            // Hiệu ứng bùng nổ năng lượng Cyber khi ăn mồi
             triggerBurst(headPos, 0x00ff88);
             spawnRipple(headPos.x, headPos.y, 0x00ff88);
-            eatSurgeTimer = 1.0; // Trigger full spine glow surge!
+            eatSurgeTimer = 1.0; // Kích hoạt luồng sáng dọc sống lưng
           }
         }
       } else {
@@ -614,34 +668,61 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
       const toTargetY = targetY - headPos.y;
       const distToTarget = Math.hypot(toTargetX, toTargetY);
 
-      // Desired heading angle directly pointing towards cursor tip
+      // Desired heading angle directly pointing towards cursor / food
       let desiredHeading = Math.atan2(toTargetY, toTargetX);
       let angleDiff = desiredHeading - headHeading;
       while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
       while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
 
-      // Fast, responsive turning toward mouse pointer
-      const turnSpeed = isHunting ? 7.5 : (mouse.isMoving ? Math.min(10.0, 4.5 + distToTarget * 1.8) : 3.5);
+      // Độ linh hoạt khi quay đầu (Turn Speed):
+      // Khi săn mồi ở cự ly gần, tăng tốc độ quay góc cực mạnh để triệt tiêu hoàn toàn hiện tượng xoay tròn quanh mồi
+      let turnSpeed: number;
+      if (isHunting) {
+        turnSpeed = Math.min(26.0, 10.0 + (3.5 / Math.max(0.25, distToTarget)) * 5.5);
+      } else if (mouse.isMoving) {
+        turnSpeed = Math.min(12.0, 4.5 + distToTarget * 1.8);
+      } else {
+        turnSpeed = 3.5;
+      }
+
+      // Xoay đầu mượt mà
       headHeading += angleDiff * Math.min(1.0, delta * turnSpeed);
 
-      // Dynamic slither speed based on distance to cursor
-      const targetSpeed = isHunting ? 5.5 : (mouse.isMoving ? Math.min(7.5, 2.0 + distToTarget * 1.6) : 2.2);
-      slitherSpeed = THREE.MathUtils.lerp(slitherSpeed, targetSpeed, 0.12);
+      // Nếu góc lệch lớn khi đã ở gần mồi (< 1.4 unit), chủ động căn chỉnh góc ngắm thẳng mồi
+      if (isHunting && distToTarget < 1.4 && Math.abs(angleDiff) > Math.PI * 0.35) {
+        headHeading = THREE.MathUtils.lerp(headHeading, desiredHeading, Math.min(1.0, delta * 20.0));
+      }
+
+      // Điều tiết tốc độ di chuyển:
+      // Khi đến gần mồi, hãm phanh mượt mà để đầu rắn lao trúng đích thay vì phi vọt qua (overshoot)
+      let targetSpeed: number;
+      if (isHunting) {
+        targetSpeed = Math.max(2.8, Math.min(6.2, distToTarget * 2.8 + 2.0));
+      } else if (mouse.isMoving) {
+        targetSpeed = Math.min(7.5, 2.0 + distToTarget * 1.6);
+      } else {
+        targetSpeed = 2.2;
+      }
+
+      slitherSpeed = THREE.MathUtils.lerp(slitherSpeed, targetSpeed, 0.15);
       slitherCycle += delta * slitherSpeed * 4.6;
 
       if (eatSurgeTimer > 0) {
         eatSurgeTimer -= delta * 0.9;
       }
 
-      // Move Head Forward toward cursor + gentle serpentine wave that dampens near pointer
-      const waveDamp = Math.min(1.0, distToTarget * 1.2);
+      // Triệt tiêu dao động ngang khi đớp mồi gần đích (< 1.3 unit) để đớp thẳng vào mồi
+      const waveDamp = isHunting
+        ? (distToTarget < 1.3 ? 0 : Math.min(1.0, (distToTarget - 1.3) * 0.9))
+        : Math.min(1.0, distToTarget * 1.2);
+
       const slitherWave = Math.sin(slitherCycle) * 0.18 * waveDamp;
       const forwardX = Math.cos(headHeading);
       const forwardY = Math.sin(headHeading);
       const sideX = -Math.sin(headHeading);
       const sideY = Math.cos(headHeading);
 
-      // Step towards target with arrival damping at pointer tip
+      // Tiến về phía mục tiêu
       const stepDist = Math.min(distToTarget, slitherSpeed * delta * 1.8);
       headVel.set(
         (forwardX + sideX * slitherWave) * stepDist,
@@ -763,6 +844,8 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("click", handleClick);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("resize", handleResize);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       observer.disconnect();
