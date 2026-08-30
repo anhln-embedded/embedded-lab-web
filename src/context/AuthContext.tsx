@@ -25,7 +25,7 @@ interface AuthContextType {
   login: (email: string, password?: string) => { success: boolean; message?: string };
   quickLogin: (role: UserRole) => void;
   register: (name: string, email: string, password?: string, role?: UserRole) => { success: boolean; message?: string };
-  loginWithOAuth: (userData: { name: string; email: string; avatar?: string; provider?: string }) => void;
+  loginWithOAuth: (userData: { name: string; email: string; avatar?: string; role?: UserRole; provider?: string }) => void;
   logout: () => void;
   updateUserRole: (userId: string, newRole: UserRole) => void;
   deleteUser: (userId: string) => void;
@@ -116,8 +116,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [allUsers, setAllUsers] = useState<User[]>(DEFAULT_USERS);
   const [completedSteps, setCompletedSteps] = useState<RoadmapProgress>({});
   const [isLoading, setIsLoading] = useState(true);
+  const [serverSuperAdmins, setServerSuperAdmins] = useState<string[]>([]);
 
-  // Initialize from LocalStorage
+  const checkIsSuperAdmin = (email?: string | null): boolean => {
+    if (!email) return false;
+    const clean = normalizeEmail(email);
+    return isSuperAdminEmail(clean) || serverSuperAdmins.includes(clean);
+  };
+
+  // 1. Fetch server-side runtime .env config for Super Admin list
+  useEffect(() => {
+    fetch("/api/auth/config")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.superAdminEmails && Array.isArray(data.superAdminEmails)) {
+          const list: string[] = data.superAdminEmails.map((e: string) => normalizeEmail(e));
+          setServerSuperAdmins(list);
+
+          // Tự động nâng cấp tài khoản đang đăng nhập hoặc đã lưu nếu thuộc danh sách .env trên server
+          setAllUsers((prevUsers) => {
+            const updated = prevUsers.map((u) => {
+              if (list.includes(normalizeEmail(u.email))) {
+                return { ...u, role: "superadmin" as UserRole, bio: "Super Admin quản trị viên Embedded-AIoT Lab PTIT" };
+              }
+              return u;
+            });
+            localStorage.setItem(USERS_LIST_KEY, JSON.stringify(updated));
+            return updated;
+          });
+
+          setUser((prevUser) => {
+            if (prevUser && list.includes(normalizeEmail(prevUser.email))) {
+              const upgraded: User = {
+                ...prevUser,
+                role: "superadmin" as UserRole,
+                bio: "Super Admin quản trị viên Embedded-AIoT Lab PTIT",
+              };
+              localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(upgraded));
+              return upgraded;
+            }
+            return prevUser;
+          });
+        }
+      })
+      .catch((err) => console.warn("Failed to fetch auth config:", err));
+  }, []);
+
+  // 2. Initialize from LocalStorage
   useEffect(() => {
     try {
       // Load all users
@@ -140,7 +185,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Check all users matching Super Admin from .env and ensure role is superadmin
       users = users.map((u) => {
-        if (isSuperAdminEmail(u.email)) {
+        if (isSuperAdminEmail(u.email) || serverSuperAdmins.includes(normalizeEmail(u.email))) {
           return { ...u, role: "superadmin" as UserRole };
         }
         return u;
@@ -154,7 +199,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (storedCurrent) {
         const parsed = JSON.parse(storedCurrent);
         let matchingUser = users.find((u) => normalizeEmail(u.email) === normalizeEmail(parsed.email)) || parsed;
-        if (isSuperAdminEmail(matchingUser.email)) {
+        if (isSuperAdminEmail(matchingUser.email) || serverSuperAdmins.includes(normalizeEmail(matchingUser.email))) {
           matchingUser = { ...matchingUser, role: "superadmin" as UserRole };
         }
         setUser(matchingUser);
@@ -171,7 +216,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [serverSuperAdmins]);
 
   const login = (email: string, _password?: string) => {
     const cleanEmail = email.toLowerCase().trim();
@@ -218,7 +263,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { success: false, message: "Email này đã được đăng ký!" };
     }
 
-    const isSuperAdmin = isSuperAdminEmail(cleanEmail);
+    const isSuperAdmin = checkIsSuperAdmin(cleanEmail);
     const assignedRole: UserRole = isSuperAdmin ? "superadmin" : role;
 
     const newUser: User = {
@@ -243,17 +288,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { success: true };
   };
 
-  const loginWithOAuth = (userData: { name: string; email: string; avatar?: string; provider?: string }) => {
+  const loginWithOAuth = (userData: {
+    name: string;
+    email: string;
+    avatar?: string;
+    role?: UserRole;
+    provider?: string;
+  }) => {
     const cleanEmail = userData.email.toLowerCase().trim();
-    const isSuperAdmin = isSuperAdminEmail(cleanEmail);
+    const isSuperAdmin =
+      userData.role === "superadmin" ||
+      checkIsSuperAdmin(cleanEmail);
+
+    const assignedRole: UserRole = isSuperAdmin ? "superadmin" : userData.role || "user";
     const existing = allUsers.find((u) => normalizeEmail(u.email) === normalizeEmail(cleanEmail));
 
     if (existing) {
       const updatedUser: User = {
         ...existing,
         name: userData.name || existing.name,
-        avatar: userData.avatar || existing.avatar || "👤",
+        avatar: userData.avatar || existing.avatar || (assignedRole === "superadmin" ? "🛡️" : "👤"),
         role: isSuperAdmin ? "superadmin" : existing.role,
+        bio: isSuperAdmin ? "Super Admin quản trị viên Embedded-AIoT Lab PTIT" : existing.bio,
       };
 
       const updatedList = allUsers.map((u) => (u.id === existing.id ? updatedUser : u));
@@ -274,8 +330,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         id: `usr_oauth_${Date.now()}`,
         name: userData.name.trim() || "Thành viên Google",
         email: cleanEmail,
-        role: isSuperAdmin ? "superadmin" : "user",
-        avatar: userData.avatar || "👤",
+        role: assignedRole,
+        avatar: userData.avatar || (assignedRole === "superadmin" ? "🛡️" : "👤"),
         bio: isSuperAdmin
           ? "Super Admin quản trị viên Embedded-AIoT Lab PTIT"
           : "Thành viên Embedded-AIoT Lab PTIT (Đăng nhập qua Google)",
