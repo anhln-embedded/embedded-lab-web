@@ -2,7 +2,12 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { BlogPostList } from "@/components/blog/BlogPostList";
+
+const CyberSnakeCanvas = dynamic(() => import("@/components/3d/CyberSnakeCanvas"), {
+  ssr: false,
+});
 import {
   Search,
   GraduationCap,
@@ -195,6 +200,9 @@ export default function HomePage() {
           id="hero"
           className="min-h-[calc(100vh-4rem)] w-full snap-start snap-always flex flex-col justify-center items-center relative overflow-hidden px-4 py-8 border-b border-border/80 bg-grid-pattern"
         >
+          {/* 3D Cyber Snake Background (Zero-Load Impact & Auto GPU-Pause) */}
+          <CyberSnakeCanvas />
+
           {/* Ambient Glows */}
           <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[700px] h-[320px] bg-accent/15 blur-[150px] pointer-events-none -z-10 rounded-full" />
           <div className="absolute top-1/2 left-1/4 w-[380px] h-[240px] bg-cyan-500/10 blur-[130px] pointer-events-none -z-10 rounded-full" />
