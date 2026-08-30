@@ -24,6 +24,7 @@ import {
   Award
 } from "lucide-react";
 import { SearchModal } from "@/components/ui/SearchModal";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 
 export function Header() {
   const pathname = usePathname();
@@ -34,6 +35,15 @@ export function Header() {
   const [mounted, setMounted] = React.useState(false);
 
   const userMenuRef = React.useRef<HTMLDivElement>(null);
+
+  const handleUserLogout = () => {
+    logout();
+    setUserMenuOpen(false);
+    setMobileMenuOpen(false);
+    if (typeof window !== "undefined" && window.location.pathname.startsWith("/login")) {
+      window.history.replaceState({}, "", "/login");
+    }
+  };
 
   React.useEffect(() => {
     setMounted(true);
@@ -168,7 +178,14 @@ export function Header() {
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
                     className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl border border-border bg-bg-elevated hover:border-accent/50 transition-all text-xs cursor-pointer"
                   >
-                    <span className="text-base">{user.avatar || "👤"}</span>
+                    <UserAvatar
+                      avatar={user.avatar}
+                      name={user.name}
+                      role={user.role}
+                      className="w-7 h-7 rounded-full border border-border"
+                      textClassName="text-base"
+                      size={28}
+                    />
                     <div className="flex flex-col text-left">
                       <span className="font-semibold text-text-primary line-clamp-1 max-w-[110px]">
                         {user.name}
@@ -254,10 +271,7 @@ export function Header() {
                       </Link>
 
                       <button
-                        onClick={() => {
-                          logout();
-                          setUserMenuOpen(false);
-                        }}
+                        onClick={handleUserLogout}
                         className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors mt-1 cursor-pointer"
                       >
                         <LogOut className="w-4 h-4" />
@@ -302,9 +316,14 @@ export function Header() {
             {user ? (
               <div className="p-3.5 rounded-2xl bg-bg-elevated/70 border border-border space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-accent/20 border border-accent/40 flex items-center justify-center text-xl flex-shrink-0">
-                    {user.avatar || "👤"}
-                  </div>
+                  <UserAvatar
+                    avatar={user.avatar}
+                    name={user.name}
+                    role={user.role}
+                    className="w-10 h-10 rounded-full bg-accent/20 border border-accent/40 shadow-sm"
+                    textClassName="text-xl"
+                    size={40}
+                  />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <h4 className="text-sm font-bold text-text-primary truncate">
@@ -394,10 +413,7 @@ export function Header() {
                   </Link>
 
                   <button
-                    onClick={() => {
-                      logout();
-                      setMobileMenuOpen(false);
-                    }}
+                    onClick={handleUserLogout}
                     className="flex items-center gap-2 p-2 rounded-xl text-red-400 hover:bg-red-500/10 transition-colors font-semibold text-left mt-1 cursor-pointer"
                   >
                     <LogOut className="w-4 h-4" />

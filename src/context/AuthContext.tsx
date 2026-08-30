@@ -35,6 +35,46 @@ interface AuthContextType {
   isStepCompleted: (trackId: string, stepId: string) => boolean;
 }
 
+/**
+ * Chuẩn hóa email (xóa dấu chấm đối với Gmail để anhln.embedded@gmail.com khớp với anhlnembedded@gmail.com)
+ * Tương tự cơ chế chuẩn trong F:\Facebook\tro_ngay
+ */
+export function normalizeEmail(email: string): string {
+  if (!email) return "";
+  const clean = email.toLowerCase().trim();
+  const [local, domain] = clean.split("@");
+  if (!domain) return clean;
+  if (domain === "gmail.com" || domain === "googlemail.com") {
+    return `${local.replace(/\./g, "")}@${domain}`;
+  }
+  return `${local}@${domain}`;
+}
+
+/**
+ * Lấy danh sách email Super Admin từ biến môi trường SUPER_ADMIN_EMAILS / NEXT_PUBLIC_SUPER_ADMIN_EMAILS trong .env
+ */
+export function getSuperAdminEmails(): string[] {
+  const envRaw =
+    (typeof process !== "undefined" &&
+      (process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAILS || process.env.SUPER_ADMIN_EMAILS)) ||
+    "";
+
+  return envRaw
+    .split(",")
+    .map((e) => normalizeEmail(e))
+    .filter(Boolean);
+}
+
+/**
+ * Kiểm tra xem một email có thuộc danh sách Super Admin cấu hình trong .env hay không
+ */
+export function isSuperAdminEmail(email?: string | null): boolean {
+  if (!email) return false;
+  const normalized = normalizeEmail(email);
+  const adminList = getSuperAdminEmails();
+  return adminList.includes(normalized);
+}
+
 const DEFAULT_USERS: User[] = [
   {
     id: "usr_superadmin",
@@ -87,11 +127,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         users = JSON.parse(storedUsersRaw);
         // Ensure default admin users exist
         DEFAULT_USERS.forEach((defUser) => {
-          if (!users.some((u) => u.id === defUser.id || u.email === defUser.email)) {
+          const idx = users.findIndex((u) => normalizeEmail(u.email) === normalizeEmail(defUser.email));
+          if (idx === -1) {
             users.push(defUser);
+          } else {
+            if (defUser.role === "superadmin") {
+              users[idx].role = "superadmin";
+            }
           }
         });
       }
+
+      // Check all users matching Super Admin from .env and ensure role is superadmin
+      users = users.map((u) => {
+        if (isSuperAdminEmail(u.email)) {
+          return { ...u, role: "superadmin" as UserRole };
+        }
+        return u;
+      });
+
       setAllUsers(users);
       localStorage.setItem(USERS_LIST_KEY, JSON.stringify(users));
 
@@ -99,9 +153,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const storedCurrent = localStorage.getItem(CURRENT_USER_KEY);
       if (storedCurrent) {
         const parsed = JSON.parse(storedCurrent);
-        // Match with updated user state
-        const matchingUser = users.find((u) => u.id === parsed.id) || parsed;
+        let matchingUser = users.find((u) => normalizeEmail(u.email) === normalizeEmail(parsed.email)) || parsed;
+        if (isSuperAdminEmail(matchingUser.email)) {
+          matchingUser = { ...matchingUser, role: "superadmin" as UserRole };
+        }
         setUser(matchingUser);
+        localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(matchingUser));
 
         // Load roadmap progress for this user
         const progressRaw = localStorage.getItem(`${ROADMAP_KEY_PREFIX}${matchingUser.id}`);
@@ -118,7 +175,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = (email: string, _password?: string) => {
     const cleanEmail = email.toLowerCase().trim();
-    const found = allUsers.find((u) => u.email.toLowerCase() === cleanEmail);
+    const found = allUsers.find((u) => normalizeEmail(u.email) === normalizeEmail(cleanEmail));
 
     if (found) {
       setUser(found);
@@ -157,17 +214,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const register = (name: string, email: string, _password?: string, role: UserRole = "user") => {
     const cleanEmail = email.toLowerCase().trim();
-    if (allUsers.some((u) => u.email.toLowerCase() === cleanEmail)) {
+    if (allUsers.some((u) => normalizeEmail(u.email) === normalizeEmail(cleanEmail))) {
       return { success: false, message: "Email này đã được đăng ký!" };
     }
+
+    const isSuperAdmin = isSuperAdminEmail(cleanEmail);
+    const assignedRole: UserRole = isSuperAdmin ? "superadmin" : role;
 
     const newUser: User = {
       id: `usr_${Date.now()}`,
       name: name.trim(),
       email: cleanEmail,
-      role,
-      avatar: role === "superadmin" ? "🛡️" : role === "admin" ? "✍️" : "🎓",
-      bio: "Thành viên Embedded-AIoT Lab PTIT",
+      role: assignedRole,
+      avatar: assignedRole === "superadmin" ? "🛡️" : assignedRole === "admin" ? "✍️" : "🎓",
+      bio: isSuperAdmin ? "Super Admin quản trị viên Embedded-AIoT Lab PTIT" : "Thành viên Embedded-AIoT Lab PTIT",
       createdAt: new Date().toISOString().split("T")[0],
     };
 
@@ -185,14 +245,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loginWithOAuth = (userData: { name: string; email: string; avatar?: string; provider?: string }) => {
     const cleanEmail = userData.email.toLowerCase().trim();
-    const existing = allUsers.find((u) => u.email.toLowerCase() === cleanEmail);
+    const isSuperAdmin = isSuperAdminEmail(cleanEmail);
+    const existing = allUsers.find((u) => normalizeEmail(u.email) === normalizeEmail(cleanEmail));
 
     if (existing) {
-      const updatedUser = {
+      const updatedUser: User = {
         ...existing,
-        name: existing.name || userData.name,
+        name: userData.name || existing.name,
         avatar: userData.avatar || existing.avatar || "👤",
+        role: isSuperAdmin ? "superadmin" : existing.role,
       };
+
+      const updatedList = allUsers.map((u) => (u.id === existing.id ? updatedUser : u));
+      setAllUsers(updatedList);
+      localStorage.setItem(USERS_LIST_KEY, JSON.stringify(updatedList));
+
       setUser(updatedUser);
       localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(updatedUser));
 
@@ -207,9 +274,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         id: `usr_oauth_${Date.now()}`,
         name: userData.name.trim() || "Thành viên Google",
         email: cleanEmail,
-        role: "user",
+        role: isSuperAdmin ? "superadmin" : "user",
         avatar: userData.avatar || "👤",
-        bio: "Thành viên Embedded-AIoT Lab PTIT (Đăng nhập qua Google)",
+        bio: isSuperAdmin
+          ? "Super Admin quản trị viên Embedded-AIoT Lab PTIT"
+          : "Thành viên Embedded-AIoT Lab PTIT (Đăng nhập qua Google)",
         createdAt: new Date().toISOString().split("T")[0],
       };
 

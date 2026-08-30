@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { useAuth, UserRole } from "@/context/AuthContext";
+import { useAuth, UserRole, getSuperAdminEmails } from "@/context/AuthContext";
 import {
   ShieldCheck,
   Edit3,
@@ -18,6 +18,7 @@ import {
   Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 
 const isProduction =
   process.env.NEXT_PUBLIC_APP_ENV === "production" ||
@@ -40,13 +41,15 @@ function LoginFormContent() {
   const [successMsg, setSuccessMsg] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const oauthHandledRef = useRef(false);
 
   // Xử lý callback OAuth trả về từ Google
   useEffect(() => {
     const oauthSuccess = searchParams.get("oauth_success");
     const errorParam = searchParams.get("error");
 
-    if (oauthSuccess) {
+    if (oauthSuccess && !oauthHandledRef.current) {
+      oauthHandledRef.current = true;
       try {
         let decodedStr = "";
         if (typeof window !== "undefined" && typeof atob !== "undefined") {
@@ -61,9 +64,17 @@ function LoginFormContent() {
           const decoded = JSON.parse(decodedStr);
           loginWithOAuth(decoded);
           setSuccessMsg(`Đăng nhập thành công với tài khoản Google (${decoded.email})!`);
-          setTimeout(() => {
-            router.push(redirectUrl);
-          }, 800);
+
+          // Xóa param trên thanh URL để tránh reload hoặc bấm đăng xuất bị tự động đăng nhập lại
+          if (typeof window !== "undefined") {
+            window.history.replaceState({}, "", "/login");
+          }
+
+          if (redirectUrl && redirectUrl !== "/" && redirectUrl !== "/login") {
+            setTimeout(() => {
+              router.push(redirectUrl);
+            }, 800);
+          }
         }
       } catch (e) {
         console.error("Failed to parse OAuth success data:", e);
@@ -76,8 +87,20 @@ function LoginFormContent() {
       } else {
         setErrorMsg(`Đăng nhập Google thất bại (${errorParam}).`);
       }
+      if (typeof window !== "undefined") {
+        window.history.replaceState({}, "", "/login");
+      }
     }
   }, [searchParams, loginWithOAuth, router, redirectUrl]);
+
+  const handleLogout = () => {
+    logout();
+    setErrorMsg("");
+    setSuccessMsg("");
+    if (typeof window !== "undefined") {
+      window.history.replaceState({}, "", "/login");
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,9 +180,14 @@ function LoginFormContent() {
       {/* If already logged in */}
       {user ? (
         <div className="w-full max-w-md space-y-6 rounded-3xl border border-border bg-bg-panel p-6 sm:p-8 shadow-2xl text-center backdrop-blur-xl">
-          <div className="w-20 h-20 mx-auto rounded-3xl bg-bg-elevated border border-border flex items-center justify-center text-4xl mb-2 shadow-inner">
-            {user.avatar || "👤"}
-          </div>
+          <UserAvatar
+            avatar={user.avatar}
+            name={user.name}
+            role={user.role}
+            className="w-20 h-20 mx-auto rounded-3xl bg-bg-elevated border border-border shadow-inner"
+            textClassName="text-4xl"
+            size={80}
+          />
 
           <div>
             <div
@@ -218,8 +246,8 @@ function LoginFormContent() {
             </Button>
             <Button
               variant="ghost"
-              onClick={logout}
-              className="w-full py-2.5 text-xs text-red-500 hover:text-red-600 hover:bg-red-500/10 rounded-xl"
+              onClick={handleLogout}
+              className="w-full py-2.5 text-xs text-red-500 hover:text-red-600 hover:bg-red-500/10 rounded-xl cursor-pointer"
             >
               Đăng xuất khỏi thiết bị
             </Button>
@@ -233,7 +261,7 @@ function LoginFormContent() {
               </p>
               <div className="grid grid-cols-3 gap-1.5">
                 <button
-                  onClick={() => quickDevLogin("superadmin", "superadmin@ptit.edu.vn")}
+                  onClick={() => quickDevLogin("superadmin", getSuperAdminEmails()[0] || "superadmin@ptit.edu.vn")}
                   className="p-2 rounded-lg text-[11px] font-bold border border-purple-500/30 bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 transition-colors text-center"
                 >
                   Super Admin
@@ -303,7 +331,7 @@ function LoginFormContent() {
               <div className="grid grid-cols-3 gap-1.5 text-xs">
                 <button
                   type="button"
-                  onClick={() => quickDevLogin("superadmin", "superadmin@ptit.edu.vn")}
+                  onClick={() => quickDevLogin("superadmin", getSuperAdminEmails()[0] || "superadmin@ptit.edu.vn")}
                   className="flex flex-col items-center justify-center gap-1 rounded-xl border border-purple-500/30 bg-bg-elevated p-2 text-purple-400 font-bold hover:bg-purple-500/20 transition-all active:scale-95 shadow-sm"
                 >
                   <span>🛡️ Super</span>

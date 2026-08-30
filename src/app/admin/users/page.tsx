@@ -17,6 +17,7 @@ import {
   Calendar
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 
 export default function AdminUsersPage() {
   const { user, allUsers, updateUserRole, deleteUser, register, quickLogin } = useAuth();
@@ -128,9 +129,14 @@ export default function AdminUsersPage() {
                   <tr key={u.id} className="hover:bg-bg-elevated/40 transition-colors">
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-lg bg-bg-elevated border border-border flex items-center justify-center text-sm shadow-inner">
-                          {u.avatar || "👤"}
-                        </div>
+                        <UserAvatar
+                          avatar={u.avatar}
+                          name={u.name}
+                          role={u.role}
+                          className="w-8 h-8 rounded-lg bg-bg-elevated border border-border shadow-inner"
+                          textClassName="text-sm"
+                          size={32}
+                        />
                         <div>
                           <span className="font-semibold text-text-primary block">
                             {u.name}

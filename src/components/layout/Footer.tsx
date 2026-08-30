@@ -22,14 +22,11 @@ export function Footer() {
   const pathname = usePathname();
   const footerRef = React.useRef<HTMLElement | null>(null);
   const [isVisible, setIsVisible] = React.useState(false);
-
-  // Ẩn hoàn toàn Footer trên trang đăng nhập
-  if (pathname === "/login" || pathname?.startsWith("/login")) {
-    return null;
-  }
+  const isLoginPage = pathname === "/login" || pathname?.startsWith("/login");
 
   // IntersectionObserver: Kích hoạt hiệu ứng Slide-in khi cuộn tới gần chân trang
   React.useEffect(() => {
+    if (isLoginPage) return;
     const el = footerRef.current;
     if (!el) return;
 
@@ -45,7 +42,12 @@ export function Footer() {
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, [pathname]);
+  }, [pathname, isLoginPage]);
+
+  // Ẩn hoàn toàn Footer trên trang đăng nhập
+  if (isLoginPage) {
+    return null;
+  }
 
   return (
     <footer

@@ -65,12 +65,40 @@ export async function GET(request: Request) {
 
     const googleUser = await userInfoResponse.json();
 
-    // 3. Chuyển hướng kèm dữ liệu OAuth để client-side AuthContext tự động lưu session
+    // 3. Chuẩn hóa email và kiểm tra SUPER_ADMIN_EMAILS từ file .env (giống tro_ngay)
+    const userEmail = (googleUser.email || "").toLowerCase().trim();
+    const [local, domain] = userEmail.split("@");
+    const normalizedUserEmail =
+      domain === "gmail.com" || domain === "googlemail.com"
+        ? `${local.replace(/\./g, "")}@${domain}`
+        : userEmail;
+
+    const envAdmins =
+      process.env.SUPER_ADMIN_EMAILS ||
+      process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAILS ||
+      "";
+
+    const superAdminList = envAdmins
+      .split(",")
+      .map((e) => {
+        const clean = e.toLowerCase().trim();
+        const [l, d] = clean.split("@");
+        if (d === "gmail.com" || d === "googlemail.com") {
+          return `${l.replace(/\./g, "")}@${d}`;
+        }
+        return clean;
+      })
+      .filter(Boolean);
+
+    const isSuperAdmin = superAdminList.includes(normalizedUserEmail);
+
+    // 4. Chuyển hướng kèm dữ liệu OAuth để client-side AuthContext tự động lưu session
     const oauthPayload = Buffer.from(
       JSON.stringify({
         name: googleUser.name || "Thành viên Google",
         email: googleUser.email,
         avatar: googleUser.picture || "🎓",
+        role: isSuperAdmin ? "superadmin" : "user",
         provider: "google",
       })
     ).toString("base64url");

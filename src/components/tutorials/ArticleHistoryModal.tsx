@@ -19,6 +19,7 @@ import {
   Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 
 interface HistoryItem {
   id: string;
@@ -234,10 +235,13 @@ export function ArticleHistoryModal({
                   >
                     <div className="flex items-start justify-between gap-2 mb-1.5">
                       <div className="flex items-center gap-2">
-                        <img
-                          src={h.userAvatar || "/images/logo.png"}
-                          alt={h.userName}
-                          className="w-7 h-7 rounded-full border border-border object-cover"
+                        <UserAvatar
+                          avatar={h.userAvatar}
+                          name={h.userName}
+                          role={h.userRole}
+                          className="w-7 h-7 rounded-full border border-border"
+                          textClassName="text-xs"
+                          size={28}
                         />
                         <div>
                           <div className="text-xs font-bold text-text-primary flex items-center gap-1.5">
