@@ -11,6 +11,7 @@ import { CodeSnippetView } from "@/components/ui/CodeSnippetView";
 import { ArticleHistoryModal } from "@/components/tutorials/ArticleHistoryModal";
 import { TopCVArticleEditor } from "@/components/tutorials/TopCVArticleEditor";
 import { markdownToLabHtml, extractHeadingsFromContent } from "@/lib/markdown-importer";
+import { safeStorage } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 import {
   BookOpen,
@@ -88,11 +89,11 @@ export default function TutorialPostDetailPage({ params }: PageProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Đọc cấu hình ẩn/hiện cột từ localStorage nếu có
+  // Đọc cấu hình ẩn/hiện cột từ safeStorage nếu có
   useEffect(() => {
     try {
-      const savedLeft = localStorage.getItem("embedded_show_left_sidebar");
-      const savedRight = localStorage.getItem("embedded_show_right_sidebar");
+      const savedLeft = safeStorage.getItem("embedded_show_left_sidebar");
+      const savedRight = safeStorage.getItem("embedded_show_right_sidebar");
       if (savedLeft !== null) setShowLeftSidebar(savedLeft === "true");
       if (savedRight !== null) setShowRightSidebar(savedRight === "true");
     } catch (e) {
@@ -103,9 +104,7 @@ export default function TutorialPostDetailPage({ params }: PageProps) {
   const toggleLeftSidebar = () => {
     setShowLeftSidebar((prev) => {
       const next = !prev;
-      try {
-        localStorage.setItem("embedded_show_left_sidebar", String(next));
-      } catch (e) {}
+      safeStorage.setItem("embedded_show_left_sidebar", String(next));
       return next;
     });
   };
@@ -113,9 +112,7 @@ export default function TutorialPostDetailPage({ params }: PageProps) {
   const toggleRightSidebar = () => {
     setShowRightSidebar((prev) => {
       const next = !prev;
-      try {
-        localStorage.setItem("embedded_show_right_sidebar", String(next));
-      } catch (e) {}
+      safeStorage.setItem("embedded_show_right_sidebar", String(next));
       return next;
     });
   };
@@ -126,18 +123,14 @@ export default function TutorialPostDetailPage({ params }: PageProps) {
       // Mở lại cả 2 cột
       setShowLeftSidebar(true);
       setShowRightSidebar(true);
-      try {
-        localStorage.setItem("embedded_show_left_sidebar", "true");
-        localStorage.setItem("embedded_show_right_sidebar", "true");
-      } catch (e) {}
+      safeStorage.setItem("embedded_show_left_sidebar", "true");
+      safeStorage.setItem("embedded_show_right_sidebar", "true");
     } else {
       // Ẩn cả 2 cột để mở to tối đa bài viết
       setShowLeftSidebar(false);
       setShowRightSidebar(false);
-      try {
-        localStorage.setItem("embedded_show_left_sidebar", "false");
-        localStorage.setItem("embedded_show_right_sidebar", "false");
-      } catch (e) {}
+      safeStorage.setItem("embedded_show_left_sidebar", "false");
+      safeStorage.setItem("embedded_show_right_sidebar", "false");
     }
   };
 

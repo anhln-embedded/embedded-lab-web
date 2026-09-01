@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { CourseData, LessonData } from "@/lib/content";
+import { safeStorage } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 import { InlineLessonEditorModal } from "./InlineLessonEditorModal";
 import { CodeSnippetView } from "@/components/ui/CodeSnippetView";
@@ -158,10 +159,10 @@ export function LessonPlayer({
     }
   };
 
-  // Load completion state from localStorage
+  // Load completion state from safeStorage
   React.useEffect(() => {
     try {
-      const saved = localStorage.getItem(`course_progress_${courseState.slug}`);
+      const saved = safeStorage.getItem(`course_progress_${courseState.slug}`);
       if (saved) {
         setCompletedLessons(new Set(JSON.parse(saved)));
       }
@@ -184,7 +185,7 @@ export function LessonPlayer({
         next.add(lessonSlug);
       }
       try {
-        localStorage.setItem(`course_progress_${course.slug}`, JSON.stringify(Array.from(next)));
+        safeStorage.setItem(`course_progress_${course.slug}`, JSON.stringify(Array.from(next)));
       } catch (e) {
         console.error(e);
       }

@@ -3,6 +3,7 @@
  */
 
 import { TUTORIAL_TOPICS, TutorialTopic, TutorialPost } from "./tutorials-data";
+import { safeStorage } from "./storage";
 
 const LOCAL_STORAGE_KEY = "embedded_lab_tutorials_custom";
 
@@ -11,12 +12,12 @@ export function getAllTutorials(): TutorialTopic[] {
     return TUTORIAL_TOPICS;
   }
   try {
-    const custom = localStorage.getItem(LOCAL_STORAGE_KEY);
+    const custom = safeStorage.getItem(LOCAL_STORAGE_KEY);
     if (custom) {
       return JSON.parse(custom);
     }
   } catch (e) {
-    console.error("Failed to read tutorials from localStorage:", e);
+    console.error("Failed to read tutorials from storage:", e);
   }
   return TUTORIAL_TOPICS;
 }
@@ -24,7 +25,7 @@ export function getAllTutorials(): TutorialTopic[] {
 export function saveAllTutorials(topics: TutorialTopic[]) {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(topics));
+    safeStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(topics));
     window.dispatchEvent(new CustomEvent("embedded_tutorials_updated"));
   } catch (e) {
     console.error("Failed to save tutorials:", e);

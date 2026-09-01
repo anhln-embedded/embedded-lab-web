@@ -225,6 +225,8 @@ export const DEFAULT_LAB_COURSES: CourseData[] = [
   },
 ];
 
+import { safeStorage } from "./storage";
+
 const STORAGE_KEY = "embedded_lab_dynamic_courses";
 
 export function getStoredCourses(): CourseData[] {
@@ -232,7 +234,7 @@ export function getStoredCourses(): CourseData[] {
     return [];
   }
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = safeStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     return JSON.parse(raw) as CourseData[];
   } catch (error) {
@@ -244,7 +246,7 @@ export function getStoredCourses(): CourseData[] {
 export function saveStoredCourses(courses: CourseData[]): void {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(courses));
+    safeStorage.setItem(STORAGE_KEY, JSON.stringify(courses));
     window.dispatchEvent(new CustomEvent("embedded_courses_updated", { detail: courses }));
   } catch (error) {
     console.error("Error saving stored courses:", error);

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { parseEmailList } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -6,22 +7,13 @@ export async function GET() {
   const rawAdmins =
     process.env.SUPER_ADMIN_EMAILS ||
     process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAILS ||
-    "";
+    "anhln.embedded@gmail.com,superadmin@ptit.edu.vn";
 
-  const superAdminEmails = rawAdmins
-    .split(",")
-    .map((e) => {
-      const clean = e.toLowerCase().trim();
-      const [l, d] = clean.split("@");
-      if (d === "gmail.com" || d === "googlemail.com") {
-        return `${l.replace(/\./g, "")}@${d}`;
-      }
-      return clean;
-    })
-    .filter(Boolean);
+  const superAdminEmails = parseEmailList(rawAdmins);
 
   return NextResponse.json({
     superAdminEmails,
     hasGoogleAuth: Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
   });
 }
+

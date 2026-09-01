@@ -1,6 +1,7 @@
 "use client";
 
 import { BlogPostData, BlogPostType } from "@/lib/content";
+import { safeStorage } from "./storage";
 export type { BlogPostType };
 
 export interface PostComment {
@@ -188,7 +189,7 @@ export function getStoredPosts(): BlogPostData[] {
     return [];
   }
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = safeStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     return JSON.parse(raw) as BlogPostData[];
   } catch (error) {
@@ -200,7 +201,7 @@ export function getStoredPosts(): BlogPostData[] {
 export function saveStoredPosts(posts: BlogPostData[]): void {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+    safeStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
     window.dispatchEvent(new CustomEvent("embedded_posts_updated", { detail: posts }));
   } catch (error) {
     console.error("Error saving stored posts:", error);
@@ -283,7 +284,7 @@ export function getAllTags(): string[] {
 export function toggleLikePost(postId: string): { isLiked: boolean; count: number } {
   if (typeof window === "undefined") return { isLiked: false, count: 0 };
   try {
-    const rawLikes = localStorage.getItem(LIKES_STORAGE_KEY) || "[]";
+    const rawLikes = safeStorage.getItem(LIKES_STORAGE_KEY) || "[]";
     let likedList: string[] = JSON.parse(rawLikes);
     const isAlreadyLiked = likedList.includes(postId);
 
@@ -305,7 +306,7 @@ export function toggleLikePost(postId: string): { isLiked: boolean; count: numbe
       saveStoredPosts(posts);
     }
 
-    localStorage.setItem(LIKES_STORAGE_KEY, JSON.stringify(likedList));
+    safeStorage.setItem(LIKES_STORAGE_KEY, JSON.stringify(likedList));
     return { isLiked: !isAlreadyLiked, count: newCount };
   } catch (err) {
     console.error("Error toggling like:", err);
@@ -316,7 +317,7 @@ export function toggleLikePost(postId: string): { isLiked: boolean; count: numbe
 export function isPostLikedByUser(postId: string): boolean {
   if (typeof window === "undefined") return false;
   try {
-    const rawLikes = localStorage.getItem(LIKES_STORAGE_KEY) || "[]";
+    const rawLikes = safeStorage.getItem(LIKES_STORAGE_KEY) || "[]";
     const likedList: string[] = JSON.parse(rawLikes);
     return likedList.includes(postId);
   } catch {
@@ -328,7 +329,7 @@ export function isPostLikedByUser(postId: string): boolean {
 export function getPostComments(postId: string): PostComment[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = localStorage.getItem(`${COMMENTS_STORAGE_KEY}_${postId}`);
+    const raw = safeStorage.getItem(`${COMMENTS_STORAGE_KEY}_${postId}`);
     if (!raw) return [];
     return JSON.parse(raw) as PostComment[];
   } catch {
@@ -348,7 +349,7 @@ export function addPostComment(postId: string, author: string, content: string, 
   };
   const updated = [...comments, newComment];
   if (typeof window !== "undefined") {
-    localStorage.setItem(`${COMMENTS_STORAGE_KEY}_${postId}`, JSON.stringify(updated));
+    safeStorage.setItem(`${COMMENTS_STORAGE_KEY}_${postId}`, JSON.stringify(updated));
 
     // increment count in post
     const posts = getStoredPosts();

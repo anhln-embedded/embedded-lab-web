@@ -20,6 +20,7 @@ import {
   Edit3
 } from "lucide-react";
 import { FacebookIcon } from "@/components/ui/FacebookIcon";
+import { safeStorage } from "@/lib/utils";
 
 const COVER_PRESETS = [
   {
@@ -78,8 +79,8 @@ export function FanpageHeader() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const savedCover = localStorage.getItem(COVER_KEY);
-      const savedAvatar = localStorage.getItem(AVATAR_KEY);
+      const savedCover = safeStorage.getItem(COVER_KEY);
+      const savedAvatar = safeStorage.getItem(AVATAR_KEY);
       if (savedCover) setCoverUrl(savedCover);
       if (savedAvatar) setAvatarUrl(savedAvatar);
     }
@@ -89,9 +90,9 @@ export function FanpageHeader() {
     setCoverUrl(url);
     if (typeof window !== "undefined") {
       if (url) {
-        localStorage.setItem(COVER_KEY, url);
+        safeStorage.setItem(COVER_KEY, url);
       } else {
-        localStorage.removeItem(COVER_KEY);
+        safeStorage.removeItem(COVER_KEY);
       }
       window.dispatchEvent(new Event("embedded_fanpage_branding_updated"));
     }
@@ -102,7 +103,7 @@ export function FanpageHeader() {
     const finalUrl = url || "/images/logo.png";
     setAvatarUrl(finalUrl);
     if (typeof window !== "undefined") {
-      localStorage.setItem(AVATAR_KEY, finalUrl);
+      safeStorage.setItem(AVATAR_KEY, finalUrl);
       window.dispatchEvent(new Event("embedded_fanpage_branding_updated"));
     }
     setShowAvatarModal(false);

@@ -35,20 +35,9 @@ interface AuthContextType {
   isStepCompleted: (trackId: string, stepId: string) => boolean;
 }
 
-/**
- * Chuẩn hóa email (xóa dấu chấm đối với Gmail để anhln.embedded@gmail.com khớp với anhlnembedded@gmail.com)
- * Tương tự cơ chế chuẩn trong F:\Facebook\tro_ngay
- */
-export function normalizeEmail(email: string): string {
-  if (!email) return "";
-  const clean = email.toLowerCase().trim();
-  const [local, domain] = clean.split("@");
-  if (!domain) return clean;
-  if (domain === "gmail.com" || domain === "googlemail.com") {
-    return `${local.replace(/\./g, "")}@${domain}`;
-  }
-  return `${local}@${domain}`;
-}
+import { normalizeEmail, parseEmailList, safeStorage } from "@/lib/utils";
+
+export { normalizeEmail, parseEmailList, safeStorage };
 
 /**
  * Lấy danh sách email Super Admin từ biến môi trường SUPER_ADMIN_EMAILS / NEXT_PUBLIC_SUPER_ADMIN_EMAILS trong .env
@@ -57,12 +46,9 @@ export function getSuperAdminEmails(): string[] {
   const envRaw =
     (typeof process !== "undefined" &&
       (process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAILS || process.env.SUPER_ADMIN_EMAILS)) ||
-    "";
+    "anhln.embedded@gmail.com,superadmin@ptit.edu.vn";
 
-  return envRaw
-    .split(",")
-    .map((e) => normalizeEmail(e))
-    .filter(Boolean);
+  return parseEmailList(envRaw);
 }
 
 /**
@@ -79,6 +65,15 @@ const DEFAULT_USERS: User[] = [
   {
     id: "usr_superadmin",
     name: "Super Admin (PTIT Lab)",
+    email: "anhln.embedded@gmail.com",
+    role: "superadmin",
+    avatar: "🛡️",
+    bio: "Quản trị viên tối cao hệ thống Embedded AIoT Laboratory PTIT",
+    createdAt: "2026-01-01",
+  },
+  {
+    id: "usr_superadmin_ptit",
+    name: "Super Admin (PTIT Edu)",
     email: "superadmin@ptit.edu.vn",
     role: "superadmin",
     avatar: "🛡️",
@@ -141,7 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               }
               return u;
             });
-            localStorage.setItem(USERS_LIST_KEY, JSON.stringify(updated));
+            safeStorage.setItem(USERS_LIST_KEY, JSON.stringify(updated));
             return updated;
           });
 
@@ -152,7 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 role: "superadmin" as UserRole,
                 bio: "Super Admin quản trị viên Embedded-AIoT Lab PTIT",
               };
-              localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(upgraded));
+              safeStorage.setItem(CURRENT_USER_KEY, JSON.stringify(upgraded));
               return upgraded;
             }
             return prevUser;
@@ -166,7 +161,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       // Load all users
-      const storedUsersRaw = localStorage.getItem(USERS_LIST_KEY);
+      const storedUsersRaw = safeStorage.getItem(USERS_LIST_KEY);
       let users = DEFAULT_USERS;
       if (storedUsersRaw) {
         users = JSON.parse(storedUsersRaw);
@@ -192,10 +187,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       setAllUsers(users);
-      localStorage.setItem(USERS_LIST_KEY, JSON.stringify(users));
+      safeStorage.setItem(USERS_LIST_KEY, JSON.stringify(users));
 
       // Load current user session
-      const storedCurrent = localStorage.getItem(CURRENT_USER_KEY);
+      const storedCurrent = safeStorage.getItem(CURRENT_USER_KEY);
       if (storedCurrent) {
         const parsed = JSON.parse(storedCurrent);
         let matchingUser = users.find((u) => normalizeEmail(u.email) === normalizeEmail(parsed.email)) || parsed;
@@ -203,16 +198,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           matchingUser = { ...matchingUser, role: "superadmin" as UserRole };
         }
         setUser(matchingUser);
-        localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(matchingUser));
+        safeStorage.setItem(CURRENT_USER_KEY, JSON.stringify(matchingUser));
 
         // Load roadmap progress for this user
-        const progressRaw = localStorage.getItem(`${ROADMAP_KEY_PREFIX}${matchingUser.id}`);
+        const progressRaw = safeStorage.getItem(`${ROADMAP_KEY_PREFIX}${matchingUser.id}`);
         if (progressRaw) {
           setCompletedSteps(JSON.parse(progressRaw));
         }
       }
     } catch (e) {
-      console.error("Failed to load auth state from localStorage:", e);
+      console.error("Failed to load auth state from safeStorage:", e);
     } finally {
       setIsLoading(false);
     }
@@ -220,19 +215,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = (email: string, _password?: string) => {
     const cleanEmail = email.toLowerCase().trim();
-    const found = allUsers.find((u) => normalizeEmail(u.email) === normalizeEmail(cleanEmail));
+    let found = allUsers.find((u) => normalizeEmail(u.email) === normalizeEmail(cleanEmail));
 
     if (found) {
+      if (checkIsSuperAdmin(cleanEmail) && found.role !== "superadmin") {
+        found = {
+          ...found,
+          role: "superadmin",
+          bio: "Super Admin quản trị viên Embedded-AIoT Lab PTIT",
+        };
+        const updatedList = allUsers.map((u) => (u.id === found!.id ? found! : u));
+        setAllUsers(updatedList);
+        safeStorage.setItem(USERS_LIST_KEY, JSON.stringify(updatedList));
+      }
+
       setUser(found);
-      localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(found));
+      safeStorage.setItem(CURRENT_USER_KEY, JSON.stringify(found));
 
       // Load roadmap progress for this user
-      const progressRaw = localStorage.getItem(`${ROADMAP_KEY_PREFIX}${found.id}`);
+      const progressRaw = safeStorage.getItem(`${ROADMAP_KEY_PREFIX}${found.id}`);
       if (progressRaw) {
         setCompletedSteps(JSON.parse(progressRaw));
       } else {
         setCompletedSteps({});
       }
+      return { success: true };
+    }
+
+    if (checkIsSuperAdmin(cleanEmail)) {
+      const superAdminUser: User = {
+        id: `usr_${Date.now()}`,
+        name: cleanEmail.split("@")[0] || "Super Admin",
+        email: cleanEmail,
+        role: "superadmin",
+        avatar: "🛡️",
+        bio: "Super Admin quản trị viên Embedded-AIoT Lab PTIT",
+        createdAt: new Date().toISOString().split("T")[0],
+      };
+      const updatedList = [...allUsers, superAdminUser];
+      setAllUsers(updatedList);
+      safeStorage.setItem(USERS_LIST_KEY, JSON.stringify(updatedList));
+      setUser(superAdminUser);
+      safeStorage.setItem(CURRENT_USER_KEY, JSON.stringify(superAdminUser));
+      setCompletedSteps({});
       return { success: true };
     }
 
@@ -246,9 +271,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const target = allUsers.find((u) => u.role === role) || DEFAULT_USERS.find((u) => u.role === role);
     if (target) {
       setUser(target);
-      localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(target));
+      safeStorage.setItem(CURRENT_USER_KEY, JSON.stringify(target));
 
-      const progressRaw = localStorage.getItem(`${ROADMAP_KEY_PREFIX}${target.id}`);
+      const progressRaw = safeStorage.getItem(`${ROADMAP_KEY_PREFIX}${target.id}`);
       if (progressRaw) {
         setCompletedSteps(JSON.parse(progressRaw));
       } else {
@@ -278,11 +303,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const updatedList = [...allUsers, newUser];
     setAllUsers(updatedList);
-    localStorage.setItem(USERS_LIST_KEY, JSON.stringify(updatedList));
+    safeStorage.setItem(USERS_LIST_KEY, JSON.stringify(updatedList));
 
     // Auto login
     setUser(newUser);
-    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(newUser));
+    safeStorage.setItem(CURRENT_USER_KEY, JSON.stringify(newUser));
     setCompletedSteps({});
 
     return { success: true };
@@ -314,12 +339,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const updatedList = allUsers.map((u) => (u.id === existing.id ? updatedUser : u));
       setAllUsers(updatedList);
-      localStorage.setItem(USERS_LIST_KEY, JSON.stringify(updatedList));
+      safeStorage.setItem(USERS_LIST_KEY, JSON.stringify(updatedList));
 
       setUser(updatedUser);
-      localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(updatedUser));
+      safeStorage.setItem(CURRENT_USER_KEY, JSON.stringify(updatedUser));
 
-      const progressRaw = localStorage.getItem(`${ROADMAP_KEY_PREFIX}${existing.id}`);
+      const progressRaw = safeStorage.getItem(`${ROADMAP_KEY_PREFIX}${existing.id}`);
       if (progressRaw) {
         setCompletedSteps(JSON.parse(progressRaw));
       } else {
@@ -340,17 +365,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const updatedList = [...allUsers, newUser];
       setAllUsers(updatedList);
-      localStorage.setItem(USERS_LIST_KEY, JSON.stringify(updatedList));
+      safeStorage.setItem(USERS_LIST_KEY, JSON.stringify(updatedList));
 
       setUser(newUser);
-      localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(newUser));
+      safeStorage.setItem(CURRENT_USER_KEY, JSON.stringify(newUser));
       setCompletedSteps({});
     }
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem(CURRENT_USER_KEY);
+    safeStorage.removeItem(CURRENT_USER_KEY);
     setCompletedSteps({});
   };
 
@@ -360,7 +385,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const updated = { ...u, role: newRole };
         if (user && user.id === userId) {
           setUser(updated);
-          localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(updated));
+          safeStorage.setItem(CURRENT_USER_KEY, JSON.stringify(updated));
         }
         return updated;
       }
@@ -368,13 +393,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     setAllUsers(updatedList);
-    localStorage.setItem(USERS_LIST_KEY, JSON.stringify(updatedList));
+    safeStorage.setItem(USERS_LIST_KEY, JSON.stringify(updatedList));
   };
 
   const deleteUser = (userId: string) => {
     const updatedList = allUsers.filter((u) => u.id !== userId);
     setAllUsers(updatedList);
-    localStorage.setItem(USERS_LIST_KEY, JSON.stringify(updatedList));
+    safeStorage.setItem(USERS_LIST_KEY, JSON.stringify(updatedList));
 
     if (user && user.id === userId) {
       logout();
@@ -396,7 +421,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         [trackId]: updatedTrackSteps,
       };
 
-      localStorage.setItem(`${ROADMAP_KEY_PREFIX}${user.id}`, JSON.stringify(newProgress));
+      safeStorage.setItem(`${ROADMAP_KEY_PREFIX}${user.id}`, JSON.stringify(newProgress));
       return newProgress;
     });
   };

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { normalizeEmail, parseEmailList } from "@/lib/utils";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -66,30 +67,14 @@ export async function GET(request: Request) {
     const googleUser = await userInfoResponse.json();
 
     // 3. Chuẩn hóa email và kiểm tra SUPER_ADMIN_EMAILS từ file .env (giống tro_ngay)
-    const userEmail = (googleUser.email || "").toLowerCase().trim();
-    const [local, domain] = userEmail.split("@");
-    const normalizedUserEmail =
-      domain === "gmail.com" || domain === "googlemail.com"
-        ? `${local.replace(/\./g, "")}@${domain}`
-        : userEmail;
+    const normalizedUserEmail = normalizeEmail(googleUser.email);
 
     const envAdmins =
       process.env.SUPER_ADMIN_EMAILS ||
       process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAILS ||
-      "";
+      "anhln.embedded@gmail.com,superadmin@ptit.edu.vn";
 
-    const superAdminList = envAdmins
-      .split(",")
-      .map((e) => {
-        const clean = e.toLowerCase().trim();
-        const [l, d] = clean.split("@");
-        if (d === "gmail.com" || d === "googlemail.com") {
-          return `${l.replace(/\./g, "")}@${d}`;
-        }
-        return clean;
-      })
-      .filter(Boolean);
-
+    const superAdminList = parseEmailList(envAdmins);
     const isSuperAdmin = superAdminList.includes(normalizedUserEmail);
 
     // 4. Chuyển hướng kèm dữ liệu OAuth để client-side AuthContext tự động lưu session

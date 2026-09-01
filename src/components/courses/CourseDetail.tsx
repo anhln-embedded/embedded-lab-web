@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { cn, getLevelColor, getLevelLabel } from "@/lib/utils";
+import { cn, getLevelColor, getLevelLabel, safeStorage } from "@/lib/utils";
 import { CourseData } from "@/lib/content";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -35,10 +35,10 @@ export function CourseDetail({ course }: CourseDetailProps) {
 
   const isAuthorized = user && (user.role === "superadmin" || user.role === "admin");
 
-  // Load progress from localStorage
+  // Load progress from safeStorage
   React.useEffect(() => {
     try {
-      const saved = localStorage.getItem(`course_progress_${course.slug}`);
+      const saved = safeStorage.getItem(`course_progress_${course.slug}`);
       if (saved) {
         setCompletedLessons(new Set(JSON.parse(saved)));
       }

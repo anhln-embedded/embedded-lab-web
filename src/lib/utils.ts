@@ -3,6 +3,7 @@ import { twMerge } from "tailwind-merge";
 import { siteConfig } from "./constants";
 
 export { siteConfig };
+export { safeStorage } from "./storage";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -85,4 +86,33 @@ export function getLevelLabel(level: string): string {
     default:
       return level;
   }
+}
+
+/**
+ * Chuẩn hóa email: loại bỏ dấu ngoặc kép/đơn, khoảng trắng thừa,
+ * viết thường và xóa dấu chấm trong phần local name của Gmail (giống cơ chế tro_ngay)
+ */
+export function normalizeEmail(email?: string | null): string {
+  if (!email) return "";
+  const clean = String(email).trim().replace(/^["']+|["']+$/g, "").trim().toLowerCase();
+  if (!clean) return "";
+  const [local, domain] = clean.split("@");
+  if (!domain) return clean;
+  if (domain === "gmail.com" || domain === "googlemail.com") {
+    return `${local.replace(/\./g, "")}@${domain}`;
+  }
+  return `${local}@${domain}`;
+}
+
+/**
+ * Phân tách chuỗi danh sách email (phân cách bằng dấu phẩy, chấm phẩy, khoảng trắng)
+ * và chuẩn hóa từng email
+ */
+export function parseEmailList(rawList?: string | null): string[] {
+  if (!rawList) return [];
+  const cleanedStr = String(rawList).trim().replace(/^["']+|["']+$/g, "");
+  return cleanedStr
+    .split(/[,;\s]+/)
+    .map((e) => normalizeEmail(e))
+    .filter(Boolean);
 }

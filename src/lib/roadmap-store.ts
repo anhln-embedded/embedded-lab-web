@@ -233,6 +233,8 @@ export const DEFAULT_5_ROADMAP_TRACKS: RoadmapTrack[] = [
   },
 ];
 
+import { safeStorage } from "./storage";
+
 const STORAGE_KEY = "embedded_lab_dynamic_roadmaps";
 
 export function getStoredRoadmapTracks(): RoadmapTrack[] {
@@ -240,7 +242,7 @@ export function getStoredRoadmapTracks(): RoadmapTrack[] {
     return [];
   }
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = safeStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     return JSON.parse(raw) as RoadmapTrack[];
   } catch (error) {
@@ -252,7 +254,7 @@ export function getStoredRoadmapTracks(): RoadmapTrack[] {
 export function saveStoredRoadmapTracks(tracks: RoadmapTrack[]): void {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tracks));
+    safeStorage.setItem(STORAGE_KEY, JSON.stringify(tracks));
     window.dispatchEvent(new CustomEvent("embedded_roadmap_updated", { detail: tracks }));
   } catch (error) {
     console.error("Error saving stored roadmap tracks:", error);

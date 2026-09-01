@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { safeStorage } from "@/lib/utils";
 import {
   Bold,
   Italic,
@@ -73,7 +74,7 @@ export function TechMarkdownEditor({
   useEffect(() => {
     if (!draftKey || typeof window === "undefined") return;
     try {
-      const saved = localStorage.getItem(`draft_${draftKey}`);
+      const saved = safeStorage.getItem(`draft_${draftKey}`);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed.text && parsed.text !== value && parsed.text.length > 20) {
@@ -95,7 +96,7 @@ export function TechMarkdownEditor({
       try {
         const now = new Date();
         const timeStr = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}:${now.getSeconds().toString().padStart(2, "0")}`;
-        localStorage.setItem(
+        safeStorage.setItem(
           `draft_${draftKey}`,
           JSON.stringify({
             text: value,
@@ -124,7 +125,7 @@ export function TechMarkdownEditor({
   const handleDiscardDraft = () => {
     if (draftKey && typeof window !== "undefined") {
       try {
-        localStorage.removeItem(`draft_${draftKey}`);
+        safeStorage.removeItem(`draft_${draftKey}`);
       } catch (e) {}
     }
     setDraftDetected(null);

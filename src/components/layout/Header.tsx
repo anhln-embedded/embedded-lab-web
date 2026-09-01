@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { cn, siteConfig } from "@/lib/utils";
+import { cn, siteConfig, safeStorage } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -47,7 +47,7 @@ export function Header() {
 
   React.useEffect(() => {
     setMounted(true);
-    const saved = localStorage.getItem("darkMode");
+    const saved = safeStorage.getItem("darkMode");
     if (saved !== null) {
       setDarkMode(saved === "true");
     } else {
@@ -69,10 +69,10 @@ export function Header() {
     const root = document.documentElement;
     if (darkMode) {
       root.classList.add("dark");
-      localStorage.setItem("darkMode", "true");
+      safeStorage.setItem("darkMode", "true");
     } else {
       root.classList.remove("dark");
-      localStorage.setItem("darkMode", "false");
+      safeStorage.setItem("darkMode", "false");
     }
   }, [darkMode, mounted]);
 
