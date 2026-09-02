@@ -31,7 +31,7 @@ export function Header() {
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [userMenuOpen, setUserMenuOpen] = React.useState(false);
-  const [darkMode, setDarkMode] = React.useState(true);
+  const [darkMode, setDarkMode] = React.useState(false);
   const [mounted, setMounted] = React.useState(false);
 
   const userMenuRef = React.useRef<HTMLDivElement>(null);
@@ -51,7 +51,7 @@ export function Header() {
     if (saved !== null) {
       setDarkMode(saved === "true");
     } else {
-      setDarkMode(true);
+      setDarkMode(false);
     }
 
     const handleClickOutside = (event: MouseEvent) => {
