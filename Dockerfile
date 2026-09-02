@@ -29,6 +29,9 @@ RUN pnpm build
 FROM node:22-alpine AS runner
 WORKDIR /app
 
+# Cài đặt su-exec để chuyển đổi quyền user an toàn từ root sang nextjs
+RUN apk add --no-cache su-exec
+
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
@@ -42,9 +45,11 @@ COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
-
-USER nextjs
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
 
 EXPOSE 3000
 
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
 CMD ["npm", "start"]
+
