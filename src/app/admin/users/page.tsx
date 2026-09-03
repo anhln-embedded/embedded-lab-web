@@ -27,6 +27,21 @@ export default function AdminUsersPage() {
   const [newEmail, setNewEmail] = useState("");
   const [newRole, setNewRole] = useState<UserRole>("user");
   const [message, setMessage] = useState("");
+  const [actionStatus, setActionStatus] = useState("");
+
+  const handleRoleChange = (userId: string, newRole: UserRole, userName: string) => {
+    updateUserRole(userId, newRole);
+    setActionStatus(`✅ Đã cập nhật vai trò của "${userName}" thành "${newRole.toUpperCase()}".`);
+    setTimeout(() => setActionStatus(""), 3500);
+  };
+
+  const handleDeleteUser = (userId: string, userName: string) => {
+    if (confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn tài khoản "${userName}"?`)) {
+      deleteUser(userId);
+      setActionStatus(`🗑️ Đã xóa tài khoản "${userName}" thành công.`);
+      setTimeout(() => setActionStatus(""), 3500);
+    }
+  };
 
   const isSuperAdmin = user && user.role === "superadmin";
 
@@ -106,6 +121,13 @@ export default function AdminUsersPage() {
 
       {/* Users Table */}
       <div className="bg-bg-panel border border-border/80 rounded-2xl p-6 shadow-md">
+        {actionStatus && (
+          <div className="mb-4 p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-semibold flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-purple-400 shrink-0" />
+            <span>{actionStatus}</span>
+          </div>
+        )}
+
         <h2 className="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
           <Users className="w-5 h-5 text-purple-400" />
           Danh sách người dùng ({allUsers.length})
@@ -172,7 +194,7 @@ export default function AdminUsersPage() {
                     <td className="py-3.5 px-4">
                       <select
                         value={u.role}
-                        onChange={(e) => updateUserRole(u.id, e.target.value as UserRole)}
+                        onChange={(e) => handleRoleChange(u.id, e.target.value as UserRole, u.name)}
                         className="px-2.5 py-1 rounded-lg bg-bg-elevated border border-border text-xs text-text-primary focus:outline-none focus:border-accent"
                       >
                         <option value="user">User (Sinh viên)</option>
@@ -183,11 +205,7 @@ export default function AdminUsersPage() {
                     <td className="py-3.5 px-4 text-right">
                       {!isCurrent && (
                         <button
-                          onClick={() => {
-                            if (confirm(`Bạn có chắc muốn xóa tài khoản ${u.name}?`)) {
-                              deleteUser(u.id);
-                            }
-                          }}
+                          onClick={() => handleDeleteUser(u.id, u.name)}
                           className="p-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-colors"
                           title="Xóa thành viên"
                         >

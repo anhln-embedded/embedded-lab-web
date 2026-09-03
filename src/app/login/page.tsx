@@ -261,7 +261,7 @@ function LoginFormContent() {
               </p>
               <div className="grid grid-cols-3 gap-1.5">
                 <button
-                  onClick={() => quickDevLogin("superadmin", getSuperAdminEmails()[0] || "superadmin@ptit.edu.vn")}
+                  onClick={() => quickDevLogin("superadmin", getSuperAdminEmails()[0] || "anhln.embedded@gmail.com")}
                   className="p-2 rounded-lg text-[11px] font-bold border border-purple-500/30 bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 transition-colors text-center"
                 >
                   Super Admin
@@ -331,7 +331,7 @@ function LoginFormContent() {
               <div className="grid grid-cols-3 gap-1.5 text-xs">
                 <button
                   type="button"
-                  onClick={() => quickDevLogin("superadmin", getSuperAdminEmails()[0] || "superadmin@ptit.edu.vn")}
+                  onClick={() => quickDevLogin("superadmin", getSuperAdminEmails()[0] || "anhln.embedded@gmail.com")}
                   className="flex flex-col items-center justify-center gap-1 rounded-xl border border-purple-500/30 bg-bg-elevated p-2 text-purple-400 font-bold hover:bg-purple-500/20 transition-all active:scale-95 shadow-sm"
                 >
                   <span>🛡️ Super</span>

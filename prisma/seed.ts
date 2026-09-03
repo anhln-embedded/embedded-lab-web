@@ -306,19 +306,30 @@ async function main() {
     }
   }
 
-  // Seed Default Admin User
-  const defaultAdmin = await prisma.user.findUnique({ where: { email: "admin@embeddedlab.vn" } });
+  // Seed Default Super Admin User
+  const primaryAdminEmail = "anhln.embedded@gmail.com";
+  const defaultAdmin = await prisma.user.findUnique({ where: { email: primaryAdminEmail } });
   if (!defaultAdmin) {
     await prisma.user.create({
       data: {
-        email: "admin@embeddedlab.vn",
-        name: "Embedded-AIoT Lab Lead",
+        email: primaryAdminEmail,
+        name: "Super Admin (Embedded AIoT Lab)",
         role: "superadmin",
-        title: "Chủ nhiệm Phòng Lab & Giảng viên",
+        avatar: "🛡️",
+        title: "Quản trị viên tối cao hệ thống Embedded AIoT Laboratory PTIT",
       },
     });
-    console.log("✅ Đã tạo tài khoản quản trị Lab mặc định: admin@embeddedlab.vn");
+    console.log(`✅ Đã tạo tài khoản quản trị Lab: ${primaryAdminEmail}`);
   }
+
+  // Dọn dẹp tài khoản admin mẫu cũ nếu tồn tại trong database
+  await prisma.user.deleteMany({
+    where: {
+      email: {
+        in: ["admin@embeddedlab.vn", "admin@ptit.edu.vn", "superadmin@ptit.edu.vn", "student@ptit.edu.vn"],
+      },
+    },
+  }).catch(() => {});
 
   console.log("✨ Seed database hoàn tất thành công!");
 }

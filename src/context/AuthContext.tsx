@@ -46,7 +46,7 @@ export function getSuperAdminEmails(): string[] {
   const envRaw =
     (typeof process !== "undefined" &&
       (process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAILS || process.env.SUPER_ADMIN_EMAILS)) ||
-    "anhln.embedded@gmail.com,superadmin@ptit.edu.vn";
+    "anhln.embedded@gmail.com,anhlnembedded@gmail.com";
 
   return parseEmailList(envRaw);
 }
@@ -71,33 +71,6 @@ const DEFAULT_USERS: User[] = [
     bio: "Quản trị viên tối cao hệ thống Embedded AIoT Laboratory PTIT",
     createdAt: "2026-01-01",
   },
-  {
-    id: "usr_superadmin_ptit",
-    name: "Super Admin (PTIT Edu)",
-    email: "superadmin@ptit.edu.vn",
-    role: "superadmin",
-    avatar: "🛡️",
-    bio: "Quản trị viên tối cao hệ thống Embedded AIoT Laboratory PTIT",
-    createdAt: "2026-01-01",
-  },
-  {
-    id: "usr_admin",
-    name: "Kỹ sư Lab (Admin)",
-    email: "admin@ptit.edu.vn",
-    role: "admin",
-    avatar: "✍️",
-    bio: "Giảng viên & Kỹ sư nghiên cứu phần cứng / Firmware Embedded-AIoT Lab",
-    createdAt: "2026-02-15",
-  },
-  {
-    id: "usr_student",
-    name: "Sinh viên PTIT (User)",
-    email: "student@ptit.edu.vn",
-    role: "user",
-    avatar: "🎓",
-    bio: "Sinh viên ngành Kỹ thuật Điện tử - Viễn thông / IoT PTIT",
-    createdAt: "2026-03-10",
-  },
 ];
 
 const CURRENT_USER_KEY = "embedded_lab_current_user";
@@ -119,8 +92,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return isSuperAdminEmail(clean) || serverSuperAdmins.includes(clean);
   };
 
-  // 1. Fetch server-side runtime .env config for Super Admin list
+  // 1. Fetch server-side runtime .env config for Super Admin list & load DB users
   useEffect(() => {
+    // A. Fetch Super Admin config from .env
     fetch("/api/auth/config")
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
@@ -155,39 +129,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       })
       .catch((err) => console.warn("Failed to fetch auth config:", err));
+
+    // B. Fetch real users from SQLite Database API
+    fetch("/api/users")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (json?.success && Array.isArray(json.data) && json.data.length > 0) {
+          setAllUsers(json.data);
+          safeStorage.setItem(USERS_LIST_KEY, JSON.stringify(json.data));
+        }
+      })
+      .catch((err) => console.warn("Failed to fetch users from server DB:", err));
   }, []);
 
-  // 2. Initialize from LocalStorage
+  // 2. Initialize from LocalStorage (cache fallback)
   useEffect(() => {
     try {
-      // Load all users
+      // Load all users from cache if available
       const storedUsersRaw = safeStorage.getItem(USERS_LIST_KEY);
       let users = DEFAULT_USERS;
       if (storedUsersRaw) {
-        users = JSON.parse(storedUsersRaw);
-        // Ensure default admin users exist
-        DEFAULT_USERS.forEach((defUser) => {
-          const idx = users.findIndex((u) => normalizeEmail(u.email) === normalizeEmail(defUser.email));
-          if (idx === -1) {
-            users.push(defUser);
-          } else {
-            if (defUser.role === "superadmin") {
-              users[idx].role = "superadmin";
-            }
+        try {
+          const parsed = JSON.parse(storedUsersRaw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            users = parsed;
           }
-        });
+        } catch {
+          // ignore
+        }
       }
 
-      // Check all users matching Super Admin from .env and ensure role is superadmin
-      users = users.map((u) => {
-        if (isSuperAdminEmail(u.email) || serverSuperAdmins.includes(normalizeEmail(u.email))) {
-          return { ...u, role: "superadmin" as UserRole };
-        }
-        return u;
-      });
-
       setAllUsers(users);
-      safeStorage.setItem(USERS_LIST_KEY, JSON.stringify(users));
 
       // Load current user session
       const storedCurrent = safeStorage.getItem(CURRENT_USER_KEY);
@@ -301,6 +273,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       createdAt: new Date().toISOString().split("T")[0],
     };
 
+    // Save to SQLite database via API
+    fetch("/api/users", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+        avatar: newUser.avatar,
+        title: newUser.bio,
+      }),
+    })
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && json.data?.id) {
+          setAllUsers((prev) =>
+            prev.map((u) => (u.email === newUser.email ? { ...u, id: json.data.id } : u))
+          );
+        }
+      })
+      .catch((e) => console.error("Failed to persist user to SQLite:", e));
+
     const updatedList = [...allUsers, newUser];
     setAllUsers(updatedList);
     safeStorage.setItem(USERS_LIST_KEY, JSON.stringify(updatedList));
@@ -380,6 +374,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateUserRole = (userId: string, newRole: UserRole) => {
+    // Call server API to update role in SQLite
+    fetch("/api/users", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: userId, role: newRole }),
+    }).catch((e) => console.error("Failed to update user role on server:", e));
+
     const updatedList = allUsers.map((u) => {
       if (u.id === userId) {
         const updated = { ...u, role: newRole };
@@ -397,6 +398,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const deleteUser = (userId: string) => {
+    // Call server API to delete from SQLite
+    fetch(`/api/users?id=${encodeURIComponent(userId)}`, {
+      method: "DELETE",
+    }).catch((e) => console.error("Failed to delete user on server:", e));
+
     const updatedList = allUsers.filter((u) => u.id !== userId);
     setAllUsers(updatedList);
     safeStorage.setItem(USERS_LIST_KEY, JSON.stringify(updatedList));

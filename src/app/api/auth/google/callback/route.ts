@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { normalizeEmail, parseEmailList } from "@/lib/utils";
+import prisma from "@/lib/prisma";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -72,18 +73,44 @@ export async function GET(request: Request) {
     const envAdmins =
       process.env.SUPER_ADMIN_EMAILS ||
       process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAILS ||
-      "anhln.embedded@gmail.com,superadmin@ptit.edu.vn";
+      "anhln.embedded@gmail.com,anhlnembedded@gmail.com";
 
     const superAdminList = parseEmailList(envAdmins);
     const isSuperAdmin = superAdminList.includes(normalizedUserEmail);
 
-    // 4. Chuyển hướng kèm dữ liệu OAuth để client-side AuthContext tự động lưu session
+    // 4. Lưu/Cập nhật người dùng trong Database SQLite
+    let dbUser = await prisma.user.findUnique({
+      where: { email: googleUser.email },
+    });
+
+    if (!dbUser) {
+      dbUser = await prisma.user.create({
+        data: {
+          name: googleUser.name || "Thành viên Google",
+          email: googleUser.email,
+          role: isSuperAdmin ? "superadmin" : "user",
+          avatar: googleUser.picture || "🎓",
+          title: isSuperAdmin
+            ? "Super Admin quản trị viên Embedded-AIoT Lab PTIT"
+            : "Thành viên Embedded-AIoT Lab PTIT",
+        },
+      });
+    } else if (isSuperAdmin && dbUser.role !== "superadmin") {
+      dbUser = await prisma.user.update({
+        where: { id: dbUser.id },
+        data: { role: "superadmin" },
+      });
+    }
+
+    // 5. Chuyển hướng kèm dữ liệu OAuth để client-side AuthContext tự động lưu session
     const oauthPayload = Buffer.from(
       JSON.stringify({
-        name: googleUser.name || "Thành viên Google",
-        email: googleUser.email,
-        avatar: googleUser.picture || "🎓",
-        role: isSuperAdmin ? "superadmin" : "user",
+        id: dbUser.id,
+        name: dbUser.name,
+        email: dbUser.email,
+        avatar: dbUser.avatar || googleUser.picture || "🎓",
+        role: dbUser.role,
+        bio: dbUser.title || (isSuperAdmin ? "Super Admin Lab PTIT" : "Thành viên Lab PTIT"),
         provider: "google",
       })
     ).toString("base64url");

@@ -7,7 +7,7 @@ export async function GET() {
   const rawAdmins =
     process.env.SUPER_ADMIN_EMAILS ||
     process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAILS ||
-    "anhln.embedded@gmail.com,superadmin@ptit.edu.vn";
+    "anhln.embedded@gmail.com,anhlnembedded@gmail.com";
 
   const superAdminEmails = parseEmailList(rawAdmins);
 

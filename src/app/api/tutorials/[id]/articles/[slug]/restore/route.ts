@@ -50,8 +50,8 @@ export async function POST(request: Request, { params }: RouteParams) {
       data: {
         articleId: history.articleId,
         userId: user?.id || null,
-        userName: user?.name || "Kỹ sư Lab (Admin)",
-        userEmail: user?.email || "admin@ptit.edu.vn",
+        userName: user?.name || "Ban Quản Trị Lab",
+        userEmail: user?.email || "anhln.embedded@gmail.com",
         userRole: user?.role || "admin",
         userAvatar: user?.avatar || "/images/logo.png",
         title: updatedArticle.title,
