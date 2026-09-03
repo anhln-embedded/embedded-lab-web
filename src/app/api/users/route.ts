@@ -12,10 +12,22 @@ function getSuperAdminEmailsFromEnv(): string[] {
   return parseEmailList(envAdmins);
 }
 
-// GET /api/users - Fetch all users from SQLite Database
-export async function GET() {
+// GET /api/users - Fetch all users from SQLite Database (supports ?search=)
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get("search")?.trim();
+
+    const where: any = {};
+    if (search) {
+      where.OR = [
+        { name: { contains: search } },
+        { email: { contains: search } },
+      ];
+    }
+
     let users = await prisma.user.findMany({
+      where,
       orderBy: { createdAt: "desc" },
     });
 

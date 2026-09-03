@@ -14,7 +14,9 @@ import {
   CheckCircle2,
   AlertTriangle,
   Mail,
-  Calendar
+  Calendar,
+  Search,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { UserAvatar } from "@/components/ui/UserAvatar";
@@ -28,6 +30,16 @@ export default function AdminUsersPage() {
   const [newRole, setNewRole] = useState<UserRole>("user");
   const [message, setMessage] = useState("");
   const [actionStatus, setActionStatus] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredUsers = allUsers.filter((u) => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      u.name.toLowerCase().includes(q) ||
+      u.email.toLowerCase().includes(q)
+    );
+  });
 
   const handleRoleChange = (userId: string, newRole: UserRole, userName: string) => {
     updateUserRole(userId, newRole);
@@ -128,10 +140,35 @@ export default function AdminUsersPage() {
           </div>
         )}
 
-        <h2 className="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
-          <Users className="w-5 h-5 text-purple-400" />
-          Danh sách người dùng ({allUsers.length})
-        </h2>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+          <h2 className="text-base font-bold text-text-primary flex items-center gap-2">
+            <Users className="w-5 h-5 text-purple-400" />
+            Danh sách người dùng ({filteredUsers.length}
+            {filteredUsers.length !== allUsers.length && ` / ${allUsers.length}`})
+          </h2>
+
+          {/* Search Box */}
+          <div className="relative max-w-xs w-full">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Tìm kiếm theo tên hoặc email..."
+              className="w-full pl-9 pr-8 py-2 rounded-xl bg-bg-elevated border border-border text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/20 transition-all"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary p-0.5 rounded transition-colors"
+                title="Xóa tìm kiếm"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
@@ -145,77 +182,96 @@ export default function AdminUsersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60">
-              {allUsers.map((u) => {
-                const isCurrent = user?.id === u.id;
-                return (
-                  <tr key={u.id} className="hover:bg-bg-elevated/40 transition-colors">
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-2.5">
-                        <UserAvatar
-                          avatar={u.avatar}
-                          name={u.name}
-                          role={u.role}
-                          className="w-8 h-8 rounded-lg bg-bg-elevated border border-border shadow-inner"
-                          textClassName="text-sm"
-                          size={32}
-                        />
-                        <div>
-                          <span className="font-semibold text-text-primary block">
-                            {u.name}
-                            {isCurrent && (
-                              <span className="ml-1.5 text-[10px] px-1.5 py-0.2 rounded bg-accent-muted text-accent">
-                                Bạn
-                              </span>
-                            )}
-                          </span>
-                          <span className="text-[11px] text-text-muted">ID: {u.id}</span>
-                        </div>
+              {filteredUsers.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-12 text-center text-xs text-text-muted">
+                    {searchQuery ? (
+                      <div className="space-y-1">
+                        <p className="font-semibold text-text-secondary">Không tìm thấy người dùng phù hợp</p>
+                        <p>
+                          Không có kết quả nào khớp với từ khóa &ldquo;
+                          <span className="text-text-primary font-medium">{searchQuery}</span>
+                          &rdquo;.
+                        </p>
                       </div>
-                    </td>
-                    <td className="py-3.5 px-4 text-xs text-text-secondary font-mono">
-                      {u.email}
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                          u.role === "superadmin"
-                            ? "bg-purple-500/15 text-purple-400 border border-purple-500/30"
-                            : u.role === "admin"
-                            ? "bg-accent/15 text-accent border border-accent/30"
-                            : "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
-                        }`}
-                      >
-                        {u.role === "superadmin" && <ShieldCheck className="w-3 h-3" />}
-                        {u.role === "admin" && <Edit3 className="w-3 h-3" />}
-                        {u.role === "user" && <GraduationCap className="w-3 h-3" />}
-                        {u.role.toUpperCase()}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <select
-                        value={u.role}
-                        onChange={(e) => handleRoleChange(u.id, e.target.value as UserRole, u.name)}
-                        className="px-2.5 py-1 rounded-lg bg-bg-elevated border border-border text-xs text-text-primary focus:outline-none focus:border-accent"
-                      >
-                        <option value="user">User (Sinh viên)</option>
-                        <option value="admin">Admin (Đăng bài)</option>
-                        <option value="superadmin">Super Admin (Tối cao)</option>
-                      </select>
-                    </td>
-                    <td className="py-3.5 px-4 text-right">
-                      {!isCurrent && (
-                        <button
-                          onClick={() => handleDeleteUser(u.id, u.name)}
-                          className="p-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-colors"
-                          title="Xóa thành viên"
+                    ) : (
+                      <p>Chưa có người dùng nào trong hệ thống.</p>
+                    )}
+                  </td>
+                </tr>
+              ) : (
+                filteredUsers.map((u) => {
+                  const isCurrent = user?.id === u.id;
+                  return (
+                    <tr key={u.id} className="hover:bg-bg-elevated/40 transition-colors">
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-2.5">
+                          <UserAvatar
+                            avatar={u.avatar}
+                            name={u.name}
+                            role={u.role}
+                            className="w-8 h-8 rounded-lg bg-bg-elevated border border-border shadow-inner"
+                            textClassName="text-sm"
+                            size={32}
+                          />
+                          <div>
+                            <span className="font-semibold text-text-primary block">
+                              {u.name}
+                              {isCurrent && (
+                                <span className="ml-1.5 text-[10px] px-1.5 py-0.2 rounded bg-accent-muted text-accent">
+                                  Bạn
+                                </span>
+                              )}
+                            </span>
+                            <span className="text-[11px] text-text-muted">ID: {u.id}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4 text-xs text-text-secondary font-mono">
+                        {u.email}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span
+                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                            u.role === "superadmin"
+                              ? "bg-purple-500/15 text-purple-400 border border-purple-500/30"
+                              : u.role === "admin"
+                              ? "bg-accent/15 text-accent border border-accent/30"
+                              : "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                          }`}
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
+                          {u.role === "superadmin" && <ShieldCheck className="w-3 h-3" />}
+                          {u.role === "admin" && <Edit3 className="w-3 h-3" />}
+                          {u.role === "user" && <GraduationCap className="w-3 h-3" />}
+                          {u.role.toUpperCase()}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <select
+                          value={u.role}
+                          onChange={(e) => handleRoleChange(u.id, e.target.value as UserRole, u.name)}
+                          className="px-2.5 py-1 rounded-lg bg-bg-elevated border border-border text-xs text-text-primary focus:outline-none focus:border-accent"
+                        >
+                          <option value="user">User (Sinh viên)</option>
+                          <option value="admin">Admin (Đăng bài)</option>
+                          <option value="superadmin">Super Admin (Tối cao)</option>
+                        </select>
+                      </td>
+                      <td className="py-3.5 px-4 text-right">
+                        {!isCurrent && (
+                          <button
+                            onClick={() => handleDeleteUser(u.id, u.name)}
+                            className="p-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-colors"
+                            title="Xóa thành viên"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
