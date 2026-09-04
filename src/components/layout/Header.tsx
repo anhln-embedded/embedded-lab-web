@@ -170,6 +170,18 @@ export function Header() {
               )}
             </button>
 
+            {/* Nút Viết Bài Nhanh (Hiển thị khi là Admin / Mentor Lab) */}
+            {user && (user.role === "superadmin" || user.role === "admin") && (
+              <Link
+                href="/admin/posts/new"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold shadow-sm shadow-accent/20 transition-all hover:scale-102"
+                title="Tạo bài viết mới nhanh"
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                <span>Viết bài</span>
+              </Link>
+            )}
+
             {/* User Auth Profile / Login Button (Chỉ hiện trên Desktop lg:, trên Mobile được đưa vào menu 3 gạch) */}
             <div className="hidden lg:block">
               {user ? (

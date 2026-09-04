@@ -119,12 +119,7 @@ export function SmartMarkdownImporterModal({
         const reader = new FileReader();
         reader.onload = (e) => {
           const content = (e.target?.result as string) || "";
-          const post = parseSingleMarkdownArticle(content, idx + 1);
-          // Nếu title lấy theo mặc định, dùng tên file làm title dự phòng
-          if (post.title.startsWith("Bài ") && post.title.includes("Tiêu đề bài viết")) {
-            const cleanFileName = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
-            post.title = `Bài ${idx + 1}: ${cleanFileName}`;
-          }
+          const post = parseSingleMarkdownArticle(content, idx + 1, file.name);
           resolve({
             filename: file.name,
             post,

@@ -3,6 +3,19 @@
  * Tự động chuyển đổi văn bản Markdown từ Notion / ChatGPT / Docs sang định dạng chuẩn Lab
  */
 
+import { highlightCodeWithLineNumbers } from "./syntax-highlighter";
+
+function safeBase64Encode(str: string): string {
+  try {
+    if (typeof Buffer !== "undefined") {
+      return Buffer.from(str, "utf-8").toString("base64");
+    }
+    return btoa(unescape(encodeURIComponent(str)));
+  } catch (e) {
+    return encodeURIComponent(str);
+  }
+}
+
 export interface ParsedPost {
   title: string;
   slug: string;
@@ -66,7 +79,10 @@ function formatInlineMarkdown(text: string): string {
   c = c.replace(/<-/g, "←");
   c = c.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>');
   c = c.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-text-primary">$1</strong>');
+  c = c.replace(/___(.*?)___/g, '<strong><em>$1</em></strong>');
+  c = c.replace(/__(.*?)__/g, '<strong class="font-bold text-text-primary">$1</strong>');
   c = c.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  c = c.replace(/_([^_]+)_/g, '<em>$1</em>');
   c = c.replace(/~~(.*?)~~/g, '<del class="line-through text-text-muted">$1</del>');
   c = c.replace(/`([^`]+)`/g, '<code class="px-1.5 py-0.5 rounded bg-bg-elevated border border-border text-accent font-mono text-[11px] font-semibold">$1</code>');
   c = c.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-accent hover:underline font-semibold">$1</a>');
@@ -213,7 +229,6 @@ export function markdownToLabHtml(markdown: string): string {
 
   content = content.replace(codeBlockRegex, (_, rawLang, rawFilename, codeText) => {
     const lang = (rawLang || "c").toLowerCase().trim();
-    let filename = rawFilename?.trim() || "";
     const code = codeText || "";
 
     // Xử lý riêng khối Mermaid Diagram
@@ -237,37 +252,66 @@ export function markdownToLabHtml(markdown: string): string {
       return createToken(mermaidHtml);
     }
 
-    // Code Card chuẩn phong cách High-Tech Lab
-    const encodedCode = encodeURIComponent(code);
-    const langLabel = lang === "c" ? "C" : lang === "cpp" ? "C++" : lang === "python" ? "Python" : lang === "rust" ? "Rust" : lang === "bash" ? "Bash" : lang.toUpperCase();
+    // Tự động phát hiện nếu nội dung thực chất là C/C++ dù tác giả ghi là ```bash hoặc để trống
+    let effectiveLang = (rawLang || "c").toLowerCase().trim();
+    const isCCode = /\b(int\s+main|typedef\s+struct|char\*|const\s+int|uint32_t|uint8_t|#include|printf\s*\(|void\s+\w+\s*\(|static\s+int|return\s+0;?|data\s+dt)\b/.test(code);
+    if ((effectiveLang === "bash" || effectiveLang === "sh" || effectiveLang === "text" || !effectiveLang) && isCCode) {
+      effectiveLang = "c";
+    }
+
+    let filename = rawFilename?.trim() || "";
+    if (!filename) {
+      if (effectiveLang === "c") filename = "source.c";
+      else if (effectiveLang === "cpp") filename = "main.cpp";
+      else if (effectiveLang === "python") filename = "script.py";
+      else if (effectiveLang === "bash") filename = "terminal.sh";
+    }
+
+    const langLabel =
+      effectiveLang === "c"
+        ? "C (Embedded)"
+        : effectiveLang === "cpp"
+        ? "C++ (ESP32)"
+        : effectiveLang === "python"
+        ? "Python"
+        : effectiveLang === "rust"
+        ? "Rust"
+        : effectiveLang === "bash"
+        ? "Bash / Shell"
+        : effectiveLang.toUpperCase();
+
+    const highlightedCodeHtml = highlightCodeWithLineNumbers(code, effectiveLang, true);
+    const b64Code = safeBase64Encode(code);
 
     const codeCardHtml = `
-      <div class="my-6 rounded-2xl border border-border/80 bg-[#0b101b] overflow-hidden shadow-2xl group">
-        <div class="flex items-center justify-between px-4 py-2.5 bg-[#111726] border-b border-white/10 text-xs">
-          <div class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-red-500/80 inline-block"></span>
-            <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/80 inline-block"></span>
-            <span class="w-2.5 h-2.5 rounded-full bg-green-500/80 inline-block"></span>
-            ${
-              filename
-                ? `<span class="ml-2 px-2.5 py-0.5 rounded-md bg-white/10 text-white font-mono text-[11px] font-bold border border-white/10 flex items-center gap-1.5">📄 ${filename}</span>`
-                : ""
-            }
+      <div class="lab-code-card my-6 rounded-2xl border overflow-hidden shadow-xl group transition-all">
+        <div class="lab-code-header flex items-center justify-between px-4 py-2.5 border-b text-xs transition-colors">
+          <div class="flex items-center gap-2.5">
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#ff5f56] inline-block shadow-xs"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-[#ffbd2e] inline-block shadow-xs"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-[#27c93f] inline-block shadow-xs"></span>
+            </div>
+            <span class="ml-1 text-[11px] font-mono font-bold text-text-primary flex items-center gap-1.5">
+              <span class="text-accent text-xs">⚡</span>
+              <span>${filename}</span>
+            </span>
           </div>
           <div class="flex items-center gap-2">
-            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-accent/20 text-accent border border-accent/30 font-mono">${langLabel}</span>
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-accent/15 text-accent border border-accent/30 font-mono">${langLabel}</span>
             <button
               type="button"
-              onclick="(function(btn){navigator.clipboard.writeText(decodeURIComponent('${encodedCode}')); const s=btn.querySelector('.copy-txt'); if(s){s.textContent='Đã chép!'; setTimeout(()=>s.textContent='Sao chép', 2000)}})(this)"
-              class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-accent text-white text-[11px] font-bold transition-all flex items-center gap-1 cursor-pointer border border-white/10 hover:border-accent"
+              data-lab-code="${b64Code}"
+              class="lab-copy-btn px-2.5 py-1 rounded-lg bg-bg-elevated hover:bg-accent hover:text-white border border-border text-[11px] font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
               title="Sao chép toàn bộ mã nguồn"
             >
-              <span class="copy-txt">Sao chép</span>
+              <span>📋</span>
+              <span class="lab-copy-label">Sao chép</span>
             </button>
           </div>
         </div>
-        <div class="p-4 sm:p-5 overflow-x-auto text-xs sm:text-sm font-mono text-slate-200 leading-relaxed scrollbar-thin">
-          <pre class="m-0 p-0 bg-transparent font-mono"><code class="language-${lang}">${escapeHtml(code)}</code></pre>
+        <div class="p-3 sm:p-4 overflow-x-auto text-xs sm:text-[13px] font-mono leading-relaxed scrollbar-thin">
+          <pre class="m-0 p-0 bg-transparent font-mono"><code class="font-mono text-inherit">${highlightedCodeHtml}</code></pre>
         </div>
       </div>
     `;
@@ -447,8 +491,37 @@ export function markdownToLabHtml(markdown: string): string {
   });
 
   // =========================================================================
-  // BƯỚC 6: Images ![Caption](url)
+  // BƯỚC 6: Images (![Caption](url) & <img src="..." />)
   // =========================================================================
+  // 6.1 Xử lý thẻ HTML img thô: <p align="center"><img ...></p> hoặc <img ...>
+  content = content.replace(/<p[^>]*>\s*<img\s+([^>]+)>\s*<\/p>/gi, (_, attrs) => {
+    const srcMatch = attrs.match(/src\s*=\s*["']?([^"'\s>]+)["']?/i);
+    const altMatch = attrs.match(/alt\s*=\s*["']?([^"'>]*)["']?/i);
+    const src = srcMatch ? srcMatch[1] : "";
+    const alt = altMatch ? altMatch[1] : "";
+    if (!src) return "";
+    return createToken(`
+      <figure class="my-8 text-center">
+        <img src="${src}" alt="${alt}" class="rounded-2xl border border-border/80 shadow-2xl max-h-[520px] mx-auto object-contain bg-bg-panel/60 p-2" loading="lazy" />
+        ${alt ? `<figcaption class="mt-2.5 text-xs text-text-muted italic font-medium flex items-center justify-center gap-1"><span>📷</span><span>${alt}</span></figcaption>` : ""}
+      </figure>
+    `);
+  });
+
+  content = content.replace(/<img\s+([^>]+)>/gi, (_, attrs) => {
+    const srcMatch = attrs.match(/src\s*=\s*["']?([^"'\s>]+)["']?/i);
+    const altMatch = attrs.match(/alt\s*=\s*["']?([^"'>]*)["']?/i);
+    const src = srcMatch ? srcMatch[1] : "";
+    const alt = altMatch ? altMatch[1] : "";
+    if (!src) return "";
+    return createToken(`
+      <figure class="my-8 text-center">
+        <img src="${src}" alt="${alt}" class="rounded-2xl border border-border/80 shadow-2xl max-h-[520px] mx-auto object-contain bg-bg-panel/60 p-2" loading="lazy" />
+        ${alt ? `<figcaption class="mt-2.5 text-xs text-text-muted italic font-medium flex items-center justify-center gap-1"><span>📷</span><span>${alt}</span></figcaption>` : ""}
+      </figure>
+    `);
+  });
+
   content = content.replace(/!\[(.*?)\]\((.*?)\)/g, (_, alt, src) => {
     const captionHtml = alt
       ? `<figcaption class="mt-2.5 text-xs text-text-muted italic font-medium flex items-center justify-center gap-1"><span>📷</span><span>${alt}</span></figcaption>`
@@ -463,13 +536,13 @@ export function markdownToLabHtml(markdown: string): string {
   });
 
   // =========================================================================
-  // BƯỚC 7: Danh sách Lists (Unordered & Ordered)
+  // BƯỚC 7: Danh sách Lists (Unordered & Ordered, hỗ trợ -, *, +)
   // =========================================================================
-  const ulBlockRegex = /(?:^[ \t]*[-*]\s+[^\n]+(?:\n[ \t]*[-*]\s+[^\n]+)*)/gm;
+  const ulBlockRegex = /(?:^[ \t]*[-*+]\s+[^\n]+(?:\n[ \t]*[-*+]\s+[^\n]+)*)/gm;
   content = content.replace(ulBlockRegex, (match) => {
     const items = match
       .split("\n")
-      .map((l) => l.replace(/^[ \t]*[-*]\s+/, "").trim())
+      .map((l) => l.replace(/^[ \t]*[-*+]\s+/, "").trim())
       .filter(Boolean);
     const ulHtml = `
       <ul class="my-4 space-y-2 pl-2">
@@ -539,50 +612,137 @@ export function markdownToLabHtml(markdown: string): string {
 /**
  * Phân tích cú pháp 1 bài Markdown đơn lẻ
  */
-export function parseSingleMarkdownArticle(rawMarkdown: string, defaultOrder: number = 1): ParsedPost {
+/**
+ * Phân tích cú pháp 1 bài Markdown đơn lẻ với hỗ trợ trích xuất thông minh từ tên file
+ */
+export function parseSingleMarkdownArticle(
+  rawMarkdown: string,
+  defaultOrder: number = 1,
+  sourceFilename?: string
+): ParsedPost {
   let title = `Bài ${defaultOrder}: Tiêu đề bài viết`;
   let summary = "";
   let codeSnippet = "";
   let codeLang = "c";
   let codeFilename = "main.c";
 
-  // 1. Tách code block đầu tiên nếu có
-  const codeBlockRegex = /```([a-zA-Z0-9_\-\.]+)?(?:\s+filename="([^"]+)")?\n([\s\S]*?)```/;
-  const codeMatch = rawMarkdown.match(codeBlockRegex);
-
   let cleanMarkdown = rawMarkdown;
 
-  if (codeMatch) {
-    codeLang = codeMatch[1]?.toLowerCase() || "c";
-    codeFilename = codeMatch[2] || (codeLang === "c" ? "main.c" : codeLang === "cpp" ? "main.cpp" : "code_snippet");
-    codeSnippet = codeMatch[3]?.trim() || "";
+  // 1. Tách code block đầu tiên nếu có filename="..." hoặc đứng đầu bài
+  const codeBlockRegex = /```([a-zA-Z0-9_\-\.]+)?(?:\s+(?:filename=)?["']?([^"'\n]+)["']?)?\n([\s\S]*?)```/;
+  const codeMatch = rawMarkdown.match(codeBlockRegex);
 
-    cleanMarkdown = rawMarkdown.replace(codeBlockRegex, "").trim();
+  if (codeMatch) {
+    const rawLang = codeMatch[1]?.toLowerCase() || "c";
+    const explicitFilename = codeMatch[2];
+    const codeBody = codeMatch[3]?.trim() || "";
+
+    // Chỉ tách khỏi nội dung chính nếu có filename="..." chỉ định rõ hoặc nằm ở đầu bài
+    const codeIndex = rawMarkdown.indexOf(codeMatch[0]);
+    const textBeforeCode = rawMarkdown.slice(0, codeIndex);
+    const hasMajorHeadingBefore = /^##\s+/m.test(textBeforeCode);
+
+    if (explicitFilename || !hasMajorHeadingBefore) {
+      codeLang = rawLang;
+      codeFilename = explicitFilename || (codeLang === "c" ? "main.c" : codeLang === "cpp" ? "main.cpp" : "main.py");
+      codeSnippet = codeBody;
+      // Chỉ xóa khỏi cleanMarkdown nếu là hero code có filename
+      if (explicitFilename) {
+        cleanMarkdown = rawMarkdown.replace(codeBlockRegex, "").trim();
+      }
+    }
   }
 
-  // 2. Tìm Title (# Title)
+  // 2. Tìm Title (# Title) trong nội dung
   const titleMatch = cleanMarkdown.match(/^#\s+(.+)$/m);
+  let rawH1 = titleMatch ? titleMatch[1].trim() : "";
+
+  // 3. Trích xuất tiêu đề thông minh kết hợp filename và H1
+  let lessonOrder = defaultOrder;
+  let topicFromFilename = "";
+
+  if (sourceFilename) {
+    const baseName = sourceFilename.replace(/\.[^/.]+$/, "").trim();
+    // Bóc tách số bài: "Bai 02. bitmask", "02-memory-layout", "bai_03"
+    const baiMatch = baseName.match(/^Bai\s*(\d+)[\.\s_-]*(.*)$/i);
+    const numMatch = baseName.match(/^(\d+)[\.\s_-]+(.*)$/);
+
+    if (baiMatch) {
+      lessonOrder = parseInt(baiMatch[1], 10);
+      topicFromFilename = baiMatch[2].trim();
+    } else if (numMatch) {
+      lessonOrder = parseInt(numMatch[1], 10);
+      topicFromFilename = numMatch[2].trim();
+    } else {
+      topicFromFilename = baseName;
+    }
+
+    if (topicFromFilename) {
+      topicFromFilename = topicFromFilename.charAt(0).toUpperCase() + topicFromFilename.slice(1);
+    }
+  }
+
+  // Kiểm tra xem rawH1 có phải là tiêu đề chung chung (generic) không
+  const isGenericH1 = !rawH1 || 
+    /^\s*\d+[\.\)]\s*(khái niệm|tổng quan|giới thiệu|định nghĩa|mục tiêu)/i.test(rawH1) ||
+    /^\s*(khái niệm|tổng quan|giới thiệu|định nghĩa|mục tiêu)\s*$/i.test(rawH1) ||
+    /^\s*\d+[\.\s]/i.test(rawH1);
+
+  if (topicFromFilename) {
+    if (rawH1 && !isGenericH1 && !rawH1.toLowerCase().includes(topicFromFilename.toLowerCase())) {
+      title = `Bài ${lessonOrder}: ${topicFromFilename} - ${rawH1}`;
+    } else if (topicFromFilename) {
+      title = `Bài ${lessonOrder}: ${topicFromFilename}`;
+    }
+  } else if (rawH1) {
+    if (!rawH1.toLowerCase().startsWith("bài")) {
+      title = `Bài ${lessonOrder}: ${rawH1}`;
+    } else {
+      title = rawH1;
+    }
+  }
+
+  // Xóa dòng H1 đầu tiên khỏi cleanMarkdown nếu có
   if (titleMatch) {
-    title = titleMatch[1].trim();
     cleanMarkdown = cleanMarkdown.replace(titleMatch[0], "").trim();
   }
 
-  // 3. Tìm Summary (> Tóm tắt: ...)
+  // 4. Tìm Summary (> Tóm tắt: ...)
   const summaryMatch = cleanMarkdown.match(/^>\s*(?:Tóm tắt|Summary):\s*(.+)$/im);
   if (summaryMatch) {
     summary = summaryMatch[1].trim();
     cleanMarkdown = cleanMarkdown.replace(summaryMatch[0], "").trim();
+  } else {
+    // Tự động trích xuất câu giới thiệu đầu tiên của bài viết làm Tóm tắt
+    const textWithoutImagesOrTags = cleanMarkdown
+      .replace(/<[^>]+>/g, " ")
+      .replace(/!\[.*?\]\(.*?\)/g, " ")
+      .replace(/```[\s\S]*?```/g, " ")
+      .trim();
+
+    const firstParaMatch = textWithoutImagesOrTags.match(/^([^#\n\r]+)/);
+    if (firstParaMatch) {
+      const firstSentence = firstParaMatch[1]
+        .replace(/^[-\*\+]\s+/, "")
+        .replace(/^[_\*]{1,3}|[_\*]{1,3}$/g, "")
+        .trim();
+      if (firstSentence.length > 20) {
+        summary = firstSentence.length > 220
+          ? firstSentence.slice(0, 217) + "..."
+          : firstSentence;
+      }
+    }
   }
 
-  // 4. Ước lượng thời gian đọc
+  // 5. Ước lượng thời gian đọc
   const wordsCount = cleanMarkdown.split(/\s+/).length;
   const readMinutes = Math.max(3, Math.ceil(wordsCount / 180));
   const readTime = `${readMinutes} phút`;
 
-  // 5. Chuyển đổi phần còn lại sang HTML
+  // 6. Chuyển đổi phần còn lại sang HTML
   const contentHtml = markdownToLabHtml(cleanMarkdown);
 
-  // 6. Tạo slug an toàn
+  // 7. Tạo slug an toàn
   const slug = title
     .toLowerCase()
     .normalize("NFD")
@@ -595,7 +755,7 @@ export function parseSingleMarkdownArticle(rawMarkdown: string, defaultOrder: nu
 
   return {
     title,
-    slug: slug || `bai-${defaultOrder}`,
+    slug: slug || `bai-${lessonOrder}`,
     readTime,
     summary,
     contentHtml,

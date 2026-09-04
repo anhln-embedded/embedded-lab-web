@@ -393,3 +393,95 @@ body {
   border: 1px solid var(--border) !important;
   padding: 8px 12px !important;
 }
+
+/* ============================================
+   EMBEDDED-AIOT LAB DUAL-THEME CODE BLOCKS
+   Tự động thích ứng hoàn hảo giữa Dark Mode & Light Mode
+   ============================================ */
+:root {
+  --code-bg: #f8fafc;
+  --code-border: #e2e8f0;
+  --code-header-bg: #f1f5f9;
+  --code-header-border: #e2e8f0;
+  --code-text: #0f172a;
+  --code-line-num: #94a3b8;
+  --code-line-border: #e2e8f0;
+
+  /* Syntax Highlighter Tokens (GitHub Light / VS Code Light+) */
+  --tok-kw: #cf222e;
+  --tok-type: #0550ae;
+  --tok-fn: #8250df;
+  --tok-str: #0a3069;
+  --tok-com: #64748b;
+  --tok-num: #0969da;
+  --tok-prep: #cf222e;
+  --tok-macro: #953800;
+  --tok-reg: #116329;
+  --tok-op: #cf222e;
+  --tok-punc: #57606a;
+  --tok-plain: #0f172a;
+}
+
+.dark {
+  --code-bg: #0d1117;
+  --code-border: #30363d;
+  --code-header-bg: #161b22;
+  --code-header-border: #30363d;
+  --code-text: #e6edf3;
+  --code-line-num: #6e7681;
+  --code-line-border: #21262d;
+
+  /* Syntax Highlighter Tokens (VS Code Dark+) */
+  --tok-kw: #c586c0;
+  --tok-type: #4ec9b0;
+  --tok-fn: #dcdcaa;
+  --tok-str: #ce9178;
+  --tok-com: #6a9955;
+  --tok-num: #b5cea8;
+  --tok-prep: #c586c0;
+  --tok-macro: #4fc1ff;
+  --tok-reg: #4fc1ff;
+  --tok-op: #d4d4d4;
+  --tok-punc: #808080;
+  --tok-plain: #e6edf3;
+}
+
+/* Base Code Card Container */
+.lab-code-card {
+  background-color: var(--code-bg) !important;
+  border-color: var(--code-border) !important;
+  color: var(--code-text) !important;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.lab-code-card .lab-code-header {
+  background-color: var(--code-header-bg) !important;
+  border-color: var(--code-header-border) !important;
+}
+
+.lab-code-card pre,
+.lab-code-card code {
+  color: var(--code-text) !important;
+  background-color: transparent !important;
+}
+
+/* Token Colors */
+.lab-tok-keyword { color: var(--tok-kw) !important; font-weight: 600; }
+.lab-tok-type { color: var(--tok-type) !important; font-weight: 600; }
+.lab-tok-function { color: var(--tok-fn) !important; font-weight: 500; }
+.lab-tok-string { color: var(--tok-str) !important; }
+.lab-tok-comment { color: var(--tok-com) !important; font-style: italic; }
+.lab-tok-number { color: var(--tok-num) !important; }
+.lab-tok-preprocessor { color: var(--tok-prep) !important; font-weight: 600; }
+.lab-tok-macro { color: var(--tok-macro) !important; font-weight: bold; }
+.lab-tok-register { color: var(--tok-reg) !important; font-weight: bold; }
+.lab-tok-operator { color: var(--tok-op) !important; font-weight: 500; }
+.lab-tok-punctuation { color: var(--tok-punc) !important; }
+.lab-tok-plain { color: var(--tok-plain) !important; }
+
+/* Line Numbers */
+.lab-code-lineno {
+  color: var(--code-line-num) !important;
+  border-right: 1px solid var(--code-line-border) !important;
+  user-select: none;
+}

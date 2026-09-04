@@ -38,6 +38,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { markdownToLabHtml } from "@/lib/markdown-importer";
 import { MediaManagerModal } from "@/components/media/MediaManagerModal";
+import { InsertCodeModal } from "@/components/editor/InsertCodeModal";
 
 interface TechMarkdownEditorProps {
   value: string;
@@ -61,6 +62,7 @@ export function TechMarkdownEditor({
   const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isInsertCodeModalOpen, setIsInsertCodeModalOpen] = useState(false);
 
   // Auto-save & LocalStorage Draft
   const [draftDetected, setDraftDetected] = useState<{ text: string; time: string } | null>(null);
@@ -204,11 +206,39 @@ export function TechMarkdownEditor({
     }
   };
 
-  // 4. Kéo thả file ảnh vào Textarea
+  const mdFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Xử lý nạp file Markdown (.md, .markdown, .txt) trực tiếp từ máy người dùng
+  const handleMarkdownFileRead = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = (e.target?.result as string) || "";
+      if (value.trim() && value.length > 50) {
+        if (confirm(`Bạn có muốn thay thế nội dung hiện tại bằng nội dung từ file "${file.name}" không?`)) {
+          onChange(content);
+        }
+      } else {
+        onChange(content);
+      }
+    };
+    reader.readAsText(file, "UTF-8");
+  };
+
+  // 4. Kéo thả file ảnh hoặc file .md vào Textarea
   const handleDrop = async (e: React.DragEvent<HTMLTextAreaElement>) => {
     const files = e.dataTransfer?.files;
     if (files && files.length > 0) {
       const file = files[0];
+      const lowerName = file.name.toLowerCase();
+
+      // Nếu kéo thả file Markdown (.md, .markdown, .txt)
+      if (lowerName.endsWith(".md") || lowerName.endsWith(".markdown") || lowerName.endsWith(".txt")) {
+        e.preventDefault();
+        handleMarkdownFileRead(file);
+        return;
+      }
+
+      // Nếu kéo thả file ảnh
       if (file.type.startsWith("image/")) {
         e.preventDefault();
         const url = await uploadImageFile(file);
@@ -393,6 +423,16 @@ export function TechMarkdownEditor({
           <div className="flex items-center bg-bg-panel/80 rounded-xl p-0.5 border border-border/60 gap-0.5">
             <button
               type="button"
+              onClick={() => setIsInsertCodeModalOpen(true)}
+              className="px-2 py-1 rounded-lg bg-accent/15 hover:bg-accent hover:text-white text-accent font-mono text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
+              title="Chèn Khối Code Kỹ Thuật (Có Xem Trước, Tên File, Đổi Ngôn Ngữ)"
+            >
+              <FileCode className="w-3.5 h-3.5" />
+              <span>+ Chèn Code Pro</span>
+            </button>
+
+            <button
+              type="button"
               onClick={() =>
                 insertTextAtCursor(
                   '\n```c filename="main.c"\n// Embedded-AIoT Lab - C Code\n#include <stdio.h>\n\nvoid app_main(void) {\n    printf("Embedded System Ready!\\n");\n}\n',
@@ -400,10 +440,9 @@ export function TechMarkdownEditor({
                 )
               }
               className="px-2 py-1 rounded-lg hover:bg-bg-elevated text-accent font-mono text-[11px] font-bold flex items-center gap-1"
-              title="Chèn Mã Nguồn C/C++"
+              title="Chèn Nhanh Mẫu C Code"
             >
-              <FileCode className="w-3 h-3" />
-              <span>C Code</span>
+              <span>C</span>
             </button>
 
             <button
@@ -415,9 +454,9 @@ export function TechMarkdownEditor({
                 )
               }
               className="px-2 py-1 rounded-lg hover:bg-bg-elevated text-text-secondary hover:text-accent font-mono text-[11px] font-semibold"
-              title="Chèn Mã Python TinyML"
+              title="Chèn Nhanh Mẫu Python"
             >
-              Python
+              <span>Py</span>
             </button>
           </div>
 
@@ -491,6 +530,30 @@ graph TD
           >
             <ImageIcon className="w-3.5 h-3.5" />
             <span>Thư Viện Ảnh</span>
+          </button>
+
+          {/* Tải file Markdown (.md) trực tiếp từ máy tính */}
+          <input
+            type="file"
+            ref={mdFileInputRef}
+            accept=".md,.markdown,.txt"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                handleMarkdownFileRead(file);
+                e.target.value = "";
+              }
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => mdFileInputRef.current?.click()}
+            className="px-2.5 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+            title="Tải lên file Markdown (.md) từ máy tính cá nhân"
+          >
+            <Upload className="w-3.5 h-3.5" />
+            <span>Tải file .md</span>
           </button>
         </div>
 
@@ -630,6 +693,13 @@ graph TD
           }
           insertTextAtCursor(imgMd);
         }}
+      />
+
+      {/* Insert Code Modal */}
+      <InsertCodeModal
+        isOpen={isInsertCodeModalOpen}
+        onClose={() => setIsInsertCodeModalOpen(false)}
+        onInsert={(snippet) => insertTextAtCursor(snippet)}
       />
     </div>
   );

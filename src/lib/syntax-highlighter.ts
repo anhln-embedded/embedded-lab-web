@@ -75,6 +75,17 @@ function renderTokensToHtml(tokens: HighlightToken[], theme: CodeTheme = "dark")
     .join("");
 }
 
+export function renderTokensToHtmlReactive(tokens: HighlightToken[]): string {
+  return tokens
+    .map((t) => {
+      const escaped = escapeHtml(t.text);
+      if (t.type === "plain") return escaped;
+      return `<span class="lab-tok-${t.type}">${escaped}</span>`;
+    })
+    .join("");
+}
+
+
 // C/C++ Keywords & Types
 const C_TYPES = new Set([
   "uint8_t", "uint16_t", "uint32_t", "uint64_t",
@@ -232,14 +243,34 @@ export function tokenizeCCppLine(line: string): HighlightToken[] {
       continue;
     }
 
-    // 6. Operators & Punctuations
-    if (/[+\-*/%=&|<>!^~?:;,.]/.test(line[i])) {
+    // 6. Multi-char operators like ->, ==, !=, <=, >=, &&, ||, ++, --, <<, >>
+    if (line[i] === "-" && line[i + 1] === ">") {
+      tokens.push({ type: "operator", text: "->" });
+      i += 2;
+      continue;
+    }
+    if (/[=!<>&|+]/.test(line[i]) && line[i + 1] === line[i]) {
+      tokens.push({ type: "operator", text: line.slice(i, i + 2) });
+      i += 2;
+      continue;
+    }
+    if (/[!<>+\-*/%^&|]=/.test(line.slice(i, i + 2))) {
+      tokens.push({ type: "operator", text: line.slice(i, i + 2) });
+      i += 2;
+      continue;
+    }
+    if (/[+\-*/%=&|<>!^~?]/.test(line[i])) {
       tokens.push({ type: "operator", text: line[i] });
       i++;
       continue;
     }
+    if (/[{}()\[\];,.]/.test(line[i])) {
+      tokens.push({ type: "punctuation", text: line[i] });
+      i++;
+      continue;
+    }
 
-    // 7. Brackets & Whitespaces
+    // 7. Whitespaces & Unmatched chars
     tokens.push({ type: "plain", text: line[i] });
     i++;
   }
@@ -311,3 +342,40 @@ export function highlightCode(code: string, language: string = "c", theme: CodeT
   }
   return highlightCCpp(code, theme);
 }
+
+/**
+ * Render code với số dòng và class CSS Reactive hỗ trợ Dark/Light mode tức thì
+ */
+export function highlightCodeWithLineNumbers(
+  code: string,
+  language: string = "c",
+  showLineNumbers: boolean = true
+): string {
+  if (!code) return "";
+  const lines = code.split("\n");
+  
+  return lines
+    .map((line, idx) => {
+      let tokens: HighlightToken[];
+      const lang = language.toLowerCase();
+      if (lang === "bash" || lang === "sh" || lang === "shell") {
+        if (line.trim().startsWith("#")) {
+          tokens = [{ type: "comment", text: line }];
+        } else {
+          tokens = tokenizeCCppLine(line);
+        }
+      } else {
+        tokens = tokenizeCCppLine(line);
+      }
+
+      const highlightedLine = renderTokensToHtmlReactive(tokens) || "&nbsp;";
+      const lineNo = idx + 1;
+
+      if (showLineNumbers) {
+        return `<div class="flex items-start py-[1px] hover:bg-white/[0.04] transition-colors"><span class="lab-code-lineno w-10 pr-3.5 mr-3 text-right flex-shrink-0 text-[11px] font-mono select-none opacity-50">${lineNo}</span><span class="flex-1 overflow-x-auto whitespace-pre font-mono">${highlightedLine}</span></div>`;
+      }
+      return `<div class="overflow-x-auto whitespace-pre py-[1px] font-mono">${highlightedLine}</div>`;
+    })
+    .join("");
+}
+

@@ -101,6 +101,36 @@ export default function TutorialPostDetailPage({ params }: PageProps) {
     }
   }, []);
 
+  // Lắng nghe sự kiện click nút Copy trong các Code Blocks của bài viết
+  useEffect(() => {
+    const handleGlobalCopy = (e: MouseEvent) => {
+      const target = (e.target as HTMLElement)?.closest(".lab-copy-btn") as HTMLButtonElement | null;
+      if (!target) return;
+
+      const rawB64 = target.getAttribute("data-lab-code") || "";
+      if (!rawB64) return;
+
+      try {
+        const decoded = typeof atob !== "undefined" ? decodeURIComponent(escape(atob(rawB64))) : rawB64;
+        navigator.clipboard.writeText(decoded);
+        const label = target.querySelector(".lab-copy-label");
+        if (label) {
+          const oldText = label.textContent;
+          label.textContent = "Đã chép!";
+          setTimeout(() => {
+            label.textContent = oldText || "Sao chép";
+          }, 2000);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    document.addEventListener("click", handleGlobalCopy);
+    return () => document.removeEventListener("click", handleGlobalCopy);
+  }, []);
+
+
   const toggleLeftSidebar = () => {
     setShowLeftSidebar((prev) => {
       const next = !prev;
@@ -247,8 +277,14 @@ export default function TutorialPostDetailPage({ params }: PageProps) {
   const isAuthorized = user && (user.role === "superadmin" || user.role === "admin");
   const isFocusMode = !showLeftSidebar && !showRightSidebar;
 
+
   // Render HTML và trích xuất Headings cho Table of Contents
-  const renderedContentHtml = markdownToLabHtml(editableContentHtml || currentPost.contentHtml || "");
+  const rawContent = editableContentHtml || currentPost.contentHtml || "";
+  const isAlreadyLabHtml =
+    rawContent.includes("lab-code-card") ||
+    rawContent.includes("<h2 id=") ||
+    rawContent.includes("<table class=");
+  const renderedContentHtml = isAlreadyLabHtml ? rawContent : markdownToLabHtml(rawContent);
   const headings = extractHeadingsFromContent(renderedContentHtml);
 
   return (
