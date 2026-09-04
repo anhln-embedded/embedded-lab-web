@@ -91,6 +91,7 @@ export default function EditTutorialTopicPage({ params }: PageProps) {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -287,22 +288,24 @@ export default function EditTutorialTopicPage({ params }: PageProps) {
     }
   };
 
-  const handleDelete = async () => {
-    if (!confirm(`Bạn có chắc chắn muốn xóa chuyên đề "${title}"? Toàn bộ các bài học trong chuyên đề sẽ bị gỡ bỏ!`)) return;
+  const handleDelete = () => {
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
     setIsDeleting(true);
     try {
-      const res = await fetch(`/api/tutorials/${topicId || slug}`, { method: "DELETE" });
+      const res = await fetch(`/api/tutorials/${encodeURIComponent(topicId || slug)}`, { method: "DELETE" });
       const json = await res.json();
       if (!res.ok || !json.success) {
         throw new Error(json.error || "Lỗi xóa chuyên đề");
       }
       window.dispatchEvent(new CustomEvent("embedded_tutorials_updated"));
-      alert("🎉 Đã xóa chuyên đề thành công.");
-      router.push("/admin");
+      router.push("/admin?tab=tutorials");
     } catch (err: any) {
       alert(`Lỗi xóa: ${err.message}`);
-    } finally {
       setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
     }
   };
 
@@ -885,6 +888,55 @@ export default function EditTutorialTopicPage({ params }: PageProps) {
           setSelectedPostIdx(posts.length);
         }}
       />
+
+      {/* In-App Delete Confirmation Modal (Zero Browser Popup Dependencies) */}
+      {isDeleteDialogOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-bg-panel border border-border rounded-3xl p-6 shadow-2xl max-w-md w-full space-y-5 animate-in zoom-in-95">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center border border-red-500/20 text-xl font-bold shrink-0">
+                ⚠️
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-text-primary">
+                  Xác Nhận Xóa Chuyên Đề
+                </h3>
+                <p className="text-xs text-text-muted">Hành động này không thể hoàn tác</p>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-bg-elevated/60 border border-border text-xs text-text-secondary leading-relaxed">
+              Bạn có chắc chắn muốn xóa vĩnh viễn chuyên đề{" "}
+              <strong className="text-text-primary font-bold">"{title}"</strong> cùng toàn bộ {posts.length} bài học và tài liệu bên trong không?
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-border/60">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isDeleting}
+                onClick={() => setIsDeleteDialogOpen(false)}
+                className="text-xs"
+              >
+                Hủy bỏ
+              </Button>
+
+              <Button
+                type="button"
+                variant="primary"
+                size="sm"
+                disabled={isDeleting}
+                onClick={handleConfirmDelete}
+                className="bg-red-500 hover:bg-red-600 text-white text-xs font-bold flex items-center gap-1.5 px-4"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>{isDeleting ? "Đang xóa..." : "Xác Nhận Xóa"}</span>
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

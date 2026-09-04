@@ -50,6 +50,20 @@ export default function AdminDashboardPage() {
   const [roadmapTracks, setRoadmapTracks] = useState<RoadmapTrack[]>([]);
   const [mounted, setMounted] = useState(false);
 
+  // In-app Confirmation Modal & Toast State (No reliance on blocked browser confirm/alert)
+  const [deleteTarget, setDeleteTarget] = useState<{
+    type: "tutorial" | "post" | "course" | "roadmap";
+    id: string;
+    title: string;
+  } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 4000);
+  };
+
   const loadData = async () => {
     // 1. Fetch posts from SQLite
     try {
@@ -207,63 +221,62 @@ export default function AdminDashboardPage() {
     );
   }
 
-  const handleDeletePost = async (id: string, title: string) => {
-    if (confirm(`Bạn có chắc muốn xóa bài viết "${title}"?`)) {
-      try {
-        const res = await fetch(`/api/posts/${id}`, { method: "DELETE" });
-        const json = await res.json();
-        if (json.success) {
-          deletePost(id);
-          window.dispatchEvent(new CustomEvent("embedded_posts_updated"));
-          alert("🗑️ Đã xóa bài viết thành công!");
-        } else {
-          alert(json.error || "Không thể xóa bài viết");
-        }
-      } catch (e: any) {
-        console.error(e);
-        deletePost(id);
-        window.dispatchEvent(new CustomEvent("embedded_posts_updated"));
-      }
-      await loadData();
-    }
+  const handleDeletePost = (id: string, title: string) => {
+    setDeleteTarget({ type: "post", id, title });
   };
 
-  const handleDeleteCourse = async (id: string, title: string) => {
-    if (confirm(`Bạn có chắc muốn xóa khóa học "${title}"?`)) {
-      try {
-        await fetch(`/api/courses/${id}`, { method: "DELETE" });
-      } catch (e) {
-        console.error(e);
-      }
-      deleteCourse(id);
-      loadData();
-    }
+  const handleDeleteCourse = (id: string, title: string) => {
+    setDeleteTarget({ type: "course", id, title });
   };
 
-  const handleDeleteTutorial = async (id: string, title: string) => {
-    if (confirm(`Bạn có chắc chắn muốn xóa chuyên đề "${title}" cùng toàn bộ bài viết trong chuyên đề này?`)) {
-      try {
-        const res = await fetch(`/api/tutorials/${id}`, { method: "DELETE" });
-        const json = await res.json();
-        if (json.success) {
-          setTutorials((prev) => prev.filter((t) => t.id !== id && t.slug !== id));
-          window.dispatchEvent(new CustomEvent("embedded_tutorials_updated"));
-          alert("🗑️ Đã xóa chuyên đề thành công!");
-        } else {
-          alert(json.error || "Không thể xóa chuyên đề");
-        }
-      } catch (e: any) {
-        console.error(e);
-        alert(e.message || "Lỗi khi gửi yêu cầu xóa đến máy chủ");
-      }
-      await loadData();
-    }
+  const handleDeleteTutorial = (id: string, title: string) => {
+    setDeleteTarget({ type: "tutorial", id, title });
   };
 
   const handleDeleteTrack = (id: string, title: string) => {
-    if (confirm(`Bạn có chắc muốn xóa lộ trình "${title}"?`)) {
-      deleteRoadmapTrack(id);
-      setRoadmapTracks(getAllRoadmapTracks());
+    setDeleteTarget({ type: "roadmap", id, title });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    try {
+      if (deleteTarget.type === "tutorial") {
+        const res = await fetch(`/api/tutorials/${encodeURIComponent(deleteTarget.id)}`, { method: "DELETE" });
+        const json = await res.json();
+        if (json.success) {
+          setTutorials((prev) => prev.filter((t) => t.id !== deleteTarget.id && t.slug !== deleteTarget.id));
+          window.dispatchEvent(new CustomEvent("embedded_tutorials_updated"));
+          showToast(`🗑️ Đã xóa chuyên đề "${deleteTarget.title}" thành công!`);
+        } else {
+          showToast(json.error || "Không thể xóa chuyên đề");
+        }
+      } else if (deleteTarget.type === "post") {
+        const res = await fetch(`/api/posts/${encodeURIComponent(deleteTarget.id)}`, { method: "DELETE" });
+        const json = await res.json();
+        if (json.success) {
+          deletePost(deleteTarget.id);
+          window.dispatchEvent(new CustomEvent("embedded_posts_updated"));
+          showToast(`🗑️ Đã xóa bài viết "${deleteTarget.title}" thành công!`);
+        } else {
+          showToast(json.error || "Không thể xóa bài viết");
+        }
+      } else if (deleteTarget.type === "course") {
+        await fetch(`/api/courses/${encodeURIComponent(deleteTarget.id)}`, { method: "DELETE" });
+        deleteCourse(deleteTarget.id);
+        showToast(`🗑️ Đã xóa khóa học "${deleteTarget.title}" thành công!`);
+      } else if (deleteTarget.type === "roadmap") {
+        deleteRoadmapTrack(deleteTarget.id);
+        setRoadmapTracks(getAllRoadmapTracks());
+        showToast(`🗑️ Đã xóa lộ trình "${deleteTarget.title}" thành công!`);
+      }
+    } catch (err: any) {
+      console.error("Delete error:", err);
+      showToast(err.message || "Lỗi khi gửi yêu cầu xóa đến máy chủ");
+    } finally {
+      setIsDeleting(false);
+      setDeleteTarget(null);
+      await loadData();
     }
   };
 
@@ -1130,6 +1143,65 @@ export default function AdminDashboardPage() {
         categories={categories}
         onUpdated={loadData}
       />
+
+      {/* In-App Delete Confirmation Modal (Reliable, Zero Browser Popup Dependencies) */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-bg-panel border border-border rounded-3xl p-6 shadow-2xl max-w-md w-full space-y-5 animate-in zoom-in-95">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center border border-red-500/20 text-xl font-bold shrink-0">
+                ⚠️
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-text-primary">
+                  Xác Nhận Xóa {deleteTarget.type === "tutorial" ? "Chuyên Đề" : deleteTarget.type === "post" ? "Bài Viết" : deleteTarget.type === "course" ? "Khóa Học" : "Lộ Trình"}
+                </h3>
+                <p className="text-xs text-text-muted">Hành động này không thể hoàn tác</p>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-bg-elevated/60 border border-border text-xs text-text-secondary leading-relaxed">
+              Bạn có chắc chắn muốn xóa vĩnh viễn{" "}
+              <strong className="text-text-primary font-bold">"{deleteTarget.title}"</strong>
+              {deleteTarget.type === "tutorial" && " cùng toàn bộ bài viết và tài liệu bên trong chuyên đề này"}?
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-border/60">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isDeleting}
+                onClick={() => setDeleteTarget(null)}
+                className="text-xs"
+              >
+                Hủy bỏ
+              </Button>
+
+              <Button
+                type="button"
+                variant="primary"
+                size="sm"
+                disabled={isDeleting}
+                onClick={handleConfirmDelete}
+                className="bg-red-500 hover:bg-red-600 text-white text-xs font-bold flex items-center gap-1.5 px-4"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>{isDeleting ? "Đang xóa..." : "Xác Nhận Xóa"}</span>
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-bg-panel border border-emerald-500/40 text-text-primary px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-bold animate-in slide-in-from-bottom-5">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span>{toastMessage}</span>
+          <button onClick={() => setToastMessage(null)} className="ml-2 text-text-muted hover:text-text-primary p-1">✕</button>
+        </div>
+      )}
     </div>
   );
 }
