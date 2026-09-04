@@ -224,12 +224,13 @@ export function markdownToLabHtml(markdown: string): string {
 
   // =========================================================================
   // BƯỚC 1: Trích xuất Fenced Code Blocks (```lang filename="..." ... ```)
+  // Sử dụng [ \t] thay vì \s để không nuốt dòng đầu tiên của code thành filename!
   // =========================================================================
-  const codeBlockRegex = /^[ \t]*```([a-zA-Z0-9_\-\.]+)?(?:\s+(?:filename=)?["']?([^"'\n]+)["']?)?[ \t]*\n([\s\S]*?)\n[ \t]*```[ \t]*$/gm;
+  const codeBlockRegex = /^[ \t]*```([a-zA-Z0-9_\-\.]+)?(?:[ \t]+(?:filename=)?["']?([^"'\r\n]+)["']?)?[ \t]*\r?\n([\s\S]*?)\r?\n[ \t]*```[ \t]*$/gm;
 
   content = content.replace(codeBlockRegex, (_, rawLang, rawFilename, codeText) => {
     const lang = (rawLang || "c").toLowerCase().trim();
-    const code = codeText || "";
+    let code = codeText || "";
 
     // Xử lý riêng khối Mermaid Diagram
     if (lang === "mermaid") {
@@ -252,6 +253,21 @@ export function markdownToLabHtml(markdown: string): string {
       return createToken(mermaidHtml);
     }
 
+    // Kiểm tra rawFilename: Tuyệt đối không để câu lệnh code / tên hàm lọt lên tiêu đề!
+    let filename = "";
+    if (rawFilename) {
+      const trimmed = rawFilename.trim();
+      const isCodeStatement = /[;{}()=*/\\#<>|&+]/.test(trimmed) || trimmed.startsWith("//") || trimmed.includes("/*");
+      const hasFileExt = /\.(c|h|cpp|hpp|py|rs|v|sv|sh|bash|txt|json|md|makefile)$/i.test(trimmed);
+
+      if (!isCodeStatement && (hasFileExt || (!trimmed.includes(" ") && trimmed.length < 32))) {
+        filename = trimmed;
+      } else {
+        // Nếu chuỗi chứa cú pháp code, đẩy trả về làm dòng đầu tiên của khối code bên dưới!
+        code = trimmed + "\n" + code;
+      }
+    }
+
     // Tự động phát hiện nếu nội dung thực chất là C/C++ dù tác giả ghi là ```bash hoặc để trống
     let effectiveLang = (rawLang || "c").toLowerCase().trim();
     const isCCode = /\b(int\s+main|typedef\s+struct|char\*|const\s+int|uint32_t|uint8_t|#include|printf\s*\(|void\s+\w+\s*\(|static\s+int|return\s+0;?|data\s+dt)\b/.test(code);
@@ -259,12 +275,12 @@ export function markdownToLabHtml(markdown: string): string {
       effectiveLang = "c";
     }
 
-    let filename = rawFilename?.trim() || "";
     if (!filename) {
       if (effectiveLang === "c") filename = "source.c";
       else if (effectiveLang === "cpp") filename = "main.cpp";
       else if (effectiveLang === "python") filename = "script.py";
       else if (effectiveLang === "bash") filename = "terminal.sh";
+      else filename = `${effectiveLang || "code"}.txt`;
     }
 
     const langLabel =
@@ -283,16 +299,12 @@ export function markdownToLabHtml(markdown: string): string {
     const highlightedCodeHtml = highlightCodeWithLineNumbers(code, effectiveLang, true);
     const b64Code = safeBase64Encode(code);
 
+    // Giao diện khối code mới: XÓA 3 CHẤM MÀU MAC, Header tinh tế, toàn bộ code/tên hàm nằm ở bên dưới
     const codeCardHtml = `
       <div class="lab-code-card my-6 rounded-2xl border overflow-hidden shadow-xl group transition-all">
-        <div class="lab-code-header flex items-center justify-between px-4 py-2.5 border-b text-xs transition-colors">
-          <div class="flex items-center gap-2.5">
-            <div class="flex items-center gap-1.5">
-              <span class="w-2.5 h-2.5 rounded-full bg-[#ff5f56] inline-block shadow-xs"></span>
-              <span class="w-2.5 h-2.5 rounded-full bg-[#ffbd2e] inline-block shadow-xs"></span>
-              <span class="w-2.5 h-2.5 rounded-full bg-[#27c93f] inline-block shadow-xs"></span>
-            </div>
-            <span class="ml-1 text-[11px] font-mono font-bold text-text-primary flex items-center gap-1.5">
+        <div class="lab-code-header flex items-center justify-between px-4 py-2 border-b text-xs transition-colors">
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] font-mono font-bold text-text-primary flex items-center gap-1.5">
               <span class="text-accent text-xs">⚡</span>
               <span>${filename}</span>
             </span>
@@ -628,28 +640,30 @@ export function parseSingleMarkdownArticle(
 
   let cleanMarkdown = rawMarkdown;
 
-  // 1. Tách code block đầu tiên nếu có filename="..." hoặc đứng đầu bài
-  const codeBlockRegex = /```([a-zA-Z0-9_\-\.]+)?(?:\s+(?:filename=)?["']?([^"'\n]+)["']?)?\n([\s\S]*?)```/;
+  // 1. Chỉ tách Hero Code Snippet nếu có `filename="..."` chỉ định rõ ràng trên block
+  const codeBlockRegex = /```([a-zA-Z0-9_\-\.]+)?(?:[ \t]+(?:filename=)?["']?([^"'\r\n]+)["']?)?\r?\n([\s\S]*?)```/;
   const codeMatch = rawMarkdown.match(codeBlockRegex);
 
   if (codeMatch) {
     const rawLang = codeMatch[1]?.toLowerCase() || "c";
-    const explicitFilename = codeMatch[2];
+    const rawFilename = codeMatch[2]?.trim() || "";
     const codeBody = codeMatch[3]?.trim() || "";
 
-    // Chỉ tách khỏi nội dung chính nếu có filename="..." chỉ định rõ hoặc nằm ở đầu bài
-    const codeIndex = rawMarkdown.indexOf(codeMatch[0]);
-    const textBeforeCode = rawMarkdown.slice(0, codeIndex);
-    const hasMajorHeadingBefore = /^##\s+/m.test(textBeforeCode);
-
-    if (explicitFilename || !hasMajorHeadingBefore) {
-      codeLang = rawLang;
-      codeFilename = explicitFilename || (codeLang === "c" ? "main.c" : codeLang === "cpp" ? "main.cpp" : "main.py");
-      codeSnippet = codeBody;
-      // Chỉ xóa khỏi cleanMarkdown nếu là hero code có filename
-      if (explicitFilename) {
-        cleanMarkdown = rawMarkdown.replace(codeBlockRegex, "").trim();
+    let explicitFilename = "";
+    if (rawFilename) {
+      const isCodeStatement = /[;{}()=*/\\#<>|&+]/.test(rawFilename) || rawFilename.startsWith("//") || rawFilename.includes("/*");
+      const hasFileExt = /\.(c|h|cpp|hpp|py|rs|v|sv|sh|bash|txt|json|md|makefile)$/i.test(rawFilename);
+      if (!isCodeStatement && (hasFileExt || (!rawFilename.includes(" ") && rawFilename.length < 32))) {
+        explicitFilename = rawFilename;
       }
+    }
+
+    // Chỉ tách khỏi nội dung chính nếu có filename="..." hợp lệ chỉ định rõ
+    if (explicitFilename) {
+      codeLang = rawLang;
+      codeFilename = explicitFilename;
+      codeSnippet = codeBody;
+      cleanMarkdown = rawMarkdown.replace(codeBlockRegex, "").trim();
     }
   }
 
