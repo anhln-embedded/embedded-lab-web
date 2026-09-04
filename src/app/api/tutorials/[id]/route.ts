@@ -7,10 +7,11 @@ interface RouteParams {
 
 export async function GET(request: Request, { params }: RouteParams) {
   try {
-    const { id } = await params;
+    const { id: rawId } = await params;
+    const id = decodeURIComponent(rawId);
     const topic = await prisma.tutorialTopic.findFirst({
       where: {
-        OR: [{ id }, { slug: id }],
+        OR: [{ id: rawId }, { id }, { slug: rawId }, { slug: id }],
       },
       include: {
         articles: {
@@ -72,7 +73,8 @@ export async function GET(request: Request, { params }: RouteParams) {
 
 export async function PUT(request: Request, { params }: RouteParams) {
   try {
-    const { id } = await params;
+    const { id: rawId } = await params;
+    const id = decodeURIComponent(rawId);
     const body = await request.json();
     const {
       title,
@@ -91,7 +93,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
     const existing = await prisma.tutorialTopic.findFirst({
       where: {
-        OR: [{ id }, { slug: id }],
+        OR: [{ id: rawId }, { id }, { slug: rawId }, { slug: id }],
       },
       include: {
         articles: true,
@@ -226,10 +228,11 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
 export async function DELETE(request: Request, { params }: RouteParams) {
   try {
-    const { id } = await params;
+    const { id: rawId } = await params;
+    const id = decodeURIComponent(rawId);
     const existing = await prisma.tutorialTopic.findFirst({
       where: {
-        OR: [{ id }, { slug: id }],
+        OR: [{ id: rawId }, { id }, { slug: rawId }, { slug: id }],
       },
       include: {
         articles: {

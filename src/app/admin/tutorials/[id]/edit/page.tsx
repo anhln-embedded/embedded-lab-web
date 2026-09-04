@@ -365,6 +365,19 @@ export default function EditTutorialTopicPage({ params }: PageProps) {
               type="button"
               variant="outline"
               size="sm"
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="text-xs border-red-500/40 text-red-400 hover:bg-red-500/10 hover:border-red-500 flex items-center gap-1.5"
+              title="Xóa vĩnh viễn chuyên đề này và tất cả bài học bên trong"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-red-400" />
+              <span className="hidden sm:inline">{isDeleting ? "Đang xóa..." : "Xóa Chuyên Đề"}</span>
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
               onClick={() => setIsTopicSettingsOpen(true)}
               className="text-xs text-text-secondary hover:text-accent flex items-center gap-1.5"
             >

@@ -138,8 +138,25 @@ export default function AdminDashboardPage() {
     setRoadmapTracks(getAllRoadmapTracks());
   };
 
+  const handleTabChange = (tab: "overview" | "posts" | "courses" | "tutorials" | "roadmap") => {
+    setActiveTab(tab);
+    try {
+      const url = tab === "overview" ? "/admin" : `/admin?tab=${tab}`;
+      window.history.replaceState(null, "", url);
+    } catch {}
+  };
+
   useEffect(() => {
     setMounted(true);
+
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get("tab");
+      if (tab && ["overview", "posts", "courses", "tutorials", "roadmap"].includes(tab)) {
+        setActiveTab(tab as any);
+      }
+    } catch {}
+
     loadData();
 
     const handleUpdate = () => {
@@ -317,7 +334,7 @@ export default function AdminDashboardPage() {
       {/* Tabs Navigation */}
       <div className="flex flex-wrap gap-2 p-1.5 rounded-2xl bg-bg-panel border border-border mb-8 shadow-sm">
         <button
-          onClick={() => setActiveTab("overview")}
+          onClick={() => handleTabChange("overview")}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs md:text-sm font-semibold transition-all ${
             activeTab === "overview"
               ? "bg-bg-elevated text-accent shadow-sm border border-border"
@@ -329,7 +346,7 @@ export default function AdminDashboardPage() {
         </button>
 
         <button
-          onClick={() => setActiveTab("posts")}
+          onClick={() => handleTabChange("posts")}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs md:text-sm font-semibold transition-all ${
             activeTab === "posts"
               ? "bg-bg-elevated text-accent shadow-sm border border-border"
@@ -341,7 +358,7 @@ export default function AdminDashboardPage() {
         </button>
 
         <button
-          onClick={() => setActiveTab("courses")}
+          onClick={() => handleTabChange("courses")}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs md:text-sm font-semibold transition-all ${
             activeTab === "courses"
               ? "bg-bg-elevated text-accent shadow-sm border border-border"
@@ -353,10 +370,10 @@ export default function AdminDashboardPage() {
         </button>
 
         <button
-          onClick={() => setActiveTab("tutorials")}
+          onClick={() => handleTabChange("tutorials")}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs md:text-sm font-semibold transition-all ${
             activeTab === "tutorials"
-              ? "bg-bg-elevated text-accent shadow-sm border border-border"
+              ? "bg-bg-elevated text-amber-500 shadow-sm border border-amber-500/30"
               : "text-text-muted hover:text-text-primary"
           }`}
         >
@@ -365,10 +382,10 @@ export default function AdminDashboardPage() {
         </button>
 
         <button
-          onClick={() => setActiveTab("roadmap")}
+          onClick={() => handleTabChange("roadmap")}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs md:text-sm font-semibold transition-all ${
             activeTab === "roadmap"
-              ? "bg-bg-elevated text-accent shadow-sm border border-border"
+              ? "bg-bg-elevated text-emerald-400 shadow-sm border border-border"
               : "text-text-muted hover:text-text-primary"
           }`}
         >
@@ -381,48 +398,72 @@ export default function AdminDashboardPage() {
       {activeTab === "overview" && (
         <div className="space-y-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            <div className="p-5 rounded-2xl bg-bg-panel border border-border/80 shadow-sm">
+            <div
+              onClick={() => handleTabChange("posts")}
+              className="p-5 rounded-2xl bg-bg-panel border border-border/80 shadow-sm hover:border-accent/50 cursor-pointer transition-all group"
+            >
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold uppercase text-text-muted">Tổng bài viết</span>
+                <span className="text-xs font-semibold uppercase text-text-muted group-hover:text-accent transition-colors">Tổng bài viết</span>
                 <FileText className="w-4 h-4 text-accent" />
               </div>
               <div className="text-2xl font-bold text-text-primary">{posts.length}</div>
-              <Link href="/admin/posts/new" className="text-[11px] text-accent font-medium hover:underline mt-1 inline-block">
-                + Thêm bài viết mới
-              </Link>
+              <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-border/40 text-[11px]">
+                <span className="text-accent font-medium group-hover:underline">Quản lý &rarr;</span>
+                <Link href="/admin/posts/new" onClick={(e) => e.stopPropagation()} className="text-text-muted hover:text-accent">
+                  + Thêm mới
+                </Link>
+              </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-bg-panel border border-border/80 shadow-sm">
+            <div
+              onClick={() => handleTabChange("courses")}
+              className="p-5 rounded-2xl bg-bg-panel border border-border/80 shadow-sm hover:border-cyan-400/50 cursor-pointer transition-all group"
+            >
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold uppercase text-text-muted">Tổng khóa học</span>
+                <span className="text-xs font-semibold uppercase text-text-muted group-hover:text-cyan-400 transition-colors">Tổng khóa học</span>
                 <GraduationCap className="w-4 h-4 text-cyan-400" />
               </div>
               <div className="text-2xl font-bold text-text-primary">{courses.length}</div>
-              <Link href="/admin/courses/new" className="text-[11px] text-cyan-400 font-medium hover:underline mt-1 inline-block">
-                + Thêm khóa học mới
-              </Link>
+              <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-border/40 text-[11px]">
+                <span className="text-cyan-400 font-medium group-hover:underline">Quản lý &rarr;</span>
+                <Link href="/admin/courses/new" onClick={(e) => e.stopPropagation()} className="text-text-muted hover:text-cyan-400">
+                  + Thêm mới
+                </Link>
+              </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-bg-panel border border-border/80 shadow-sm">
+            <div
+              onClick={() => handleTabChange("tutorials")}
+              className="p-5 rounded-2xl bg-bg-panel border border-border/80 shadow-sm hover:border-amber-500/50 cursor-pointer transition-all group ring-1 ring-amber-500/10"
+            >
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold uppercase text-text-muted">Tổng chuyên đề</span>
+                <span className="text-xs font-semibold uppercase text-text-muted group-hover:text-amber-500 transition-colors">Tổng chuyên đề</span>
                 <Compass className="w-4 h-4 text-amber-500" />
               </div>
               <div className="text-2xl font-bold text-text-primary">{tutorials.length}</div>
-              <Link href="/admin/tutorials/new" className="text-[11px] text-amber-500 font-medium hover:underline mt-1 inline-block">
-                + Thêm chuyên đề mới
-              </Link>
+              <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-border/40 text-[11px]">
+                <span className="text-amber-500 font-medium group-hover:underline">Quản lý & Xóa &rarr;</span>
+                <Link href="/admin/tutorials/new" onClick={(e) => e.stopPropagation()} className="text-text-muted hover:text-amber-500">
+                  + Thêm mới
+                </Link>
+              </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-bg-panel border border-border/80 shadow-sm">
+            <div
+              onClick={() => handleTabChange("roadmap")}
+              className="p-5 rounded-2xl bg-bg-panel border border-border/80 shadow-sm hover:border-emerald-400/50 cursor-pointer transition-all group"
+            >
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold uppercase text-text-muted">Lộ trình học tập</span>
+                <span className="text-xs font-semibold uppercase text-text-muted group-hover:text-emerald-400 transition-colors">Lộ trình học tập</span>
                 <Sparkles className="w-4 h-4 text-emerald-400" />
               </div>
               <div className="text-2xl font-bold text-text-primary">{roadmapTracks.length}</div>
-              <Link href="/admin/roadmap" className="text-[11px] text-emerald-400 font-medium hover:underline mt-1 inline-block">
-                + Thêm lộ trình mới
-              </Link>
+              <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-border/40 text-[11px]">
+                <span className="text-emerald-400 font-medium group-hover:underline">Quản lý &rarr;</span>
+                <Link href="/admin/roadmap" onClick={(e) => e.stopPropagation()} className="text-text-muted hover:text-emerald-400">
+                  + Thêm mới
+                </Link>
+              </div>
             </div>
 
             <div className="p-5 rounded-2xl bg-bg-panel border border-border/80 shadow-sm">
@@ -444,24 +485,24 @@ export default function AdminDashboardPage() {
               <div>
                 <h3 className="font-bold text-text-primary mb-2 flex items-center gap-2 text-sm">
                   <FileText className="w-4 h-4 text-accent" />
-                  1. Quản lý Bài Viết (Blog)
+                  1. Quản lý Bài Viết ({posts.length})
                 </h3>
                 <p className="text-xs text-text-secondary leading-relaxed mb-4">
                   Soạn thảo bài viết kỹ thuật với trình biên soạn Markdown chuyên sâu, hỗ trợ chèn code C/C++, Python và xem trước Live Preview.
                 </p>
               </div>
-              <div className="flex items-center gap-2 pt-2">
-                <Button variant="primary" size="sm" asChild className="bg-accent hover:bg-accent-hover text-white flex-1 text-xs font-bold">
-                  <Link href="/admin/posts/new">Đăng bài viết mới</Link>
-                </Button>
+              <div className="flex flex-col gap-2 pt-2">
                 <Button
-                  variant="outline"
+                  variant="primary"
                   size="sm"
-                  onClick={() => setActiveTab("posts")}
-                  className="text-xs border-accent/40 text-accent hover:bg-accent/10 px-2.5 flex-shrink-0"
-                  title="Quản lý danh sách bài viết"
+                  onClick={() => handleTabChange("posts")}
+                  className="bg-accent hover:bg-accent-hover text-white text-xs font-bold w-full"
                 >
-                  <FolderKanban className="w-3.5 h-3.5" />
+                  <FileText className="w-3.5 h-3.5 mr-1.5" />
+                  Xem Danh Sách ({posts.length})
+                </Button>
+                <Button variant="outline" size="sm" asChild className="text-xs border-border hover:border-accent text-text-secondary w-full">
+                  <Link href="/admin/posts/new">+ Đăng bài viết mới</Link>
                 </Button>
               </div>
             </div>
@@ -471,60 +512,62 @@ export default function AdminDashboardPage() {
               <div>
                 <h3 className="font-bold text-text-primary mb-2 flex items-center gap-2 text-sm">
                   <GraduationCap className="w-4 h-4 text-cyan-400" />
-                  2. Quản lý Khóa Học
+                  2. Quản lý Khóa Học ({courses.length})
                 </h3>
                 <p className="text-xs text-text-secondary leading-relaxed mb-4">
                   Tạo khóa học theo từng học phần (Modules) và từng bài giảng (Lessons) có kèm video URL, tóm tắt lý thuyết và code snippet.
                 </p>
               </div>
-              <div className="flex items-center gap-2 pt-2">
-                <Button variant="primary" size="sm" asChild className="bg-cyan-600 hover:bg-cyan-700 text-white flex-1 text-xs font-bold">
-                  <Link href="/admin/courses/new">Tạo khóa học mới</Link>
-                </Button>
+              <div className="flex flex-col gap-2 pt-2">
                 <Button
-                  variant="outline"
+                  variant="primary"
                   size="sm"
-                  onClick={() => setActiveTab("courses")}
-                  className="text-xs border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10 px-2.5 flex-shrink-0"
-                  title="Quản lý danh sách khóa học"
+                  onClick={() => handleTabChange("courses")}
+                  className="bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-bold w-full"
                 >
-                  <FolderKanban className="w-3.5 h-3.5" />
+                  <GraduationCap className="w-3.5 h-3.5 mr-1.5" />
+                  Xem Danh Sách ({courses.length})
+                </Button>
+                <Button variant="outline" size="sm" asChild className="text-xs border-border hover:border-cyan-400 text-text-secondary w-full">
+                  <Link href="/admin/courses/new">+ Tạo khóa học mới</Link>
                 </Button>
               </div>
             </div>
 
             {/* 3. Quản lý Chuyên Đề */}
-            <div className="p-6 rounded-2xl bg-bg-panel border border-border shadow-md flex flex-col justify-between">
+            <div className="p-6 rounded-2xl bg-bg-panel border border-amber-500/30 shadow-md flex flex-col justify-between ring-1 ring-amber-500/10">
               <div>
                 <h3 className="font-bold text-text-primary mb-2 flex items-center gap-2 text-sm">
                   <Compass className="w-4 h-4 text-amber-500" />
-                  3. Quản lý Chuyên Đề
+                  3. Quản lý Chuyên Đề ({tutorials.length})
                 </h3>
                 <p className="text-xs text-text-secondary leading-relaxed mb-4">
-                  Xây dựng giáo trình chuyên sâu (C, Linux, RTOS, Automotive, MCU), nạp hàng loạt từ thư mục Markdown và quản lý nhóm lĩnh vực.
+                  Xây dựng giáo trình chuyên sâu (C, Linux, RTOS, Automotive, MCU), nạp hàng loạt từ thư mục Markdown và quản lý/xóa chuyên đề.
                 </p>
               </div>
-              <div className="flex items-center gap-2 pt-2">
-                <Button variant="primary" size="sm" asChild className="bg-amber-600 hover:bg-amber-700 text-white flex-1 text-xs font-bold">
-                  <Link href="/admin/tutorials/new">Tạo chuyên đề</Link>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setActiveTab("tutorials")}
-                  className="text-xs border-amber-500/40 text-amber-500 hover:bg-amber-500/10 px-2.5 flex-shrink-0"
-                  title="Quản lý danh sách chuyên đề"
-                >
-                  <FolderKanban className="w-3.5 h-3.5" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsCategoryModalOpen(true)}
-                  className="text-xs border-amber-500/40 text-amber-500 hover:bg-amber-500/10 px-2.5 flex-shrink-0"
-                  title="Quản lý nhóm danh mục"
-                >
-                  <Settings className="w-3.5 h-3.5" />
+              <div className="flex flex-col gap-2 pt-2">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => handleTabChange("tutorials")}
+                    className="bg-amber-600 hover:bg-amber-700 text-white flex-1 text-xs font-bold"
+                  >
+                    <Compass className="w-3.5 h-3.5 mr-1.5" />
+                    Quản Lý & Xóa ({tutorials.length})
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsCategoryModalOpen(true)}
+                    className="text-xs border-amber-500/40 text-amber-500 hover:bg-amber-500/10 px-2.5 flex-shrink-0"
+                    title="Quản lý nhóm danh mục"
+                  >
+                    <Settings className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+                <Button variant="outline" size="sm" asChild className="text-xs border-border hover:border-amber-500/50 text-text-secondary w-full">
+                  <Link href="/admin/tutorials/new">+ Tạo Chuyên Đề Mới</Link>
                 </Button>
               </div>
             </div>
@@ -596,68 +639,121 @@ export default function AdminDashboardPage() {
               </Button>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="border-b border-border text-xs uppercase text-text-muted font-semibold bg-bg-elevated/50">
-                  <tr>
-                    <th className="py-3 px-4">Tiêu đề bài viết</th>
-                    <th className="py-3 px-4">Chuyên mục / Tags</th>
-                    <th className="py-3 px-4">Tác giả</th>
-                    <th className="py-3 px-4">Ngày</th>
-                    <th className="py-3 px-4 text-right">Hành động</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/60">
-                  {posts.map((post) => (
-                    <tr key={post._id} className="hover:bg-bg-elevated/40 transition-colors">
-                      <td className="py-3.5 px-4 font-semibold text-text-primary">
-                        <Link href={`/blog/${post.slug}`} target="_blank" className="hover:text-accent">
-                          {post.title}
-                        </Link>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <div className="flex flex-wrap gap-1">
-                          {post.tags.map((t) => (
-                            <span key={t} className="px-2 py-0.5 rounded text-[10px] font-mono bg-bg-elevated border border-border">
-                              #{t}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-4 text-xs text-text-muted">{post.author}</td>
-                      <td className="py-3.5 px-4 text-xs text-text-muted">{post.date}</td>
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <Link
-                            href={`/admin/posts/${post.slug || post._id}/edit`}
-                            className="p-1.5 rounded-lg bg-bg-elevated border border-border text-text-muted hover:text-accent hover:border-accent transition-all flex items-center gap-1 text-xs px-2.5 font-medium"
-                            title="Chỉnh sửa bài viết với Google Docs Editor"
-                          >
-                            <Edit3 className="w-3.5 h-3.5" />
-                            <span>Sửa</span>
-                          </Link>
-                          <Link
-                            href={`/blog/${post.slug}`}
-                            target="_blank"
-                            className="p-1.5 rounded-lg bg-bg-elevated border border-border text-text-muted hover:text-text-primary"
-                            title="Xem trước trên website"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                          </Link>
-                          <button
-                            onClick={() => handleDeletePost(post._id, post.title)}
-                            className="p-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20"
-                            title="Xóa bài viết"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </td>
+            <>
+              {/* Mobile View: Cards */}
+              <div className="block md:hidden space-y-3">
+                {posts.map((post) => (
+                  <div key={post._id} className="p-4 rounded-2xl bg-bg-elevated/40 border border-border space-y-3 shadow-sm">
+                    <div>
+                      <Link href={`/blog/${post.slug}`} target="_blank" className="font-bold text-text-primary hover:text-accent text-sm block line-clamp-2">
+                        {post.title}
+                      </Link>
+                      <div className="flex flex-wrap items-center gap-1.5 mt-2 text-[11px] text-text-muted">
+                        <span>{post.author}</span>
+                        <span>•</span>
+                        <span>{post.date}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {post.tags.map((t) => (
+                          <span key={t} className="px-2 py-0.5 rounded text-[10px] font-mono bg-bg-panel border border-border">
+                            #{t}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border/60">
+                      <Link
+                        href={`/admin/posts/${post.slug || post._id}/edit`}
+                        className="py-2 px-3 rounded-xl bg-bg-panel border border-accent/30 text-accent hover:bg-accent/10 transition-all flex items-center justify-center gap-1 text-xs font-bold"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                        <span>Sửa</span>
+                      </Link>
+                      <Link
+                        href={`/blog/${post.slug}`}
+                        target="_blank"
+                        className="py-2 px-3 rounded-xl bg-bg-panel border border-border text-text-secondary hover:text-text-primary flex items-center justify-center gap-1 text-xs font-medium"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Xem</span>
+                      </Link>
+                      <button
+                        onClick={() => handleDeletePost(post._id, post.title)}
+                        className="py-2 px-3 rounded-xl bg-red-500/15 border border-red-500/30 text-red-400 hover:bg-red-500/25 flex items-center justify-center gap-1 text-xs font-bold"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Xóa</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop View: Table */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="border-b border-border text-xs uppercase text-text-muted font-semibold bg-bg-elevated/50">
+                    <tr>
+                      <th className="py-3 px-4">Tiêu đề bài viết</th>
+                      <th className="py-3 px-4">Chuyên mục / Tags</th>
+                      <th className="py-3 px-4">Tác giả</th>
+                      <th className="py-3 px-4">Ngày</th>
+                      <th className="py-3 px-4 text-right">Hành động</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-border/60">
+                    {posts.map((post) => (
+                      <tr key={post._id} className="hover:bg-bg-elevated/40 transition-colors">
+                        <td className="py-3.5 px-4 font-semibold text-text-primary">
+                          <Link href={`/blog/${post.slug}`} target="_blank" className="hover:text-accent">
+                            {post.title}
+                          </Link>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <div className="flex flex-wrap gap-1">
+                            {post.tags.map((t) => (
+                              <span key={t} className="px-2 py-0.5 rounded text-[10px] font-mono bg-bg-elevated border border-border">
+                                #{t}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-4 text-xs text-text-muted">{post.author}</td>
+                        <td className="py-3.5 px-4 text-xs text-text-muted">{post.date}</td>
+                        <td className="py-3.5 px-4 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <Link
+                              href={`/admin/posts/${post.slug || post._id}/edit`}
+                              className="p-1.5 rounded-lg bg-bg-elevated border border-border text-text-muted hover:text-accent hover:border-accent transition-all flex items-center gap-1 text-xs px-2.5 font-medium"
+                              title="Chỉnh sửa bài viết với Google Docs Editor"
+                            >
+                              <Edit3 className="w-3.5 h-3.5" />
+                              <span>Sửa</span>
+                            </Link>
+                            <Link
+                              href={`/blog/${post.slug}`}
+                              target="_blank"
+                              className="p-1.5 rounded-lg bg-bg-elevated border border-border text-text-muted hover:text-text-primary"
+                              title="Xem trước trên website"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                            </Link>
+                            <button
+                              onClick={() => handleDeletePost(post._id, post.title)}
+                              className="p-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20"
+                              title="Xóa bài viết"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       )}
@@ -813,84 +909,152 @@ export default function AdminDashboardPage() {
               </Button>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-border/80 text-[11px] font-bold text-text-muted uppercase tracking-wider bg-bg-elevated/40">
-                    <th className="py-3 px-4">Chuyên Đề</th>
-                    <th className="py-3 px-4">Nhóm / Lĩnh Vực</th>
-                    <th className="py-3 px-4">Trình Độ</th>
-                    <th className="py-3 px-4">Số Bài Viết</th>
-                    <th className="py-3 px-4 text-right">Thao Tác</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/60">
-                  {tutorials.map((topic) => (
-                    <tr key={topic.id || topic.slug} className="hover:bg-bg-elevated/30 transition-colors">
-                      <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl p-1.5 rounded-xl bg-bg-elevated border border-border">
-                            {topic.icon}
+            <>
+              {/* Mobile View: Cards */}
+              <div className="block md:hidden space-y-3">
+                {tutorials.map((topic) => (
+                  <div
+                    key={topic.id || topic.slug}
+                    className="p-4 rounded-2xl bg-bg-elevated/40 border border-border space-y-3 shadow-sm"
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl p-2 rounded-xl bg-bg-panel border border-border shrink-0">
+                        {topic.icon}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <Link
+                          href={`/tutorials/${topic.slug}`}
+                          target="_blank"
+                          className="font-bold text-text-primary hover:text-accent text-sm block truncate"
+                        >
+                          {topic.title}
+                        </Link>
+                        <span className="text-[11px] text-text-muted font-mono block truncate">
+                          /tutorials/{topic.slug}
+                        </span>
+                        <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30">
+                            {topic.categoryName}
                           </span>
-                          <div>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-bg-panel border border-border">
+                            {topic.level}
+                          </span>
+                          <span className="text-[10px] text-text-secondary font-semibold">
+                            {topic.posts?.length || topic.totalArticles || 0} bài
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border/60">
+                      <Link
+                        href={`/admin/tutorials/${topic.slug || topic.id}/edit`}
+                        className="py-2 px-3 rounded-xl bg-bg-panel border border-amber-500/30 text-amber-500 hover:bg-amber-500/10 transition-all flex items-center justify-center gap-1 text-xs font-bold"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                        <span>Sửa</span>
+                      </Link>
+                      <Link
+                        href={`/tutorials/${topic.slug}`}
+                        target="_blank"
+                        className="py-2 px-3 rounded-xl bg-bg-panel border border-border text-text-secondary hover:text-text-primary flex items-center justify-center gap-1 text-xs font-medium"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Xem</span>
+                      </Link>
+                      <button
+                        onClick={() => handleDeleteTutorial(topic.id || topic.slug, topic.title)}
+                        className="py-2 px-3 rounded-xl bg-red-500/15 border border-red-500/30 text-red-400 hover:bg-red-500/25 flex items-center justify-center gap-1 text-xs font-bold"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Xóa</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop View: Table */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-border/80 text-[11px] font-bold text-text-muted uppercase tracking-wider bg-bg-elevated/40">
+                      <th className="py-3 px-4">Chuyên Đề</th>
+                      <th className="py-3 px-4">Nhóm / Lĩnh Vực</th>
+                      <th className="py-3 px-4">Trình Độ</th>
+                      <th className="py-3 px-4">Số Bài Viết</th>
+                      <th className="py-3 px-4 text-right">Thao Tác</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/60">
+                    {tutorials.map((topic) => (
+                      <tr key={topic.id || topic.slug} className="hover:bg-bg-elevated/30 transition-colors">
+                        <td className="py-3.5 px-4">
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl p-1.5 rounded-xl bg-bg-elevated border border-border">
+                              {topic.icon}
+                            </span>
+                            <div>
+                              <Link
+                                href={`/tutorials/${topic.slug}`}
+                                target="_blank"
+                                className="font-bold text-text-primary hover:text-accent transition-colors text-sm line-clamp-1"
+                              >
+                                {topic.title}
+                              </Link>
+                              <span className="text-[11px] text-text-muted font-mono">
+                                /tutorials/{topic.slug}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30">
+                            {topic.categoryName}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-bg-elevated border border-border">
+                            {topic.level}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 text-xs font-semibold text-text-secondary">
+                          {topic.posts?.length || topic.totalArticles || 0} bài viết
+                        </td>
+                        <td className="py-3.5 px-4 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <Link
+                              href={`/admin/tutorials/${topic.slug || topic.id}/edit`}
+                              className="p-1.5 rounded-lg bg-bg-elevated border border-border text-text-muted hover:text-amber-500 hover:border-amber-500 transition-all flex items-center gap-1 text-xs px-2.5 font-medium"
+                              title="Chỉnh sửa chuyên đề & bài viết"
+                            >
+                              <Edit3 className="w-3.5 h-3.5" />
+                              <span>Sửa</span>
+                            </Link>
                             <Link
                               href={`/tutorials/${topic.slug}`}
                               target="_blank"
-                              className="font-bold text-text-primary hover:text-accent transition-colors text-sm line-clamp-1"
+                              className="p-1.5 rounded-lg bg-bg-elevated border border-border text-text-muted hover:text-accent"
+                              title="Xem trang chuyên đề"
                             >
-                              {topic.title}
+                              <Eye className="w-3.5 h-3.5" />
                             </Link>
-                            <span className="text-[11px] text-text-muted font-mono">
-                              /tutorials/{topic.slug}
-                            </span>
+                            <button
+                              onClick={() => handleDeleteTutorial(topic.id || topic.slug, topic.title)}
+                              className="p-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 flex items-center gap-1 text-xs px-2 font-medium"
+                              title="Xóa chuyên đề"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Xóa</span>
+                            </button>
                           </div>
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30">
-                          {topic.categoryName}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-bg-elevated border border-border">
-                          {topic.level}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4 text-xs font-semibold text-text-secondary">
-                        {topic.posts?.length || topic.totalArticles || 0} bài viết
-                      </td>
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <Link
-                            href={`/admin/tutorials/${topic.slug || topic.id}/edit`}
-                            className="p-1.5 rounded-lg bg-bg-elevated border border-border text-text-muted hover:text-amber-500 hover:border-amber-500 transition-all flex items-center gap-1 text-xs px-2.5 font-medium"
-                            title="Chỉnh sửa chuyên đề & bài viết"
-                          >
-                            <Edit3 className="w-3.5 h-3.5" />
-                            <span>Sửa</span>
-                          </Link>
-                          <Link
-                            href={`/tutorials/${topic.slug}`}
-                            target="_blank"
-                            className="p-1.5 rounded-lg bg-bg-elevated border border-border text-text-muted hover:text-accent"
-                            title="Xem trang chuyên đề"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                          </Link>
-                          <button
-                            onClick={() => handleDeleteTutorial(topic.id || topic.slug, topic.title)}
-                            className="p-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20"
-                            title="Xóa chuyên đề"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       )}
