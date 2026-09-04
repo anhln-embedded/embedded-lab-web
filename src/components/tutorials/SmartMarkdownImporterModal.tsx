@@ -16,7 +16,10 @@ import {
   FolderOpen,
   Upload,
   Layers,
-  Trash2
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { parseMultiMarkdownArticles, parseSingleMarkdownArticle, ParsedPost } from "@/lib/markdown-importer";
@@ -86,17 +89,20 @@ export function SmartMarkdownImporterModal({
   const [parsedPosts, setParsedPosts] = useState<ParsedPost[]>([]);
   const [loadedFiles, setLoadedFiles] = useState<LoadedFileItem[]>([]);
   const [isProcessingFiles, setIsProcessingFiles] = useState(false);
+  const [progressText, setProgressText] = useState("");
+  const [selectedPreviewIdx, setSelectedPreviewIdx] = useState(0);
 
   const folderInputRef = useRef<HTMLInputElement | null>(null);
   const multipleFilesInputRef = useRef<HTMLInputElement | null>(null);
 
   if (!isOpen) return null;
 
-  // Xử lý nạp các file Markdown được chọn
+  // Xử lý nạp các file Markdown được chọn không chặn main thread
   const handleFilesSelected = async (fileList: FileList | null) => {
     if (!fileList || fileList.length === 0) return;
 
     setIsProcessingFiles(true);
+    setProgressText("Đang quét danh sách file...");
     const filesArray = Array.from(fileList);
 
     // Lọc chỉ nhận các file Markdown (.md, .markdown, .txt)
@@ -108,38 +114,46 @@ export function SmartMarkdownImporterModal({
     if (mdFiles.length === 0) {
       alert("Không tìm thấy file .md nào trong thư mục được chọn.");
       setIsProcessingFiles(false);
+      setProgressText("");
       return;
     }
 
     // Sắp xếp các file theo tên (hỗ trợ số thứ tự 01-, 02-, bai-1, bai-2...)
     mdFiles.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" }));
 
-    const readPromises = mdFiles.map((file, idx) => {
-      return new Promise<LoadedFileItem>((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const content = (e.target?.result as string) || "";
-          const post = parseSingleMarkdownArticle(content, idx + 1, file.name);
-          resolve({
-            filename: file.name,
-            post,
-          });
-        };
-        reader.readAsText(file, "UTF-8");
-      });
-    });
-
     try {
-      const results = await Promise.all(readPromises);
+      const results: LoadedFileItem[] = [];
+
+      for (let idx = 0; idx < mdFiles.length; idx++) {
+        const file = mdFiles[idx];
+        setProgressText(`Đang xử lý bài ${idx + 1}/${mdFiles.length}: ${file.name}...`);
+
+        // Tạm nghỉ 4ms để trình duyệt cập nhật UI mượt mà, không bị khóa luồng
+        await new Promise((resolve) => setTimeout(resolve, 4));
+
+        const content = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve((e.target?.result as string) || "");
+          reader.readAsText(file, "UTF-8");
+        });
+
+        const post = parseSingleMarkdownArticle(content, idx + 1, file.name);
+        results.push({
+          filename: file.name,
+          post,
+        });
+      }
+
       setLoadedFiles(results);
-      const posts = results.map((r) => r.post);
-      setParsedPosts(posts);
+      setParsedPosts(results.map((r) => r.post));
+      setSelectedPreviewIdx(0);
       setActiveTab("preview");
     } catch (err) {
       console.error(err);
       alert("Đã xảy ra lỗi khi đọc các file Markdown.");
     } finally {
       setIsProcessingFiles(false);
+      setProgressText("");
     }
   };
 
@@ -150,6 +164,7 @@ export function SmartMarkdownImporterModal({
     }
     const results = parseMultiMarkdownArticles(inputText);
     setParsedPosts(results);
+    setSelectedPreviewIdx(0);
     setActiveTab("preview");
   };
 
@@ -158,6 +173,7 @@ export function SmartMarkdownImporterModal({
     setInputText(SAMPLE_EMBEDDED_C_MARKDOWN);
     const results = parseMultiMarkdownArticles(SAMPLE_EMBEDDED_C_MARKDOWN);
     setParsedPosts(results);
+    setSelectedPreviewIdx(0);
     setActiveTab("preview");
   };
 
@@ -181,12 +197,16 @@ export function SmartMarkdownImporterModal({
   const handleRemoveLoadedFile = (index: number) => {
     const nextLoaded = loadedFiles.filter((_, i) => i !== index);
     setLoadedFiles(nextLoaded);
-    setParsedPosts(nextLoaded.map((item) => item.post));
+    const nextPosts = nextLoaded.map((item) => item.post);
+    setParsedPosts(nextPosts);
+    if (selectedPreviewIdx >= nextPosts.length) {
+      setSelectedPreviewIdx(Math.max(0, nextPosts.length - 1));
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-4xl bg-bg-panel border border-border/80 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-5xl bg-bg-panel border border-border/80 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Hidden File Inputs */}
         <input
           type="file"
@@ -394,13 +414,13 @@ export function SmartMarkdownImporterModal({
               />
             </div>
           ) : (
-            /* --- PREVIEW VIEW --- */
+            /* --- MASTER-DETAIL HIGH-PERFORMANCE PREVIEW VIEW --- */
             <div className="space-y-4">
-              <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-400 flex items-center justify-between">
+              <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-400 flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
                   <span>
-                    Đã chuyển đổi thành công <strong>{parsedPosts.length} bài học</strong> sẵn sàng nạp vào Form:
+                    Đã chuyển đổi thành công <strong>{parsedPosts.length} bài học</strong>. Chọn bài bên trái để xem chi tiết:
                   </span>
                 </div>
 
@@ -417,84 +437,168 @@ export function SmartMarkdownImporterModal({
                 )}
               </div>
 
-              <div className="space-y-6">
-                {parsedPosts.map((post, idx) => {
-                  const sourceFileName = loadedFiles[idx]?.filename;
+              {parsedPosts.length > 0 && (
+                <div className="flex flex-col md:flex-row gap-4 min-h-[420px] max-h-[62vh]">
+                  {/* Cột Trái: Danh Sách 23 Bài Học Thu Gọn */}
+                  <div className="w-full md:w-80 flex-shrink-0 border border-border/80 rounded-2xl bg-bg-elevated/30 p-2 space-y-1.5 overflow-y-auto max-h-[220px] md:max-h-[60vh]">
+                    <div className="px-2 py-1 text-[11px] font-bold text-text-muted flex items-center justify-between border-b border-border/60 mb-1">
+                      <span>DANH SÁCH BÀI ({parsedPosts.length})</span>
+                      <span className="text-[10px]">Click để xem</span>
+                    </div>
 
-                  return (
-                    <div
-                      key={idx}
-                      className="p-5 rounded-3xl bg-bg-elevated/40 border border-border/80 space-y-4 shadow-sm relative group"
-                    >
-                      <div className="flex items-center justify-between pb-2 border-b border-border">
-                        <div className="flex items-center gap-2.5">
-                          <span className="w-7 h-7 rounded-xl bg-accent text-white font-mono font-bold text-xs flex items-center justify-center shadow-md">
-                            {idx + 1}
-                          </span>
-                          <div>
-                            <h4 className="text-sm font-bold text-text-primary">
-                              {post.title}
-                            </h4>
-                            {sourceFileName && (
-                              <span className="text-[10px] text-text-muted font-mono block">
-                                Nguồn file: {sourceFileName}
-                              </span>
-                            )}
+                    {parsedPosts.map((post, idx) => {
+                      const isSelected = idx === selectedPreviewIdx;
+                      const sourceFileName = loadedFiles[idx]?.filename;
+
+                      return (
+                        <div
+                          key={idx}
+                          onClick={() => setSelectedPreviewIdx(idx)}
+                          className={`p-2.5 rounded-xl border transition-all cursor-pointer flex items-start justify-between gap-2 group ${
+                            isSelected
+                              ? "bg-accent/15 border-accent text-accent shadow-sm"
+                              : "bg-bg-panel/70 border-border/60 hover:bg-bg-elevated text-text-primary"
+                          }`}
+                        >
+                          <div className="flex items-start gap-2.5 min-w-0">
+                            <span
+                              className={`w-6 h-6 rounded-lg font-mono text-xs font-bold flex items-center justify-center flex-shrink-0 ${
+                                isSelected
+                                  ? "bg-accent text-white"
+                                  : "bg-bg-elevated text-text-muted border border-border"
+                              }`}
+                            >
+                              {idx + 1}
+                            </span>
+                            <div className="min-w-0">
+                              <p className="text-xs font-bold truncate leading-tight">
+                                {post.title}
+                              </p>
+                              <p className="text-[10px] text-text-muted font-mono truncate mt-0.5">
+                                {post.readTime} {sourceFileName ? `• ${sourceFileName}` : ""}
+                              </p>
+                            </div>
                           </div>
-                        </div>
 
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-text-muted font-mono">{post.readTime}</span>
                           {loadedFiles.length > 0 && (
                             <button
                               type="button"
-                              onClick={() => handleRemoveLoadedFile(idx)}
-                              className="p-1 rounded-lg text-text-muted hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRemoveLoadedFile(idx);
+                              }}
+                              className="p-1 rounded-md text-text-muted hover:text-rose-400 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0"
                               title="Bỏ bài này"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           )}
                         </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Cột Phải: Xem Chi Tiết Duy Nhất 1 Bài Đang Chọn */}
+                  {(() => {
+                    const currentPost = parsedPosts[selectedPreviewIdx] || parsedPosts[0];
+                    const currentSource = loadedFiles[selectedPreviewIdx]?.filename;
+
+                    if (!currentPost) return null;
+
+                    return (
+                      <div className="flex-1 min-w-0 border border-border/80 rounded-2xl bg-bg-elevated/20 p-4 space-y-4 overflow-y-auto max-h-[60vh]">
+                        {/* Header Chi Tiết Bài & Nút Chuyển Bài */}
+                        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <span className="w-8 h-8 rounded-xl bg-accent text-white font-mono font-bold text-sm flex items-center justify-center shadow-md flex-shrink-0">
+                              {selectedPreviewIdx + 1}
+                            </span>
+                            <div className="min-w-0">
+                              <h4 className="text-sm font-bold text-text-primary truncate">
+                                {currentPost.title}
+                              </h4>
+                              {currentSource && (
+                                <span className="text-[11px] text-text-muted font-mono block">
+                                  File nguồn: {currentSource} • {currentPost.readTime}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              disabled={selectedPreviewIdx === 0}
+                              onClick={() => setSelectedPreviewIdx((p) => Math.max(0, p - 1))}
+                              className="p-1.5 rounded-lg border border-border text-text-muted hover:text-text-primary disabled:opacity-30 disabled:cursor-not-allowed hover:bg-bg-elevated transition-colors cursor-pointer"
+                              title="Bài trước"
+                            >
+                              <ChevronLeft className="w-4 h-4" />
+                            </button>
+                            <span className="text-xs font-mono text-text-muted px-1.5">
+                              {selectedPreviewIdx + 1} / {parsedPosts.length}
+                            </span>
+                            <button
+                              type="button"
+                              disabled={selectedPreviewIdx >= parsedPosts.length - 1}
+                              onClick={() =>
+                                setSelectedPreviewIdx((p) => Math.min(parsedPosts.length - 1, p + 1))
+                              }
+                              className="p-1.5 rounded-lg border border-border text-text-muted hover:text-text-primary disabled:opacity-30 disabled:cursor-not-allowed hover:bg-bg-elevated transition-colors cursor-pointer"
+                              title="Bài tiếp theo"
+                            >
+                              <ChevronRight className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {currentPost.summary && (
+                          <div className="p-3 rounded-xl bg-bg-panel text-xs text-text-secondary border-l-4 border-accent shadow-sm">
+                            <strong>Tóm tắt:</strong> {currentPost.summary}
+                          </div>
+                        )}
+
+                        {currentPost.codeSnippet && (
+                          <div className="space-y-1.5">
+                            <span className="text-[10px] font-bold text-accent uppercase tracking-wider block">
+                              Mã nguồn tiêu biểu ({currentPost.codeLang || "c"} - {currentPost.codeFilename || "main.c"}):
+                            </span>
+                            <CodeSnippetView
+                              code={currentPost.codeSnippet}
+                              language={currentPost.codeLang}
+                              filename={currentPost.codeFilename}
+                            />
+                          </div>
+                        )}
+
+                        {currentPost.contentHtml && (
+                          <div className="space-y-1.5">
+                            <span className="text-[10px] font-bold text-accent uppercase tracking-wider block">
+                              Lý thuyết bài giảng:
+                            </span>
+                            <div
+                              className="p-4 rounded-2xl bg-bg-panel border border-border prose prose-slate dark:prose-invert max-w-none text-xs text-text-primary max-h-72 overflow-y-auto leading-relaxed shadow-inner"
+                              dangerouslySetInnerHTML={{ __html: currentPost.contentHtml }}
+                            />
+                          </div>
+                        )}
                       </div>
-
-                      {post.summary && (
-                        <div className="p-3 rounded-xl bg-bg-panel text-xs text-text-secondary border-l-4 border-accent">
-                          <strong>Tóm tắt:</strong> {post.summary}
-                        </div>
-                      )}
-
-                      {post.codeSnippet && (
-                        <div className="space-y-1">
-                          <span className="text-[10px] font-bold text-accent uppercase tracking-wider block">
-                            Mã nguồn ({post.codeLang || "c"} - {post.codeFilename || "main.c"}):
-                          </span>
-                          <CodeSnippetView
-                            code={post.codeSnippet}
-                            language={post.codeLang}
-                            filename={post.codeFilename}
-                          />
-                        </div>
-                      )}
-
-                      {post.contentHtml && (
-                        <div className="space-y-1">
-                          <span className="text-[10px] font-bold text-accent uppercase tracking-wider block">
-                            Lý thuyết hiển thị:
-                          </span>
-                          <div
-                            className="p-4 rounded-2xl bg-bg-panel border border-border prose prose-slate dark:prose-invert max-w-none text-xs text-text-primary max-h-60 overflow-y-auto"
-                            dangerouslySetInnerHTML={{ __html: post.contentHtml }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })()}
+                </div>
+              )}
             </div>
           )}
         </div>
+
+        {/* Loading Overlay khi đang xử lý các file Markdown */}
+        {isProcessingFiles && (
+          <div className="absolute inset-0 z-30 bg-bg-panel/85 backdrop-blur-sm flex flex-col items-center justify-center gap-3 animate-in fade-in">
+            <Loader2 className="w-8 h-8 text-accent animate-spin" />
+            <p className="text-xs sm:text-sm font-bold text-text-primary">{progressText || "Đang xử lý tài liệu..."}</p>
+            <p className="text-[11px] text-text-muted">Đang phân tích cấu trúc, highlight code và tạo preview...</p>
+          </div>
+        )}
 
         {/* Modal Footer */}
         <div className="p-4 border-t border-border bg-bg-elevated/40 flex items-center justify-between">
