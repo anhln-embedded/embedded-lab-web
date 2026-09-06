@@ -75,6 +75,39 @@ export default function TutorialPostDetailPage({ params }: PageProps) {
   const [liveChangeNote, setLiveChangeNote] = useState("");
   const [liveToast, setLiveToast] = useState<string | null>(null);
 
+  const [completedPosts, setCompletedPosts] = useState<Set<string>>(new Set());
+
+  // Đọc và lưu trạng thái bài học đã hoàn thành từ safeStorage
+  useEffect(() => {
+    if (!topic) return;
+    try {
+      const saved = safeStorage.getItem(`tutorial_progress_${topic.slug}`);
+      if (saved) {
+        setCompletedPosts(new Set(JSON.parse(saved)));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, [topic?.slug]);
+
+  const toggleCompletePost = (postSlug: string) => {
+    if (!topic) return;
+    setCompletedPosts((prev) => {
+      const next = new Set(prev);
+      if (next.has(postSlug)) {
+        next.delete(postSlug);
+      } else {
+        next.add(postSlug);
+      }
+      try {
+        safeStorage.setItem(`tutorial_progress_${topic.slug}`, JSON.stringify(Array.from(next)));
+      } catch (e) {
+        console.error(e);
+      }
+      return next;
+    });
+  };
+
   // Theo dõi tiến độ cuộn trang (Top Reading Progress Bar)
   useEffect(() => {
     const handleScroll = () => {
@@ -289,25 +322,25 @@ export default function TutorialPostDetailPage({ params }: PageProps) {
 
   return (
     <div className="relative min-h-screen w-full max-w-full">
-      {/* --- TOP READING PROGRESS BAR --- */}
+      {/* --- TOP READING PROGRESS BAR (1 Single Accent Color) --- */}
       <div className="fixed top-0 left-0 w-full h-1 bg-transparent z-50 pointer-events-none">
         <div
-          className="h-full bg-gradient-to-r from-accent via-emerald-400 to-accent transition-all duration-150 shadow-sm"
+          className="h-full bg-accent transition-all duration-150 shadow-sm"
           style={{ width: `${scrollProgress}%` }}
         />
       </div>
 
-      {/* Floating Buttons when Sidebars are collapsed on Desktop */}
+      {/* Floating Buttons when Sidebars are collapsed on Desktop (LearningVN Style) */}
       <div className="hidden lg:block">
         {!showLeftSidebar && (
           <button
             type="button"
             onClick={toggleLeftSidebar}
-            className="fixed left-4 top-28 z-40 p-2.5 rounded-2xl bg-bg-panel/90 hover:bg-bg-panel border border-border shadow-xl hover:border-accent text-text-muted hover:text-accent backdrop-blur-md transition-all duration-200 hover:scale-105 cursor-pointer group flex items-center gap-2"
+            className="fixed left-5 bottom-8 z-40 px-3.5 py-2.5 rounded-2xl bg-accent hover:bg-accent-hover text-white shadow-2xl shadow-accent/40 transition-all duration-200 hover:scale-105 cursor-pointer flex items-center gap-2 text-xs font-bold animate-pulse hover:animate-none"
             title="Mở lại danh mục bài học (Sidebar Trái)"
           >
-            <PanelLeft className="w-4 h-4 text-accent" />
-            <span className="text-xs font-bold hidden group-hover:inline-block pr-1">Hiện giáo trình</span>
+            <PanelLeft className="w-4 h-4 text-white" />
+            <span>Hiện giáo trình ({completedPosts.size}/{topic.posts.length})</span>
           </button>
         )}
 
@@ -422,6 +455,7 @@ export default function TutorialPostDetailPage({ params }: PageProps) {
             <TutorialSidebar
               topic={topic}
               currentPostSlug={currentPost.slug}
+              completedPosts={completedPosts}
               onCollapse={toggleLeftSidebar}
             />
           )}
@@ -637,56 +671,115 @@ export default function TutorialPostDetailPage({ params }: PageProps) {
               </article>
             )}
 
-            {/* Navigation: Prev / Next Post */}
-            <div className="pt-10 border-t border-border/80 grid grid-cols-1 sm:grid-cols-2 gap-5 select-none">
-              {prevPost ? (
-                <Button
-                  asChild
-                  variant="outline"
-                  className="w-full h-auto p-5 rounded-2xl border-border/80 hover:border-accent flex items-start gap-4 text-left transition-all group shadow-sm"
-                >
-                  <Link href={`/tutorials/${topic.slug}/${prevPost.slug}`}>
-                    <ChevronLeft className="w-6 h-6 text-accent flex-shrink-0 mt-0.5 group-hover:-translate-x-1 transition-transform" />
-                    <div className="min-w-0 flex-1">
-                      <span className="text-[11px] font-bold text-text-muted uppercase tracking-wider block mb-1">
-                        ← Bài trước đó
-                      </span>
-                      <span className="text-sm font-bold text-text-primary group-hover:text-accent line-clamp-2">
-                        {prevPost.title}
-                      </span>
+            {/* LearningVN Style Bottom Action & Completion Bar - 1 Consistent Brand Color */}
+            <div className="pt-8 border-t border-border/80 space-y-4 select-none">
+              {/* Mark as Completed Toggle Card */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-bg-panel border border-border/80 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+                <div className="flex items-center gap-3 text-center sm:text-left">
+                  <span
+                    className={`w-9 h-9 rounded-2xl flex items-center justify-center text-sm font-bold transition-all shadow-sm ${
+                      completedPosts.has(currentPost.slug)
+                        ? "bg-accent text-white"
+                        : "bg-bg-elevated text-text-muted border border-border"
+                    }`}
+                  >
+                    {completedPosts.has(currentPost.slug) ? "✓" : "●"}
+                  </span>
+                  <div>
+                    <div className="text-sm font-extrabold text-text-primary">
+                      {completedPosts.has(currentPost.slug)
+                        ? "Bạn đã hoàn thành bài học này!"
+                        : "Đọc xong bài học này?"}
                     </div>
-                  </Link>
-                </Button>
-              ) : (
-                <div className="hidden sm:block" />
-              )}
+                    <p className="text-xs text-text-muted">
+                      {completedPosts.has(currentPost.slug)
+                        ? "Bài viết đã được ghi nhận vào tiến độ của bạn. Nhấn lại nếu muốn hủy đánh dấu."
+                        : "Đánh dấu hoàn thành để ghi nhận tiến độ và mở khóa bài tiếp theo."}
+                    </p>
+                  </div>
+                </div>
 
-              {nextPost && (
-                <Button
-                  asChild
-                  variant="primary"
-                  className="w-full h-auto p-5 rounded-2xl bg-accent hover:bg-accent-hover text-white flex items-start justify-between gap-4 text-right shadow-2xl group"
+                <button
+                  type="button"
+                  onClick={() => toggleCompletePost(currentPost.slug)}
+                  className={`px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shadow-md ${
+                    completedPosts.has(currentPost.slug)
+                      ? "bg-accent/15 text-accent border border-accent/40 hover:bg-accent/25"
+                      : "bg-accent hover:bg-accent-hover text-white shadow-accent/25 hover:scale-102"
+                  }`}
                 >
-                  <Link href={`/tutorials/${topic.slug}/${nextPost.slug}`}>
-                    <div className="min-w-0 flex-1 text-left sm:text-right">
-                      <span className="text-[11px] font-bold text-white/80 uppercase tracking-wider block mb-1">
-                        Bài tiếp theo →
-                      </span>
-                      <span className="text-sm font-bold text-white line-clamp-2">
-                        {nextPost.title}
-                      </span>
-                    </div>
-                    <ChevronRight className="w-6 h-6 text-white flex-shrink-0 mt-0.5 group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                </Button>
-              )}
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>
+                    {completedPosts.has(currentPost.slug)
+                      ? "✓ Đã hoàn thành bài học"
+                      : "Đánh dấu hoàn thành"}
+                  </span>
+                </button>
+              </div>
+
+              {/* Navigation: Prev / Next Post */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {prevPost ? (
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="w-full h-auto p-4 rounded-2xl border-border/80 hover:border-accent flex items-center gap-3 text-left transition-all group shadow-sm bg-bg-panel hover:bg-bg-elevated"
+                  >
+                    <Link href={`/tutorials/${topic.slug}/${prevPost.slug}`}>
+                      <ChevronLeft className="w-5 h-5 text-accent flex-shrink-0 group-hover:-translate-x-1 transition-transform" />
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block">
+                          ← Bài trước đó
+                        </span>
+                        <span className="text-xs sm:text-sm font-bold text-text-primary group-hover:text-accent line-clamp-1">
+                          {prevPost.title}
+                        </span>
+                      </div>
+                    </Link>
+                  </Button>
+                ) : (
+                  <div className="hidden sm:block" />
+                )}
+
+                {nextPost ? (
+                  <Button
+                    asChild
+                    variant="primary"
+                    className="w-full h-auto p-4 rounded-2xl bg-accent hover:bg-accent-hover text-white flex items-center justify-between gap-3 text-right shadow-xl group"
+                  >
+                    <Link href={`/tutorials/${topic.slug}/${nextPost.slug}`}>
+                      <div className="min-w-0 flex-1 text-left sm:text-right">
+                        <span className="text-[10px] font-bold text-white/80 uppercase tracking-wider block">
+                          Bài tiếp theo →
+                        </span>
+                        <span className="text-xs sm:text-sm font-bold text-white line-clamp-1">
+                          {nextPost.title}
+                        </span>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-white flex-shrink-0 group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button
+                    asChild
+                    variant="primary"
+                    className="w-full h-auto p-4 rounded-2xl bg-accent hover:bg-accent-hover text-white flex items-center justify-center gap-2 shadow-xl"
+                  >
+                    <Link href={`/tutorials/${topic.slug}`}>
+                      <CheckCircle2 className="w-5 h-5" />
+                      <span className="text-xs sm:text-sm font-bold">Hoàn tất chuyên đề! Xem tổng quan</span>
+                    </Link>
+                  </Button>
+                )}
+              </div>
             </div>
           </main>
 
           {/* 3. RIGHT SIDEBAR: TABLE OF CONTENTS (ON THIS PAGE) */}
-          {showRightSidebar && headings.length > 0 && (
+          {showRightSidebar && (
             <TutorialTableOfContents
               headings={headings}
+              isCompleted={completedPosts.has(currentPost.slug)}
               onCollapse={toggleRightSidebar}
             />
           )}
