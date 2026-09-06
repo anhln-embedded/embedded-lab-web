@@ -51,6 +51,9 @@ export async function GET(request: Request, { params }: RouteParams) {
         updatedAt: a.updatedAt.toISOString().split("T")[0],
         summary: a.summary || "",
         contentHtml: a.contentHtml || "",
+        authorName: a.authorName || topic.author || "Kỹ sư Lab PTIT",
+        authorTitle: a.authorTitle || topic.authorTitle || "Mentor Lab Embedded-AIoT",
+        authorAvatar: a.authorAvatar || topic.coverImage || "/images/logo.png",
         codeSnippet: a.codeSnippet
           ? {
               code: a.codeSnippet,

@@ -13,6 +13,9 @@ export interface TutorialPost {
   summary: string;
   contentHtml: string;
   draft?: boolean;
+  authorName?: string;
+  authorTitle?: string;
+  authorAvatar?: string;
   codeSnippet?: {
     code: string;
     language: string;

@@ -128,13 +128,32 @@ model TutorialArticle {
   codeFilename  String?              @default("main.c")
   order         Int                  @default(0)
   draft         Boolean              @default(false)
+  authorName    String?              @default("Embedded-AIoT Lab PTIT")
+  authorTitle   String?              @default("Kỹ sư Nghiên cứu Embedded")
+  authorAvatar  String?              @default("/images/logo.png")
   topicId       String
   topic         TutorialTopic        @relation(fields: [topicId], references: [id], onDelete: Cascade)
   editHistories ArticleEditHistory[]
+  comments      TutorialComment[]
   createdAt     DateTime             @default(now())
   updatedAt     DateTime             @updatedAt
 
   @@unique([topicId, slug])
+}
+
+model TutorialComment {
+  id         String          @id @default(cuid())
+  articleId  String
+  article    TutorialArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  userId     String?
+  userName   String
+  userAvatar String?         @default("/images/logo.png")
+  userRole   String?         @default("user")
+  userEmail  String?
+  content    String
+  createdAt  DateTime        @default(now())
+
+  @@index([articleId])
 }
 
 model ArticleEditHistory {
