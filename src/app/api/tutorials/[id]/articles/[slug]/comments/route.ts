@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { ensureTutorialSchema } from "@/lib/db-sync";
 
 interface RouteParams {
   params: Promise<{ id: string; slug: string }>;
@@ -8,6 +9,7 @@ interface RouteParams {
 // 1. GET: Lấy danh sách bình luận của bài viết
 export async function GET(request: Request, { params }: RouteParams) {
   try {
+    await ensureTutorialSchema();
     const { id: topicIdOrSlug, slug: articleSlug } = await params;
 
     const topic = await prisma.tutorialTopic.findFirst({
@@ -58,6 +60,7 @@ export async function GET(request: Request, { params }: RouteParams) {
 // 2. POST: Thêm bình luận mới (yêu cầu đăng nhập)
 export async function POST(request: Request, { params }: RouteParams) {
   try {
+    await ensureTutorialSchema();
     const { id: topicIdOrSlug, slug: articleSlug } = await params;
     const body = await request.json();
     const { content, user } = body;

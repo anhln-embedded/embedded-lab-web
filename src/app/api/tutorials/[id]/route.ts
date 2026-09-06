@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { ensureTutorialSchema } from "@/lib/db-sync";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -93,6 +94,8 @@ export async function PUT(request: Request, { params }: RouteParams) {
       coverImage,
       posts = [],
     } = body;
+
+    await ensureTutorialSchema();
 
     const existing = await prisma.tutorialTopic.findFirst({
       where: {

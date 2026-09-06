@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { TUTORIAL_TOPICS } from "@/lib/tutorials-data";
+import { ensureTutorialSchema } from "@/lib/db-sync";
 
 export async function GET() {
   try {
@@ -113,6 +114,9 @@ export async function POST(request: Request) {
       };
     });
 
+    // Đảm bảo database đã có đầy đủ các cột và bảng mới nhất (kể cả trên server production)
+    await ensureTutorialSchema();
+
     let created;
     try {
       created = await prisma.tutorialTopic.create({
@@ -137,9 +141,11 @@ export async function POST(request: Request) {
         },
       });
     } catch (createErr: any) {
-      if (createErr?.message && createErr.message.includes("draft")) {
-        // Fallback: Nếu runtime in-memory của Prisma chưa load kịp schema mới
-        const fallbackArticles = sanitizedArticles.map(({ draft, ...rest }: any) => rest);
+      console.warn("Lần tạo đầu tiên gặp lỗi, đang thử tự động đồng bộ schema và retry:", createErr?.message);
+      // Buộc đồng bộ lại schema lần nữa nếu server vừa khởi tạo
+      await ensureTutorialSchema();
+
+      try {
         created = await prisma.tutorialTopic.create({
           data: {
             title,
@@ -154,15 +160,48 @@ export async function POST(request: Request) {
             authorTitle,
             coverImage,
             articles: {
-              create: fallbackArticles,
+              create: sanitizedArticles,
             },
           },
           include: {
             articles: true,
           },
         });
-      } else {
-        throw createErr;
+      } catch (retryErr: any) {
+        // Nếu vẫn lỗi do runtime Prisma client cũ hoặc SQLite column
+        if (
+          retryErr?.message &&
+          (retryErr.message.includes("authorName") ||
+            retryErr.message.includes("draft") ||
+            retryErr.message.includes("does not exist"))
+        ) {
+          const fallbackArticles = sanitizedArticles.map(
+            ({ draft, authorName, authorTitle, authorAvatar, ...rest }: any) => rest
+          );
+          created = await prisma.tutorialTopic.create({
+            data: {
+              title,
+              slug: finalTopicSlug,
+              category,
+              categoryName,
+              icon,
+              badge,
+              level,
+              description,
+              author,
+              authorTitle,
+              coverImage,
+              articles: {
+                create: fallbackArticles,
+              },
+            },
+            include: {
+              articles: true,
+            },
+          });
+        } else {
+          throw retryErr;
+        }
       }
     }
 
