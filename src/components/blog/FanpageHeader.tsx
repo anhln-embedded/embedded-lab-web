@@ -77,60 +77,138 @@ export function FanpageHeader() {
   const coverFileInputRef = useRef<HTMLInputElement>(null);
   const avatarFileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedCover = safeStorage.getItem(COVER_KEY);
-      const savedAvatar = safeStorage.getItem(AVATAR_KEY);
-      if (savedCover) setCoverUrl(savedCover);
-      if (savedAvatar) setAvatarUrl(savedAvatar);
-    }
-  }, []);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const handleSaveCover = (url: string) => {
+  // Tải ảnh bìa & avatar từ máy chủ cho mọi người dùng
+  useEffect(() => {
+    // 1. Tải trước từ cache cục bộ nếu có
+    const localCover = safeStorage.getItem(COVER_KEY);
+    const localAvatar = safeStorage.getItem(AVATAR_KEY);
+    if (localCover) setCoverUrl(localCover);
+    if (localAvatar) setAvatarUrl(localAvatar);
+
+    // 2. Tải cấu hình chính thức từ Server
+    fetch("/api/fanpage/branding")
+      .then((res) => res.json())
+      .then(async (json) => {
+        if (json.success && json.data) {
+          const serverCover = json.data.coverUrl;
+          const serverAvatar = json.data.avatarUrl;
+
+          if (serverCover) {
+            setCoverUrl(serverCover);
+            safeStorage.setItem(COVER_KEY, serverCover);
+          } else if (localCover && (user?.role === "superadmin" || user?.role === "admin")) {
+            // TỰ ĐỘNG MIGRATION: Nếu máy Admin đang có ảnh trong localStorage mà trên Server chưa có ảnh
+            // Gửi ngay ảnh đó lên Server để lưu vĩnh viễn cho toàn thể sinh viên và người xem!
+            try {
+              await fetch("/api/fanpage/branding", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ coverUrl: localCover }),
+              });
+            } catch (err) {
+              console.error("Auto-sync local cover to server error:", err);
+            }
+          }
+
+          if (serverAvatar) {
+            setAvatarUrl(serverAvatar);
+            safeStorage.setItem(AVATAR_KEY, serverAvatar);
+          }
+        }
+      })
+      .catch((err) => console.error("Fetch branding error:", err));
+  }, [user?.role]);
+
+  const handleSaveCover = async (url: string) => {
     setCoverUrl(url);
-    if (typeof window !== "undefined") {
-      if (url) {
-        safeStorage.setItem(COVER_KEY, url);
-      } else {
-        safeStorage.removeItem(COVER_KEY);
-      }
-      window.dispatchEvent(new Event("embedded_fanpage_branding_updated"));
-    }
+    safeStorage.setItem(COVER_KEY, url);
+    window.dispatchEvent(new Event("embedded_fanpage_branding_updated"));
     setShowCoverModal(false);
+
+    // Lưu vĩnh viễn lên server cho toàn bộ mọi người
+    try {
+      await fetch("/api/fanpage/branding", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ coverUrl: url }),
+      });
+    } catch (err) {
+      console.error("Lỗi khi lưu ảnh bìa lên server:", err);
+    }
   };
 
-  const handleSaveAvatar = (url: string) => {
+  const handleSaveAvatar = async (url: string) => {
     const finalUrl = url || "/images/logo.png";
     setAvatarUrl(finalUrl);
-    if (typeof window !== "undefined") {
-      safeStorage.setItem(AVATAR_KEY, finalUrl);
-      window.dispatchEvent(new Event("embedded_fanpage_branding_updated"));
-    }
+    safeStorage.setItem(AVATAR_KEY, finalUrl);
+    window.dispatchEvent(new Event("embedded_fanpage_branding_updated"));
     setShowAvatarModal(false);
+
+    // Lưu vĩnh viễn lên server cho toàn bộ mọi người
+    try {
+      await fetch("/api/fanpage/branding", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ avatarUrl: finalUrl }),
+      });
+    } catch (err) {
+      console.error("Lỗi khi lưu avatar lên server:", err);
+    }
   };
 
-  const handleFileUpload = (
+  const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
     type: "cover" | "avatar"
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      alert("Kích thước ảnh vượt quá 5MB. Vui lòng chọn ảnh nhỏ hơn.");
+    if (file.size > 8 * 1024 * 1024) {
+      alert("Kích thước ảnh vượt quá 8MB. Vui lòng chọn ảnh nhỏ hơn.");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const result = ev.target?.result as string;
-      if (type === "cover") {
-        handleSaveCover(result);
-      } else {
-        handleSaveAvatar(result);
+    try {
+      setIsUploading(true);
+      // Tải file ảnh thật lên máy chủ (/api/upload)
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || "Tải ảnh lên máy chủ thất bại.");
       }
-    };
-    reader.readAsDataURL(file);
+
+      const uploadedUrl = json.url;
+      if (type === "cover") {
+        await handleSaveCover(uploadedUrl);
+      } else {
+        await handleSaveAvatar(uploadedUrl);
+      }
+    } catch (err: any) {
+      console.error("Upload error:", err);
+      // Dự phòng nếu API upload gặp sự cố: dùng FileReader và gửi dữ liệu lên
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        const result = ev.target?.result as string;
+        if (type === "cover") {
+          await handleSaveCover(result);
+        } else {
+          await handleSaveAvatar(result);
+        }
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setIsUploading(false);
+      if (e.target) e.target.value = "";
+    }
   };
 
   return (
@@ -327,12 +405,22 @@ export function FanpageHeader() {
               </label>
               <button
                 type="button"
+                disabled={isUploading}
                 onClick={() => coverFileInputRef.current?.click()}
-                className="w-full py-4 border-2 border-dashed border-accent/40 rounded-2xl bg-accent-muted/10 hover:bg-accent-muted/20 text-accent transition-all flex flex-col items-center justify-center gap-1.5 font-semibold text-xs"
+                className="w-full py-4 border-2 border-dashed border-accent/40 rounded-2xl bg-accent-muted/10 hover:bg-accent-muted/20 text-accent transition-all flex flex-col items-center justify-center gap-1.5 font-semibold text-xs disabled:opacity-50 cursor-pointer"
               >
-                <Upload className="w-6 h-6" />
-                <span>Bấm vào đây để chọn tệp ảnh từ máy (PNG, JPG, WebP)</span>
-                <span className="text-[10px] text-text-muted font-normal">Hỗ trợ ảnh chất lượng cao lên đến 5MB</span>
+                {isUploading ? (
+                  <>
+                    <div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+                    <span>Đang tải ảnh lên máy chủ Lab...</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-6 h-6" />
+                    <span>Bấm vào đây để chọn tệp ảnh từ máy (PNG, JPG, WebP)</span>
+                    <span className="text-[10px] text-text-muted font-normal">Hỗ trợ ảnh chất lượng cao lên đến 8MB</span>
+                  </>
+                )}
               </button>
             </div>
 
@@ -450,11 +538,21 @@ export function FanpageHeader() {
               </label>
               <button
                 type="button"
+                disabled={isUploading}
                 onClick={() => avatarFileInputRef.current?.click()}
-                className="w-full py-3.5 border-2 border-dashed border-accent/40 rounded-2xl bg-accent-muted/10 hover:bg-accent-muted/20 text-accent transition-all flex flex-col items-center justify-center gap-1 font-semibold text-xs"
+                className="w-full py-3.5 border-2 border-dashed border-accent/40 rounded-2xl bg-accent-muted/10 hover:bg-accent-muted/20 text-accent transition-all flex flex-col items-center justify-center gap-1 font-semibold text-xs disabled:opacity-50 cursor-pointer"
               >
-                <Upload className="w-5 h-5" />
-                <span>Bấm vào đây để tải logo / ảnh đại diện từ máy</span>
+                {isUploading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+                    <span>Đang tải ảnh lên...</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-5 h-5" />
+                    <span>Bấm vào đây để tải logo / ảnh đại diện từ máy</span>
+                  </>
+                )}
               </button>
             </div>
 
