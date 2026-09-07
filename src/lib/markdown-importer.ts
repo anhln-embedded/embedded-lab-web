@@ -95,7 +95,7 @@ function formatInlineMarkdown(text: string): string {
   c = c.replace(/\*(.*?)\*/g, '<em>$1</em>');
   c = c.replace(/_([^_]+)_/g, '<em>$1</em>');
   c = c.replace(/~~(.*?)~~/g, '<del class="line-through text-text-muted">$1</del>');
-  c = c.replace(/`([^`]+)`/g, '<code class="px-1.5 py-0.5 rounded bg-bg-elevated border border-border text-accent font-mono text-[11px] font-semibold">$1</code>');
+  c = c.replace(/`([^`]+)`/g, (_, code) => `<code class="px-1.5 py-0.5 rounded bg-bg-elevated border border-border text-accent font-mono text-[11px] font-semibold">${escapeHtml(code)}</code>`);
   c = c.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-accent hover:underline font-semibold">$1</a>');
   return c;
 }
@@ -232,7 +232,7 @@ const labMarkedInstance = new Marked({
 labMarkedInstance.use({
   renderer: {
     codespan({ text }) {
-      return `<code class="px-1.5 py-0.5 mx-0.5 rounded bg-bg-elevated border border-border/80 text-accent font-mono text-[0.88em] font-semibold">${text}</code>`;
+      return `<code class="px-1.5 py-0.5 mx-0.5 rounded bg-bg-elevated border border-border/80 text-accent font-mono text-[0.88em] font-semibold">${escapeHtml(text)}</code>`;
     },
 
     heading(token) {
