@@ -41,7 +41,7 @@ export async function POST(request: Request) {
       if ((prisma as any).media) {
         await (prisma as any).media.create({
           data: {
-            filename: file.name || uniqueFileName,
+            filename: uniqueFileName,
             mimeType: file.type || "image/png",
             data: buffer,
             size: buffer.length,
