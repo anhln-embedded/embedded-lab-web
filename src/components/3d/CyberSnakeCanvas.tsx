@@ -326,6 +326,14 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
       spineNodes.push(new THREE.Vector3(0, -i * SEGMENT_DIST, 0));
     }
 
+    // Path History Buffer: Lưu lại vết di chuyển của đầu để toàn bộ thân và đuôi
+    // trườn chính xác theo cùng một rãnh sóng 3D (Đồng bộ tuyệt đối 100% giữa đầu và đuôi)
+    const TOTAL_SNAKE_LEN = (SEGMENTS - 1) * SEGMENT_DIST;
+    const pathHistory: THREE.Vector3[] = [];
+    for (let d = 0; d <= TOTAL_SNAKE_LEN + 4.0; d += 0.02) {
+      pathHistory.push(new THREE.Vector3(0, -d, 0));
+    }
+
     // --- 11. Precise 3D World Coordinate Tracking ---
     const get3DWorldPos = (clientX: number, clientY: number) => {
       const rect = container.getBoundingClientRect();
@@ -750,55 +758,75 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
         ? (distToTarget < 1.6 ? Math.max(0.12, (distToTarget - 0.4) / 1.2) : 1.0)
         : 1.0;
 
-      // Dao động lắc đầu nhẹ nhàng theo nhịp bò
-      const headSway = Math.sin(slitherCycle) * 0.07 * waveDamp;
+      // Dao động lắc đầu theo nhịp bò chữ S tự nhiên
+      const headSway = Math.sin(slitherCycle) * 0.28 * waveDamp;
       const currentHeadHeading = headHeading + headSway;
 
       // Tiến về phía trước
       const stepDist = slitherSpeed * delta;
       headPos.x += Math.cos(currentHeadHeading) * stepDist;
       headPos.y += Math.sin(currentHeadHeading) * stepDist;
-      headPos.z = Math.sin(time * 0.7) * 0.28;
+      headPos.z = Math.sin(time * 0.7) * 0.22;
 
       snakeGlowLight.position.set(headPos.x, headPos.y, headPos.z + 1.2);
 
       // --- Biologically Accurate Sinuous Spine Kinematics (72 joints) ---
-      // Bảo toàn chính xác khoảng cách SEGMENT_DIST tuyệt đối giữa mọi đốt sống
+      // 1. Ghi nhận vết di chuyển của đầu vào pathHistory (Track Following)
+      const distFromLatest = headPos.distanceTo(pathHistory[0]);
+      if (distFromLatest >= 0.018) {
+        pathHistory.unshift(headPos.clone());
+
+        // Cắt tỉa độ dài pathHistory vượt quá chiều dài tối đa của rắn
+        const maxNeededDist = TOTAL_SNAKE_LEN + 3.0;
+        let accum = 0;
+        let pruneIdx = pathHistory.length;
+        for (let k = 0; k < pathHistory.length - 1; k++) {
+          accum += pathHistory[k].distanceTo(pathHistory[k + 1]);
+          if (accum > maxNeededDist) {
+            pruneIdx = k + 2;
+            break;
+          }
+        }
+        if (pruneIdx < pathHistory.length) {
+          pathHistory.length = pruneIdx;
+        }
+      } else {
+        pathHistory[0].copy(headPos);
+      }
+
+      // 2. Định vị chính xác 72 đốt sống trườn theo đúng vết rãnh sóng của đầu
+      // (Bảo đảm đầu và đuôi đồng bộ 100%, không bao giờ bị trôi hay vẫy lệch hướng)
       spineNodes[0].copy(headPos);
 
+      let pathIdx = 0;
+      let accumDist = 0;
+
       for (let i = 1; i < SEGMENTS; i++) {
-        const prev = spineNodes[i - 1];
-        const curr = spineNodes[i];
-        const u = i / (SEGMENTS - 1);
+        const targetDist = i * SEGMENT_DIST;
 
-        // Vector hướng ban đầu từ curr đến prev
-        const dir = new THREE.Vector3().subVectors(curr, prev);
-        if (dir.lengthSq() < 0.00001) dir.set(0, -1, 0);
-        dir.normalize();
+        while (pathIdx < pathHistory.length - 1) {
+          const pA = pathHistory[pathIdx];
+          const pB = pathHistory[pathIdx + 1];
+          const segLen = pA.distanceTo(pB);
 
-        // Điểm tựa giữ nguyên khoảng cách SEGMENT_DIST
-        const basePos = prev.clone().addScaledVector(dir, SEGMENT_DIST);
+          if (accumDist + segLen >= targetDist) {
+            const alpha = segLen > 0.00001 ? (targetDist - accumDist) / segLen : 0;
+            spineNodes[i].lerpVectors(pA, pB, alpha);
+            break;
+          }
 
-        // Biên độ uốn lượn sinh học (Biological amplitude envelope):
-        // - Cổ (u < 0.1): rất nhỏ để giữ đầu ổn định
-        // - Thân giữa (u = 0.2 -> 0.7): cực đại, tạo thành các khúc uốn chữ S uyển chuyển
-        // - Đuôi (u > 0.7): thon dần và quẫy thoát sóng mềm mại
-        const waveAmp = Math.sin(Math.pow(u, 0.72) * Math.PI) * 0.40 + (u > 0.65 ? (u - 0.65) * 0.28 : 0);
-        const wavePhase = slitherCycle - u * 8.2;
-        const lateralWave = Math.sin(wavePhase) * waveAmp * waveDamp * 0.18;
+          accumDist += segLen;
+          pathIdx++;
+        }
 
-        // Vector vuông góc trong mặt phẳng XY
-        const sideVec = new THREE.Vector3(-dir.y, dir.x, 0).normalize();
-
-        // Độ dịch chuyển uốn sóng cơ bắp
-        const desiredPos = basePos.addScaledVector(sideVec, lateralWave);
-
-        // CHIẾU LẠI CHUẨN XÁC: Bảo toàn độ dài SEGMENT_DIST 100% (không co dãn đốt)
-        const finalDir = new THREE.Vector3().subVectors(desiredPos, prev).normalize();
-        curr.copy(prev).addScaledVector(finalDir, SEGMENT_DIST);
-
-        // Nâng nhẹ trục Z ở các đỉnh sóng uốn lượn (3D dorsal arching sinh học)
-        curr.z = headPos.z * (1.0 - u * 0.55) + Math.cos(wavePhase) * 0.08 * waveAmp;
+        // Dự phòng khi đuôi vượt quá mảng vết tích
+        if (pathIdx >= pathHistory.length - 1) {
+          const last = pathHistory[pathHistory.length - 1];
+          const prevLast = pathHistory[pathHistory.length - 2] || last;
+          const extDir = new THREE.Vector3().subVectors(last, prevLast).normalize();
+          const rem = targetDist - accumDist;
+          spineNodes[i].copy(last).addScaledVector(extDir, rem);
+        }
       }
 
       // Compute orthonormal basis frames for each segment
