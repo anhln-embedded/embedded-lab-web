@@ -623,30 +623,11 @@ export function parseSingleMarkdownArticle(
     }
   }
 
-  // 4. Tìm Summary (> Tóm tắt: ...)
+  // 4. Tìm Summary (> Tóm tắt: ...) - Hoàn toàn tùy chọn, phụ thuộc vào tác giả có muốn thêm hay không
   const summaryMatch = cleanMarkdown.match(/^>\s*(?:Tóm tắt|Summary):\s*(.+)$/im);
   if (summaryMatch) {
     summary = stripMarkdownInline(summaryMatch[1]);
     cleanMarkdown = cleanMarkdown.replace(summaryMatch[0], "").trim();
-  } else {
-    // Tự động trích xuất câu giới thiệu đầu tiên của bài viết làm Tóm tắt
-    const textWithoutImagesOrTags = cleanMarkdown
-      .replace(/<[^>]+>/g, " ")
-      .replace(/!\[.*?\]\(.*?\)/g, " ")
-      .replace(/```[\s\S]*?```/g, " ")
-      .trim();
-
-    const firstParaMatch = textWithoutImagesOrTags.match(/^([^#\n\r]+)/);
-    if (firstParaMatch) {
-      const firstSentence = stripMarkdownInline(
-        firstParaMatch[1].replace(/^[-\*\+]\s+/, "")
-      );
-      if (firstSentence.length > 20) {
-        summary = firstSentence.length > 220
-          ? firstSentence.slice(0, 217) + "..."
-          : firstSentence;
-      }
-    }
   }
 
   // 5. Ước lượng thời gian đọc
