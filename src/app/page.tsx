@@ -207,7 +207,7 @@ export default function HomePage() {
           <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[700px] h-[320px] bg-accent/15 blur-[150px] pointer-events-none -z-10 rounded-full" />
           <div className="absolute top-1/2 left-1/4 w-[380px] h-[240px] bg-cyan-500/10 blur-[130px] pointer-events-none -z-10 rounded-full" />
 
-          <div className="max-w-4xl mx-auto text-center space-y-6 my-auto">
+          <div className="max-w-4xl mx-auto text-center space-y-6 my-auto relative z-10">
             {/* Headline - Pure High Contrast White on Dark, Dark on Light */}
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight text-text-primary">
               <span className="inline-block">Lộ Trình Đào Tạo & Nghiên Cứu</span> <br />
