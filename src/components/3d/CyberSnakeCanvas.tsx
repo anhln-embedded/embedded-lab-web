@@ -434,6 +434,22 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
         const { pos, up, side } = spineTransforms[i];
         const { radiusX, radiusY } = profiles[i];
 
+        // Sóng năng lượng nuốt mồi di chuyển dọc sống lưng (Digestive energy surge)
+        let rx = radiusX;
+        let ry = radiusY;
+        let isBulgePoint = false;
+        if (surge > 0.02) {
+          const bulgeCenter = 1.0 - surge; // Chạy từ 0 (đầu) xuống 1 (đuôi)
+          const distToBulge = Math.abs(u - bulgeCenter);
+          if (distToBulge < 0.09) {
+            const factor = Math.cos((distToBulge / 0.09) * (Math.PI * 0.5));
+            const expansion = factor * surge * 0.42;
+            rx *= 1.0 + expansion;
+            ry *= 1.0 + expansion * 0.85;
+            isBulgePoint = true;
+          }
+        }
+
         // Pulse wave traveling down the spine
         const pulse = Math.sin(cycle * 3.2 - u * 18.0);
         // Energy surge wave traveling down when food is eaten
@@ -444,10 +460,10 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
           const cosT = Math.cos(theta); // lateral (+right / -left)
           const sinT = Math.sin(theta); // vertical (+dorsal spine / -belly)
 
-          // Elliptical cross section offset
-          const offsetX = side.x * cosT * radiusX + up.x * sinT * radiusY;
-          const offsetY = side.y * cosT * radiusX + up.y * sinT * radiusY;
-          const offsetZ = side.z * cosT * radiusX + up.z * sinT * radiusY;
+          // Elliptical cross section offset with dynamic bulge expansion
+          const offsetX = side.x * cosT * rx + up.x * sinT * ry;
+          const offsetY = side.y * cosT * rx + up.y * sinT * ry;
+          const offsetZ = side.z * cosT * rx + up.z * sinT * ry;
 
           bodyPositions[vIdx * 3] = pos.x + offsetX;
           bodyPositions[vIdx * 3 + 1] = pos.y + offsetY;
@@ -464,7 +480,10 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
           // Color & Glow Mapping
           let vertColor = darkScaleColor.clone();
 
-          if (sinT > 0.62) {
+          if (isBulgePoint) {
+            // Khối năng lượng thức ăn phát sáng xanh ngọc chạy dọc thân
+            vertColor.lerp(surgeColor, 0.9);
+          } else if (sinT > 0.62) {
             // Dorsal glowing spine crest
             if (surge > 0.1 && surgeWave > 0.3) {
               vertColor.lerp(surgeColor, 0.95);
@@ -636,7 +655,7 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
 
         // Lực hút từ tính miệng rắn khi ở cự ly gần (< 1.2 unit)
         if (closestDist < 1.2) {
-          const pull = (1.2 - closestDist) * 0.18;
+          const pull = (1.2 - closestDist) * 0.22;
           targetFood.mesh.position.x = THREE.MathUtils.lerp(targetFood.mesh.position.x, headPos.x, pull);
           targetFood.mesh.position.y = THREE.MathUtils.lerp(targetFood.mesh.position.y, headPos.y, pull);
         }
@@ -656,11 +675,21 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
           }
         }
       } else {
-        // No food: follow mouse or wander in infinity loop
-        if (performance.now() - lastMouseMoveTime > 3000) {
+        const timeSinceMove = performance.now() - lastMouseMoveTime;
+        if (timeSinceMove > 2500) {
+          // Autonomous smooth wandering (Harmonic multi-frequency glide quanh màn hình)
           mouse.isMoving = false;
-          targetX = Math.sin(time * 0.42) * 5.8;
-          targetY = Math.sin(time * 0.84) * 3.2;
+          targetX = Math.sin(time * 0.28) * 5.4 + Math.cos(time * 0.15) * 1.4;
+          targetY = Math.sin(time * 0.38 + 1.1) * 3.0 + Math.sin(time * 0.19) * 0.8;
+        } else {
+          // Khi chuột dừng lại và rắn đã đến gần (< 1.6 unit):
+          // Chế độ "Lượn vòng thám thính" (Curiosity Orbit) quanh con trỏ chuột thay vì đứng rung lắc giật cục
+          const distToMouse = Math.hypot(mouse.targetX - headPos.x, mouse.targetY - headPos.y);
+          if (distToMouse < 1.6 && !mouse.isMoving) {
+            const orbitAngle = time * 1.35;
+            targetX = mouse.targetX + Math.cos(orbitAngle) * 1.3;
+            targetY = mouse.targetY + Math.sin(orbitAngle) * 1.3;
+          }
         }
       }
 
@@ -668,94 +697,108 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
       const toTargetY = targetY - headPos.y;
       const distToTarget = Math.hypot(toTargetX, toTargetY);
 
-      // Desired heading angle directly pointing towards cursor / food
+      // Desired heading angle directly pointing towards target
       let desiredHeading = Math.atan2(toTargetY, toTargetX);
       let angleDiff = desiredHeading - headHeading;
       while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
       while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
 
-      // Độ linh hoạt khi quay đầu (Turn Speed):
-      // Khi săn mồi ở cự ly gần, tăng tốc độ quay góc cực mạnh để triệt tiêu hoàn toàn hiện tượng xoay tròn quanh mồi
-      let turnSpeed: number;
+      // Turning dynamics: Gia tốc xoay tự nhiên, mượt mà (ngăn chặn quay ngoắt góc nhọn)
+      let maxTurnRate: number;
+      let turnFactor: number;
       if (isHunting) {
-        turnSpeed = Math.min(26.0, 10.0 + (3.5 / Math.max(0.25, distToTarget)) * 5.5);
+        maxTurnRate = distToTarget < 1.5 ? 14.0 : 8.5;
+        turnFactor = distToTarget < 1.5 ? 12.0 : 7.0;
       } else if (mouse.isMoving) {
-        turnSpeed = Math.min(12.0, 4.5 + distToTarget * 1.8);
+        maxTurnRate = 7.2;
+        turnFactor = 5.5;
       } else {
-        turnSpeed = 3.5;
+        maxTurnRate = 3.8;
+        turnFactor = 3.2;
       }
 
-      // Xoay đầu mượt mà
-      headHeading += angleDiff * Math.min(1.0, delta * turnSpeed);
+      const turnStep = THREE.MathUtils.clamp(
+        angleDiff * turnFactor * delta,
+        -maxTurnRate * delta,
+        maxTurnRate * delta
+      );
+      headHeading += turnStep;
 
-      // Nếu góc lệch lớn khi đã ở gần mồi (< 1.4 unit), chủ động căn chỉnh góc ngắm thẳng mồi
-      if (isHunting && distToTarget < 1.4 && Math.abs(angleDiff) > Math.PI * 0.35) {
-        headHeading = THREE.MathUtils.lerp(headHeading, desiredHeading, Math.min(1.0, delta * 20.0));
-      }
-
-      // Điều tiết tốc độ di chuyển:
-      // Khi đến gần mồi, hãm phanh mượt mà để đầu rắn lao trúng đích thay vì phi vọt qua (overshoot)
+      // Điều tiết tốc độ di chuyển sinh học
       let targetSpeed: number;
       if (isHunting) {
-        targetSpeed = Math.max(2.8, Math.min(6.2, distToTarget * 2.8 + 2.0));
+        // Tăng tốc khi săn mồi, vào cự ly đớp thì lao nhanh dứt khoát
+        targetSpeed = Math.max(3.2, Math.min(6.5, distToTarget * 2.5 + 2.4));
       } else if (mouse.isMoving) {
-        targetSpeed = Math.min(7.5, 2.0 + distToTarget * 1.6);
+        targetSpeed = Math.min(6.0, 2.2 + distToTarget * 1.2);
       } else {
-        targetSpeed = 2.2;
+        // Tốc độ du ngoạn thư thái
+        targetSpeed = 2.4 + Math.sin(time * 0.5) * 0.4;
       }
 
-      slitherSpeed = THREE.MathUtils.lerp(slitherSpeed, targetSpeed, 0.15);
-      slitherCycle += delta * slitherSpeed * 4.6;
+      slitherSpeed = THREE.MathUtils.lerp(slitherSpeed, targetSpeed, 0.12);
+
+      // Chu kỳ uốn lượn gắn kết chặt chẽ với tốc độ trườn thực tế
+      slitherCycle += delta * slitherSpeed * 3.6;
 
       if (eatSurgeTimer > 0) {
-        eatSurgeTimer -= delta * 0.9;
+        eatSurgeTimer -= delta * 0.75;
       }
 
-      // Triệt tiêu dao động ngang khi đớp mồi gần đích (< 1.3 unit) để đớp thẳng vào mồi
+      // Giảm độ lắc đầu khi chuẩn bị đớp mồi (Head stabilization)
       const waveDamp = isHunting
-        ? (distToTarget < 1.3 ? 0 : Math.min(1.0, (distToTarget - 1.3) * 0.9))
-        : Math.min(1.0, distToTarget * 1.2);
+        ? (distToTarget < 1.6 ? Math.max(0.12, (distToTarget - 0.4) / 1.2) : 1.0)
+        : 1.0;
 
-      const slitherWave = Math.sin(slitherCycle) * 0.18 * waveDamp;
-      const forwardX = Math.cos(headHeading);
-      const forwardY = Math.sin(headHeading);
-      const sideX = -Math.sin(headHeading);
-      const sideY = Math.cos(headHeading);
+      // Dao động lắc đầu nhẹ nhàng theo nhịp bò
+      const headSway = Math.sin(slitherCycle) * 0.07 * waveDamp;
+      const currentHeadHeading = headHeading + headSway;
 
-      // Tiến về phía mục tiêu
-      const stepDist = Math.min(distToTarget, slitherSpeed * delta * 1.8);
-      headVel.set(
-        (forwardX + sideX * slitherWave) * stepDist,
-        (forwardY + sideY * slitherWave) * stepDist,
-        Math.sin(time * 0.6) * 0.08 * delta
-      );
-      headPos.add(headVel);
+      // Tiến về phía trước
+      const stepDist = slitherSpeed * delta;
+      headPos.x += Math.cos(currentHeadHeading) * stepDist;
+      headPos.y += Math.sin(currentHeadHeading) * stepDist;
+      headPos.z = Math.sin(time * 0.7) * 0.28;
 
-      headPos.z = Math.sin(time * 0.5) * 0.4;
       snakeGlowLight.position.set(headPos.x, headPos.y, headPos.z + 1.2);
 
-      // --- Sinuous Chain Constrained Spine (72 joints) ---
+      // --- Biologically Accurate Sinuous Spine Kinematics (72 joints) ---
+      // Bảo toàn chính xác khoảng cách SEGMENT_DIST tuyệt đối giữa mọi đốt sống
       spineNodes[0].copy(headPos);
 
       for (let i = 1; i < SEGMENTS; i++) {
         const prev = spineNodes[i - 1];
         const curr = spineNodes[i];
-
-        // S-wave lateral propagation along the slender snake body
         const u = i / (SEGMENTS - 1);
-        const waveAmp = Math.sin(u * Math.PI) * 0.24 + (u > 0.5 ? (u - 0.5) * 0.32 : 0);
-        const waveOffset = Math.sin(slitherCycle - u * 8.6) * waveAmp;
 
+        // Vector hướng ban đầu từ curr đến prev
         const dir = new THREE.Vector3().subVectors(curr, prev);
         if (dir.lengthSq() < 0.00001) dir.set(0, -1, 0);
         dir.normalize();
 
-        // Strict distance constraint (No stretching/collapsing)
-        curr.copy(prev).addScaledVector(dir, SEGMENT_DIST);
+        // Điểm tựa giữ nguyên khoảng cách SEGMENT_DIST
+        const basePos = prev.clone().addScaledVector(dir, SEGMENT_DIST);
 
-        // Add lateral S-wave perpendicular to direction
+        // Biên độ uốn lượn sinh học (Biological amplitude envelope):
+        // - Cổ (u < 0.1): rất nhỏ để giữ đầu ổn định
+        // - Thân giữa (u = 0.2 -> 0.7): cực đại, tạo thành các khúc uốn chữ S uyển chuyển
+        // - Đuôi (u > 0.7): thon dần và quẫy thoát sóng mềm mại
+        const waveAmp = Math.sin(Math.pow(u, 0.72) * Math.PI) * 0.40 + (u > 0.65 ? (u - 0.65) * 0.28 : 0);
+        const wavePhase = slitherCycle - u * 8.2;
+        const lateralWave = Math.sin(wavePhase) * waveAmp * waveDamp * 0.18;
+
+        // Vector vuông góc trong mặt phẳng XY
         const sideVec = new THREE.Vector3(-dir.y, dir.x, 0).normalize();
-        curr.addScaledVector(sideVec, waveOffset * delta * 8.2);
+
+        // Độ dịch chuyển uốn sóng cơ bắp
+        const desiredPos = basePos.addScaledVector(sideVec, lateralWave);
+
+        // CHIẾU LẠI CHUẨN XÁC: Bảo toàn độ dài SEGMENT_DIST 100% (không co dãn đốt)
+        const finalDir = new THREE.Vector3().subVectors(desiredPos, prev).normalize();
+        curr.copy(prev).addScaledVector(finalDir, SEGMENT_DIST);
+
+        // Nâng nhẹ trục Z ở các đỉnh sóng uốn lượn (3D dorsal arching sinh học)
+        curr.z = headPos.z * (1.0 - u * 0.55) + Math.cos(wavePhase) * 0.08 * waveAmp;
       }
 
       // Compute orthonormal basis frames for each segment
@@ -783,17 +826,18 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
       // Update Body Mesh & Eyes
       updateSnakeGeometry(spineTransforms, slitherCycle, eatSurgeTimer);
 
-      // --- Forked Tongue Flicking Logic ---
-      tongueTimer += delta * (isHunting ? 4.5 : 2.0);
-      // Tongue flicks in rapid bursts every 2-3 seconds
-      const flickWindow = tongueTimer % 3.0;
+      // --- Forked Tongue Flicking Logic (Realistic Double-Flick) ---
+      tongueTimer += delta * (isHunting ? 4.2 : 1.8);
+      const flickCycle = tongueTimer % 2.8;
       let tongueExtension = 0;
       let tongueWiggle = 0;
 
-      if (flickWindow < 0.6) {
-        const t = flickWindow / 0.6;
-        tongueExtension = Math.sin(t * Math.PI) * (isHunting ? 1.3 : 1.0);
-        tongueWiggle = time * 28.0;
+      // Mô phỏng cử động lưỡi rắn thật: thò ra rung 2 nhịp nhanh rồi thu về
+      if (flickCycle < 0.55) {
+        const t = flickCycle / 0.55;
+        const flickShape = Math.sin(t * Math.PI * 2.0 - Math.PI * 0.5) * 0.5 + 0.5;
+        tongueExtension = Math.sin(t * Math.PI) * (0.6 + flickShape * 0.4) * (isHunting ? 1.3 : 1.0);
+        tongueWiggle = time * 32.0;
       }
 
       const snoutFrame = {
