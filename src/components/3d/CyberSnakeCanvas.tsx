@@ -59,59 +59,63 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
     const snakeGlowLight = new THREE.PointLight(0xff6a00, 3.5, 10);
     scene.add(snakeGlowLight);
 
-    // --- 3. Snake Anatomy: Ultra-Slender & High Segment Resolution ---
-    const SEGMENTS = 72; // High resolution for silky smooth spine bending
+    // --- 3. Snake Anatomy: Dynamic Growth & High Segment Resolution ---
+    const MAX_SEGMENTS = 144; // Chiều dài tối đa khi ăn nhiều mồi
+    const INITIAL_SEGMENTS = 48; // Chiều dài khởi đầu gọn gàng, nhanh nhẹn
+    const SEGMENTS_PER_FOOD = 8; // Số đốt dài thêm mỗi khi tạo mồi
     const RADIAL_SEGMENTS = 14;
-    const SEGMENT_DIST = 0.14; // Ultra-flexible tight vertebra spacing
+    const SEGMENT_DIST = 0.14; // Khoảng cách chuẩn giữa các đốt sống
 
-    interface SegmentProfile {
-      radiusX: number;
-      radiusY: number;
-    }
+    let currentSegments = INITIAL_SEGMENTS;
+    let targetSegments = INITIAL_SEGMENTS;
 
-    const profiles: SegmentProfile[] = [];
-    for (let i = 0; i < SEGMENTS; i++) {
-      const u = i / (SEGMENTS - 1); // 0 (snout) to 1 (tail tip)
+    // Hàm tính toán tiết diện hình học động theo số đốt hiện tại
+    const getSegmentProfile = (i: number, total: number): { radiusX: number; radiusY: number } => {
+      const u = i / (total - 1); // 0 (snout) to 1 (tail tip)
       let rx = 0.11;
       let ry = 0.08;
 
-      if (u < 0.045) {
-        // Sleek aerodynamic Viper Snout & Brow
-        const t = u / 0.045;
-        rx = 0.055 + Math.sin(t * Math.PI) * 0.09; // Snout -> Slim Viper Jaw
-        ry = 0.045 + Math.sin(t * Math.PI) * 0.05;
-      } else if (u < 0.09) {
-        // Ultra-slender Neck constriction
-        const t = (u - 0.045) / 0.045;
+      const headSegs = Math.min(3, total * 0.06);
+      const neckSegs = Math.min(7, total * 0.12);
+      const tailStartU = Math.max(0.65, 1.0 - 20 / total);
+
+      if (i <= headSegs) {
+        // Mõm và đầu rắn khí động học
+        const t = i / headSegs;
+        rx = 0.055 + Math.sin(t * Math.PI * 0.5) * 0.09;
+        ry = 0.045 + Math.sin(t * Math.PI * 0.5) * 0.05;
+      } else if (i <= neckSegs) {
+        // Cổ rắn thon gọn
+        const t = (i - headSegs) / (neckSegs - headSegs);
         rx = 0.145 - t * 0.04;
         ry = 0.095 - t * 0.02;
-      } else if (u < 0.65) {
-        // Long, slender, flexible muscular body
-        const t = (u - 0.09) / 0.56;
+      } else if (u < tailStartU) {
+        // Thân rắn cơ bắp uyển chuyển
+        const t = (u - neckSegs / total) / (tailStartU - neckSegs / total);
         rx = 0.105 + Math.sin(t * Math.PI) * 0.02;
         ry = 0.075 + Math.sin(t * Math.PI) * 0.015;
       } else {
-        // Long needle-point tapered tail
-        const t = (u - 0.65) / 0.35;
-        rx = 0.105 * (1 - t * 0.94);
-        ry = 0.075 * (1 - t * 0.94);
+        // Đuôi vuốt nhọn thẩm mỹ
+        const t = (u - tailStartU) / (1.0 - tailStartU);
+        rx = 0.105 * (1.0 - t * 0.94);
+        ry = 0.075 * (1.0 - t * 0.94);
       }
 
-      profiles.push({
+      return {
         radiusX: Math.max(0.007, rx),
         radiusY: Math.max(0.005, ry),
-      });
-    }
+      };
+    };
 
     // --- 4. Snake Body Mesh Buffers ---
-    const bodyVertexCount = SEGMENTS * RADIAL_SEGMENTS;
+    const bodyVertexCount = MAX_SEGMENTS * RADIAL_SEGMENTS;
     const bodyPositions = new Float32Array(bodyVertexCount * 3);
     const bodyNormals = new Float32Array(bodyVertexCount * 3);
     const bodyColors = new Float32Array(bodyVertexCount * 3);
     const bodyUVs = new Float32Array(bodyVertexCount * 2);
 
     const bodyIndices: number[] = [];
-    for (let i = 0; i < SEGMENTS - 1; i++) {
+    for (let i = 0; i < MAX_SEGMENTS - 1; i++) {
       for (let j = 0; j < RADIAL_SEGMENTS; j++) {
         const nextJ = (j + 1) % RADIAL_SEGMENTS;
         const p1 = i * RADIAL_SEGMENTS + j;
@@ -130,6 +134,7 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
     bodyGeometry.setAttribute("color", new THREE.BufferAttribute(bodyColors, 3));
     bodyGeometry.setAttribute("uv", new THREE.BufferAttribute(bodyUVs, 2));
     bodyGeometry.setIndex(bodyIndices);
+    bodyGeometry.setDrawRange(0, (INITIAL_SEGMENTS - 1) * RADIAL_SEGMENTS * 6);
 
     const bodyMaterial = new THREE.MeshStandardMaterial({
       vertexColors: true,
@@ -201,6 +206,9 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
           foodGroup.remove(oldest.mesh);
         }
       }
+
+      // Tăng dần chiều dài theo mỗi mồi tạo ra!
+      targetSegments = Math.min(MAX_SEGMENTS, targetSegments + SEGMENTS_PER_FOOD);
 
       const fGroup = new THREE.Group();
 
@@ -320,17 +328,17 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
     let slitherSpeed = 2.4;
     let eatSurgeTimer = 0; // Excitement & spine energy pulse upon eating
 
-    // 72-joint spine nodes
+    // Multi-joint spine nodes (hỗ trợ tăng độ dài động lên tới MAX_SEGMENTS)
     const spineNodes: THREE.Vector3[] = [];
-    for (let i = 0; i < SEGMENTS; i++) {
+    for (let i = 0; i < MAX_SEGMENTS; i++) {
       spineNodes.push(new THREE.Vector3(0, -i * SEGMENT_DIST, 0));
     }
 
     // Path History Buffer: Lưu lại vết di chuyển của đầu để toàn bộ thân và đuôi
-    // trườn chính xác theo cùng một rãnh sóng 3D (Đồng bộ tuyệt đối 100% giữa đầu và đuôi)
-    const TOTAL_SNAKE_LEN = (SEGMENTS - 1) * SEGMENT_DIST;
+    // trườn chính xác theo cùng một rãnh sóng 3D
+    const MAX_SNAKE_LEN = (MAX_SEGMENTS - 1) * SEGMENT_DIST;
     const pathHistory: THREE.Vector3[] = [];
-    for (let d = 0; d <= TOTAL_SNAKE_LEN + 4.0; d += 0.02) {
+    for (let d = 0; d <= MAX_SNAKE_LEN + 6.0; d += 0.02) {
       pathHistory.push(new THREE.Vector3(0, -d, 0));
     }
 
@@ -423,6 +431,7 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
     // --- 12. Update Mesh Geometry Function ---
     const updateSnakeGeometry = (
       spineTransforms: { pos: THREE.Vector3; dir: THREE.Vector3; up: THREE.Vector3; side: THREE.Vector3 }[],
+      activeSegments: number,
       cycle: number,
       surge: number
     ) => {
@@ -437,10 +446,10 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
       let uvIdx = 0;
       let cIdx = 0;
 
-      for (let i = 0; i < SEGMENTS; i++) {
-        const u = i / (SEGMENTS - 1);
+      for (let i = 0; i < activeSegments; i++) {
+        const u = i / (activeSegments - 1);
         const { pos, up, side } = spineTransforms[i];
-        const { radiusX, radiusY } = profiles[i];
+        const { radiusX, radiusY } = getSegmentProfile(i, activeSegments);
 
         // Sóng năng lượng nuốt mồi di chuyển dọc sống lưng (Digestive energy surge)
         let rx = radiusX;
@@ -518,15 +527,17 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
         }
       }
 
+      bodyGeometry.setDrawRange(0, (activeSegments - 1) * RADIAL_SEGMENTS * 6);
       bodyGeometry.attributes.position.needsUpdate = true;
       bodyGeometry.attributes.normal.needsUpdate = true;
       bodyGeometry.attributes.color.needsUpdate = true;
-      bodyGeometry.computeVertexNormals();
+      bodyGeometry.attributes.uv.needsUpdate = true;
 
       // Precision position Viper Eyes on Head Frame (Node 1)
       const headFrame = spineTransforms[1];
-      const eyeOffsetX = profiles[1].radiusX * 0.92;
-      const eyeOffsetY = profiles[1].radiusY * 0.72;
+      const headProfile = getSegmentProfile(1, activeSegments);
+      const eyeOffsetX = headProfile.radiusX * 0.92;
+      const eyeOffsetY = headProfile.radiusY * 0.72;
       const eyeOffsetZ = 0.03;
 
       leftEye.position.copy(headFrame.pos)
@@ -680,6 +691,8 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
             triggerBurst(headPos, 0x00ff88);
             spawnRipple(headPos.x, headPos.y, 0x00ff88);
             eatSurgeTimer = 1.0; // Kích hoạt luồng sáng dọc sống lưng
+            // Rắn hấp thụ mồi và tăng thêm chiều dài!
+            targetSegments = Math.min(MAX_SEGMENTS, targetSegments + 4);
           }
         }
       } else {
@@ -701,12 +714,69 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
         }
       }
 
+      // Cập nhật số lượng đốt sống hiện tại (tăng trưởng mượt mà không bị giật)
+      currentSegments = THREE.MathUtils.lerp(currentSegments, targetSegments, delta * 2.2);
+      const activeSegments = Math.min(MAX_SEGMENTS, Math.max(INITIAL_SEGMENTS, Math.round(currentSegments)));
+
       const toTargetX = targetX - headPos.x;
       const toTargetY = targetY - headPos.y;
       const distToTarget = Math.hypot(toTargetX, toTargetY);
 
       // Desired heading angle directly pointing towards target
       let desiredHeading = Math.atan2(toTargetY, toTargetX);
+
+      // --- TỰ ĐỘNG NÉ THÂN VÀ ĐUÔI (SELF-COLLISION AVOIDANCE) ---
+      // Rắn kiểm tra các đốt thân từ đốt thứ 8 trở đi (loại trừ đầu và cổ) để không tự cắn vào mình
+      let avoidanceSteer = 0;
+      const headForwardX = Math.cos(headHeading);
+      const headForwardY = Math.sin(headHeading);
+      const headSideX = -Math.sin(headHeading);
+      const headSideY = Math.cos(headHeading);
+
+      for (let i = 8; i < activeSegments; i++) {
+        const bodyNode = spineNodes[i];
+        const dx = bodyNode.x - headPos.x;
+        const dy = bodyNode.y - headPos.y;
+        const dist = Math.hypot(dx, dy);
+
+        // Chiếu lên trục di chuyển của đầu rắn
+        const dotForward = dx * headForwardX + dy * headForwardY;
+        const dotSide = dx * headSideX + dy * headSideY;
+
+        // 1. Quét phía trước (Lookahead Cone): Phát hiện đốt thân nằm chắn đường phía trước
+        const lookaheadDist = 2.2;
+        const bodySafeWidth = 0.95;
+        if (dotForward > 0.15 && dotForward < lookaheadDist && Math.abs(dotSide) < bodySafeWidth) {
+          // Thân nằm bên trái -> bẻ sang phải (-), thân nằm bên phải -> bẻ sang trái (+)
+          const steerSign = dotSide >= 0 ? -1.0 : 1.0;
+          const urgency = (1.0 - dotForward / lookaheadDist) * (1.0 - Math.abs(dotSide) / bodySafeWidth);
+          avoidanceSteer += steerSign * urgency * 7.5;
+        }
+
+        // 2. Vùng tiệm cận nguy hiểm (Proximity Repulsion): Bất kỳ đốt thân nào ở quá gần (< 0.85 unit)
+        const proximityDist = 0.85;
+        if (dist < proximityDist && dist > 0.001) {
+          const steerSign = dotSide >= 0 ? -1.0 : 1.0;
+          const repulse = Math.pow(1.0 - dist / proximityDist, 2);
+          avoidanceSteer += steerSign * repulse * 5.5;
+
+          // 3. Giới hạn vật lý cứng (Hard Physical Barrier): Không bao giờ cho đầu xuyên thấu thân (< 0.3 unit)
+          const hardRadius = 0.3;
+          if (dist < hardRadius) {
+            const push = (hardRadius - dist) * 0.6;
+            headPos.x -= (dx / dist) * push;
+            headPos.y -= (dy / dist) * push;
+          }
+        }
+      }
+
+      // Hòa trộn góc bẻ lái né thân vào góc mong muốn
+      if (Math.abs(avoidanceSteer) > 0.05) {
+        const maxAvoidTurn = Math.PI * 0.75;
+        const avoidAngle = THREE.MathUtils.clamp(avoidanceSteer * 0.45, -maxAvoidTurn, maxAvoidTurn);
+        desiredHeading += avoidAngle;
+      }
+
       let angleDiff = desiredHeading - headHeading;
       while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
       while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
@@ -714,7 +784,11 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
       // Turning dynamics: Gia tốc xoay tự nhiên, mượt mà (ngăn chặn quay ngoắt góc nhọn)
       let maxTurnRate: number;
       let turnFactor: number;
-      if (isHunting) {
+      if (Math.abs(avoidanceSteer) > 0.1) {
+        // Đang né thân mình: quay dứt khoát để lượn ra ngoài vòng xoắn
+        maxTurnRate = 12.0;
+        turnFactor = 10.0;
+      } else if (isHunting) {
         maxTurnRate = distToTarget < 1.5 ? 14.0 : 8.5;
         turnFactor = distToTarget < 1.5 ? 12.0 : 7.0;
       } else if (mouse.isMoving) {
@@ -770,14 +844,14 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
 
       snakeGlowLight.position.set(headPos.x, headPos.y, headPos.z + 1.2);
 
-      // --- Biologically Accurate Sinuous Spine Kinematics (72 joints) ---
+      // --- Biologically Accurate Sinuous Spine Kinematics ---
       // 1. Ghi nhận vết di chuyển của đầu vào pathHistory (Track Following)
       const distFromLatest = headPos.distanceTo(pathHistory[0]);
       if (distFromLatest >= 0.018) {
         pathHistory.unshift(headPos.clone());
 
         // Cắt tỉa độ dài pathHistory vượt quá chiều dài tối đa của rắn
-        const maxNeededDist = TOTAL_SNAKE_LEN + 3.0;
+        const maxNeededDist = (activeSegments - 1) * SEGMENT_DIST + 4.0;
         let accum = 0;
         let pruneIdx = pathHistory.length;
         for (let k = 0; k < pathHistory.length - 1; k++) {
@@ -794,14 +868,14 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
         pathHistory[0].copy(headPos);
       }
 
-      // 2. Định vị chính xác 72 đốt sống trườn theo đúng vết rãnh sóng của đầu
+      // 2. Định vị chính xác activeSegments đốt sống trườn theo đúng vết rãnh sóng của đầu
       // (Bảo đảm đầu và đuôi đồng bộ 100%, không bao giờ bị trôi hay vẫy lệch hướng)
       spineNodes[0].copy(headPos);
 
       let pathIdx = 0;
       let accumDist = 0;
 
-      for (let i = 1; i < SEGMENTS; i++) {
+      for (let i = 1; i < activeSegments; i++) {
         const targetDist = i * SEGMENT_DIST;
 
         while (pathIdx < pathHistory.length - 1) {
@@ -829,16 +903,21 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
         }
       }
 
+      // Đốt không hoạt động (dự phòng cho MAX_SEGMENTS) được thu gọn về đuôi
+      for (let i = activeSegments; i < MAX_SEGMENTS; i++) {
+        spineNodes[i].copy(spineNodes[activeSegments - 1]);
+      }
+
       // Compute orthonormal basis frames for each segment
       const spineTransforms: { pos: THREE.Vector3; dir: THREE.Vector3; up: THREE.Vector3; side: THREE.Vector3 }[] = [];
 
-      for (let i = 0; i < SEGMENTS; i++) {
+      for (let i = 0; i < activeSegments; i++) {
         const pos = spineNodes[i];
         let dir: THREE.Vector3;
 
         if (i === 0) {
           dir = new THREE.Vector3().subVectors(spineNodes[0], spineNodes[1]).normalize();
-        } else if (i === SEGMENTS - 1) {
+        } else if (i === activeSegments - 1) {
           dir = new THREE.Vector3().subVectors(spineNodes[i - 1], spineNodes[i]).normalize();
         } else {
           dir = new THREE.Vector3().subVectors(spineNodes[i - 1], spineNodes[i + 1]).normalize();
@@ -852,7 +931,7 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
       }
 
       // Update Body Mesh & Eyes
-      updateSnakeGeometry(spineTransforms, slitherCycle, eatSurgeTimer);
+      updateSnakeGeometry(spineTransforms, activeSegments, slitherCycle, eatSurgeTimer);
 
       // --- Forked Tongue Flicking Logic (Realistic Double-Flick) ---
       tongueTimer += delta * (isHunting ? 4.2 : 1.8);
