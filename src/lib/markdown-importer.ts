@@ -406,10 +406,28 @@ labMarkedInstance.use({
     },
 
     image({ href, title, text }) {
+      let src = href || "";
+      if (src.startsWith("images/")) {
+        src = "/" + src;
+      }
+      const isSvg = src.toLowerCase().endsWith(".svg") && !src.toLowerCase().endsWith("_dark.svg");
+      const darkSrc = isSvg ? src.replace(/\.svg$/i, "_dark.svg") : "";
+
+      if (isSvg) {
+        return `
+        <figure class="my-6 text-center flex flex-col items-center justify-center">
+          <div class="inline-block max-w-full">
+            <img src="${src}" alt="${text || ""}" class="block dark:hidden rounded-2xl border border-border/80 shadow-lg max-h-[560px] mx-auto object-contain bg-bg-panel/40 p-1.5" loading="lazy" />
+            <img src="${darkSrc}" alt="${text || ""}" class="hidden dark:block rounded-2xl border border-border/80 shadow-lg max-h-[560px] mx-auto object-contain bg-bg-panel/40 p-1.5" loading="lazy" onerror="this.onerror=null; this.src='${src}';" />
+          </div>
+          ${text ? `<figcaption class="mt-2 text-xs text-text-muted italic font-medium flex items-center justify-center gap-1"><span>📷</span><span>${text}</span></figcaption>` : ""}
+        </figure>\n`;
+      }
+
       return `
         <figure class="my-6 text-center flex flex-col items-center justify-center">
           <div class="inline-block max-w-full">
-            <img src="${href}" alt="${text || ""}" class="rounded-2xl border border-border/80 shadow-lg max-h-[560px] mx-auto object-contain bg-bg-panel/40 p-1.5" loading="lazy" />
+            <img src="${src}" alt="${text || ""}" class="rounded-2xl border border-border/80 shadow-lg max-h-[560px] mx-auto object-contain bg-bg-panel/40 p-1.5" loading="lazy" />
           </div>
           ${text ? `<figcaption class="mt-2 text-xs text-text-muted italic font-medium flex items-center justify-center gap-1"><span>📷</span><span>${text}</span></figcaption>` : ""}
         </figure>\n`;
@@ -461,9 +479,21 @@ export function markdownToLabHtml(markdown: string): string {
       styleParts.push(`max-height: ${hCss}`);
     }
 
+    const isSvg = src.toLowerCase().endsWith(".svg") && !src.toLowerCase().endsWith("_dark.svg");
+    const darkSrc = isSvg ? src.replace(/\.svg$/i, "_dark.svg") : "";
+
+    let innerImgs = "";
+    if (isSvg) {
+      innerImgs = `
+    <img src="${src}" alt="${alt}" ${width ? `width="${width}"` : ""} ${height ? `height="${height}"` : ""} style="${styleParts.join("; ")}" class="block dark:hidden rounded-2xl border border-border/80 shadow-lg mx-auto object-contain bg-bg-panel/40 p-1.5" loading="lazy" />
+    <img src="${darkSrc}" alt="${alt}" ${width ? `width="${width}"` : ""} ${height ? `height="${height}"` : ""} style="${styleParts.join("; ")}" class="hidden dark:block rounded-2xl border border-border/80 shadow-lg mx-auto object-contain bg-bg-panel/40 p-1.5" loading="lazy" onerror="this.onerror=null; this.src='${src}';" />`;
+    } else {
+      innerImgs = `
+    <img src="${src}" alt="${alt}" ${width ? `width="${width}"` : ""} ${height ? `height="${height}"` : ""} style="${styleParts.join("; ")}" class="rounded-2xl border border-border/80 shadow-lg mx-auto object-contain bg-bg-panel/40 p-1.5" loading="lazy" />`;
+    }
+
     const html = `\n\n<figure class="my-6 text-center flex flex-col items-center justify-center">
-  <div class="inline-block max-w-full">
-    <img src="${src}" alt="${alt}" ${width ? `width="${width}"` : ""} ${height ? `height="${height}"` : ""} style="${styleParts.join("; ")}" class="rounded-2xl border border-border/80 shadow-lg mx-auto object-contain bg-bg-panel/40 p-1.5" loading="lazy" />
+  <div class="inline-block max-w-full">${innerImgs}
   </div>
   ${alt ? `<figcaption class="mt-2 text-xs text-text-muted italic font-medium flex items-center justify-center gap-1"><span>📷</span><span>${alt}</span></figcaption>` : ""}
 </figure>\n\n`;

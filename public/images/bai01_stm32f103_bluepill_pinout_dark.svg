@@ -2,23 +2,23 @@
   <defs>
     <style>
       :root {
-        --canvas-bg: #ffffff;
-        --canvas-border: #e2e8f0;
-        --card-bg: #ffffff;
-        --title-color: #0f172a;
-        --subtitle-color: #475569;
-        --board-pcb: #1e3a8a;
-        --board-border: #172554;
-        --chip-body: #0f172a;
-        --chip-border: #334155;
-        --chip-text: #e2e8f0;
-        --pin-silver: #cbd5e1;
-        --pin-stroke: #64748b;
-        --label-box-bg: #ffffff;
-        --label-border: #cbd5e1;
-        --text-primary: #1e293b;
-        --text-muted: #64748b;
-        --wire-line: #94a3b8;
+        --canvas-bg: #0b0f19;
+          --canvas-border: #1e293b;
+          --card-bg: #111827;
+          --title-color: #f8fafc;
+          --subtitle-color: #94a3b8;
+          --board-pcb: #172554;
+          --board-border: #1e3a8a;
+          --chip-body: #030712;
+          --chip-border: #1e293b;
+          --chip-text: #f1f5f9;
+          --pin-silver: #475569;
+          --pin-stroke: #334155;
+          --label-box-bg: #1e293b;
+          --label-border: #334155;
+          --text-primary: #f8fafc;
+          --text-muted: #94a3b8;
+          --wire-line: #475569;
       }
 
       

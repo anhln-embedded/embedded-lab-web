@@ -2,7 +2,7 @@
   <defs>
     <style>
       :root {
-        --canvas-bg: #f8fafc;
+        --canvas-bg: #ffffff;
         --canvas-border: #e2e8f0;
         --card-bg: #ffffff;
         --title-color: #0f172a;
@@ -21,27 +21,7 @@
         --wire-line: #94a3b8;
       }
 
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --canvas-bg: #0b0f19;
-          --canvas-border: #1e293b;
-          --card-bg: #111827;
-          --title-color: #f8fafc;
-          --subtitle-color: #94a3b8;
-          --board-pcb: #172554;
-          --board-border: #1e3a8a;
-          --chip-body: #030712;
-          --chip-border: #1e293b;
-          --chip-text: #f1f5f9;
-          --pin-silver: #475569;
-          --pin-stroke: #334155;
-          --label-box-bg: #1e293b;
-          --label-border: #334155;
-          --text-primary: #f8fafc;
-          --text-muted: #94a3b8;
-          --wire-line: #475569;
-        }
-      }
+      
 
       .canvas-bg { fill: var(--canvas-bg); stroke: var(--canvas-border); }
       .title-text { fill: var(--title-color); font-weight: 800; font-size: 24px; text-anchor: middle; }
@@ -65,7 +45,7 @@
 
   <!-- Title & Subtitle -->
   <text x="530" y="48" class="title-text">SƠ ĐỒ BẢN ĐỒ CHÂN (PINOUT) STM32F103C8T6 BLUE PILL</text>
-  <text x="530" y="73" class="subtitle-text">Lõi ARM Cortex-M3 32-bit (72MHz, 64KB Flash, 20KB SRAM) - Hỗ trợ Giao diện Sáng / Tối</text>
+  <text x="530" y="73" class="subtitle-text">Lõi ARM Cortex-M3 32-bit (72MHz, 64KB Flash, 20KB SRAM)</text>
 
   <!-- Legend -->
   <g transform="translate(130, 92)" font-size="11" font-weight="700">
