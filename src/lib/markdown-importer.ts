@@ -345,35 +345,44 @@ labMarkedInstance.use({
         </div>\n`;
     },
 
-    blockquote({ text }) {
-      const trimmed = text.trim();
-      if (/^<p>\s*\[!TIP\]/i.test(trimmed)) {
-        const body = trimmed.replace(/^<p>\s*\[!TIP\]\s*/i, "<p>");
+    blockquote(token) {
+      const innerHtml = (this.parser.parse(token.tokens || []) || "").trim();
+
+      if (/^(?:<p>\s*)?\[!TIP\]/i.test(innerHtml)) {
+        const body = innerHtml.replace(/^(?:<p>\s*)?\[!TIP\](?:\s*<br\s*\/?>)?\s*/i, "<p>").trim();
         return `
           <div class="my-6 p-5 sm:p-6 rounded-2xl border-l-4 border-emerald-500 bg-emerald-500/10 text-emerald-400 text-sm sm:text-base shadow-md leading-relaxed">
             <div class="flex items-center gap-2 font-bold mb-1.5 text-sm sm:text-base">💡 Mẹo Tối Ưu Kỹ Thuật</div>
-            <div class="leading-relaxed text-xs sm:text-sm text-text-primary/90 mt-1">${body}</div>
+            <div class="leading-relaxed text-xs sm:text-sm text-text-primary/90 mt-1">${body.startsWith("<p>") ? body : `<p>${body}</p>`}</div>
           </div>\n`;
       }
-      if (/^<p>\s*\[!NOTE\]|^<p>\s*\[!INFO\]/i.test(trimmed)) {
-        const body = trimmed.replace(/^<p>\s*\[!(?:NOTE|INFO)\]\s*/i, "<p>");
+      if (/^(?:<p>\s*)?\[!(?:NOTE|INFO)\]/i.test(innerHtml)) {
+        const body = innerHtml.replace(/^(?:<p>\s*)?\[!(?:NOTE|INFO)\](?:\s*<br\s*\/?>)?\s*/i, "<p>").trim();
         return `
           <div class="my-6 p-5 sm:p-6 rounded-2xl border-l-4 border-cyan-500 bg-cyan-500/10 text-cyan-400 text-sm sm:text-base shadow-md leading-relaxed">
             <div class="flex items-center gap-2 font-bold mb-1.5 text-sm sm:text-base">ℹ️ Ghi Chú Kỹ Thuật</div>
-            <div class="leading-relaxed text-xs sm:text-sm text-text-primary/90 mt-1">${body}</div>
+            <div class="leading-relaxed text-xs sm:text-sm text-text-primary/90 mt-1">${body.startsWith("<p>") ? body : `<p>${body}</p>`}</div>
           </div>\n`;
       }
-      if (/^<p>\s*\[!WARNING\]|^<p>\s*\[!CAUTION\]|^<p>\s*\[!DANGER\]/i.test(trimmed)) {
-        const body = trimmed.replace(/^<p>\s*\[!(?:WARNING|CAUTION|DANGER)\]\s*/i, "<p>");
+      if (/^(?:<p>\s*)?\[!IMPORTANT\]/i.test(innerHtml)) {
+        const body = innerHtml.replace(/^(?:<p>\s*)?\[!IMPORTANT\](?:\s*<br\s*\/?>)?\s*/i, "<p>").trim();
+        return `
+          <div class="my-6 p-5 sm:p-6 rounded-2xl border-l-4 border-amber-500 bg-amber-500/10 text-amber-400 text-sm sm:text-base shadow-md leading-relaxed">
+            <div class="flex items-center gap-2 font-bold mb-1.5 text-sm sm:text-base">⭐ Điểm Cốt Lõi Quan Trọng</div>
+            <div class="leading-relaxed text-xs sm:text-sm text-text-primary/90 mt-1">${body.startsWith("<p>") ? body : `<p>${body}</p>`}</div>
+          </div>\n`;
+      }
+      if (/^(?:<p>\s*)?\[!(?:WARNING|CAUTION|DANGER)\]/i.test(innerHtml)) {
+        const body = innerHtml.replace(/^(?:<p>\s*)?\[!(?:WARNING|CAUTION|DANGER)\](?:\s*<br\s*\/?>)?\s*/i, "<p>").trim();
         return `
           <div class="my-6 p-5 sm:p-6 rounded-2xl border-l-4 border-red-500 bg-red-500/10 text-red-400 text-sm sm:text-base shadow-md leading-relaxed">
             <div class="flex items-center gap-2 font-bold mb-1.5 text-sm sm:text-base">🚨 Cảnh Báo Phần Cứng</div>
-            <div class="leading-relaxed text-xs sm:text-sm text-text-primary/90 mt-1">${body}</div>
+            <div class="leading-relaxed text-xs sm:text-sm text-text-primary/90 mt-1">${body.startsWith("<p>") ? body : `<p>${body}</p>`}</div>
           </div>\n`;
       }
       return `
         <blockquote class="my-6 p-5 sm:p-6 rounded-2xl bg-bg-elevated/80 border-l-4 border-accent text-sm sm:text-base text-text-secondary leading-relaxed shadow-md italic">
-          ${text}
+          ${innerHtml}
         </blockquote>\n`;
     },
 
@@ -447,6 +456,17 @@ export function markdownToLabHtml(markdown: string): string {
 
   // Dọn dẹp thẻ <p align="center"> mồ côi nếu có
   preprocessed = preprocessed.replace(/<p[^>]*align\s*=\s*["']?center["']?[^>]*>\s*/gi, "");
+
+  // Tự động chuyển đổi các ký hiệu LaTeX cơ bản sang Unicode chuẩn web
+  preprocessed = preprocessed
+    .replace(/\$\s*\\to\s*\$/g, "→")
+    .replace(/\$\s*\\rightarrow\s*\$/g, "→")
+    .replace(/\$\s*\\Rightarrow\s*\$/g, "⇒")
+    .replace(/\$\s*\\leftarrow\s*\$/g, "←")
+    .replace(/\$\s*\\leftrightarrow\s*\$/g, "↔");
+
+  // Loại bỏ đường dẫn cục bộ file:/// và chuyển thành anchor sạch
+  preprocessed = preprocessed.replace(/\(file:\/\/\/[^\)]+\)/gi, "(#)");
 
   try {
     let html = labMarkedInstance.parse(preprocessed) as string;
