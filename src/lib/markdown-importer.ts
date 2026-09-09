@@ -101,6 +101,25 @@ function formatInlineMarkdown(text: string): string {
 }
 
 /**
+ * Loại bỏ các thẻ định dạng Markdown (Bold, Italic, Code, Link) để lấy văn bản thuần sạch
+ */
+function stripMarkdownInline(text: string): string {
+  if (!text) return "";
+  return text
+    .replace(/\*\*\*(.*?)\*\*\*/g, "$1")
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/\*(.*?)\*/g, "$1")
+    .replace(/___(.*?)___/g, "$1")
+    .replace(/__(.*?)__/g, "$1")
+    .replace(/_([^_]+)_/g, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/\[(.*?)\]\(.*?\)/g, "$1")
+    .replace(/\$\s*\\to\s*\$/g, "→")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
  * Phân tích và chuyển đổi Bảng Markdown sang HTML <table> chuẩn phong cách Lab
  */
 function parseMarkdownTables(markdown: string): string {
@@ -607,7 +626,7 @@ export function parseSingleMarkdownArticle(
   // 4. Tìm Summary (> Tóm tắt: ...)
   const summaryMatch = cleanMarkdown.match(/^>\s*(?:Tóm tắt|Summary):\s*(.+)$/im);
   if (summaryMatch) {
-    summary = summaryMatch[1].trim();
+    summary = stripMarkdownInline(summaryMatch[1]);
     cleanMarkdown = cleanMarkdown.replace(summaryMatch[0], "").trim();
   } else {
     // Tự động trích xuất câu giới thiệu đầu tiên của bài viết làm Tóm tắt
@@ -619,10 +638,9 @@ export function parseSingleMarkdownArticle(
 
     const firstParaMatch = textWithoutImagesOrTags.match(/^([^#\n\r]+)/);
     if (firstParaMatch) {
-      const firstSentence = firstParaMatch[1]
-        .replace(/^[-\*\+]\s+/, "")
-        .replace(/^[_\*]{1,3}|[_\*]{1,3}$/g, "")
-        .trim();
+      const firstSentence = stripMarkdownInline(
+        firstParaMatch[1].replace(/^[-\*\+]\s+/, "")
+      );
       if (firstSentence.length > 20) {
         summary = firstSentence.length > 220
           ? firstSentence.slice(0, 217) + "..."
