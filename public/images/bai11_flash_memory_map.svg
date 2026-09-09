@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 310" width="100%" height="100%" style="background:#ffffff; font-family: 'Segoe UI', Arial, sans-serif;">
+  <rect x="10" y="10" width="820" height="290" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2"/>
+  <text x="420" y="40" text-anchor="middle" fill="#0f172a" font-size="18" font-weight="800">BẢN ĐỒ PHÂN VÙNG BỘ NHỚ FLASH TRÊN ESP32 (4MB FLASH MAP)</text>
+
+  <!-- 4MB Flash Block -->
+  <g transform="translate(50, 70)">
+    <rect x="0" y="0" width="730" height="120" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+
+    <!-- Bootloader -->
+    <rect x="10" y="15" width="85" height="90" rx="6" fill="#fee2e2" stroke="#ef4444" stroke-width="1.5"/>
+    <text x="52" y="60" text-anchor="middle" fill="#b91c1c" font-size="12" font-weight="bold">Bootloader</text>
+    <text x="52" y="80" text-anchor="middle" fill="#b91c1c" font-size="10">0x1000</text>
+
+    <!-- Partition Table -->
+    <rect x="105" y="15" width="80" height="90" rx="6" fill="#ffedd5" stroke="#f97316" stroke-width="1.5"/>
+    <text x="145" y="55" text-anchor="middle" fill="#c2410c" font-size="11" font-weight="bold">Partition</text>
+    <text x="145" y="70" text-anchor="middle" fill="#c2410c" font-size="11" font-weight="bold">Table</text>
+    <text x="145" y="88" text-anchor="middle" fill="#c2410c" font-size="9">0x8000</text>
+
+    <!-- NVS (Preferences) -->
+    <rect x="195" y="15" width="95" height="90" rx="6" fill="#fef3c7" stroke="#eab308" stroke-width="1.5"/>
+    <text x="242" y="55" text-anchor="middle" fill="#a16207" font-size="12" font-weight="bold">NVS (Flash)</text>
+    <text x="242" y="72" text-anchor="middle" fill="#a16207" font-size="10">Preferences</text>
+    <text x="242" y="88" text-anchor="middle" fill="#a16207" font-size="10">20KB</text>
+
+    <!-- App 0 (Firmware) -->
+    <rect x="300" y="15" width="230" height="90" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="415" y="55" text-anchor="middle" fill="#15803d" font-size="13" font-weight="bold">ỨNG DỤNG CHÍNH (app0)</text>
+    <text x="415" y="75" text-anchor="middle" fill="#15803d" font-size="10">Code Arduino / FreeRTOS (~1.3MB)</text>
+
+    <!-- LittleFS File System -->
+    <rect x="540" y="15" width="180" height="90" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="630" y="55" text-anchor="middle" fill="#1d4ed8" font-size="13" font-weight="bold">LittleFS (Tệp Tin)</text>
+    <text x="630" y="75" text-anchor="middle" fill="#1d4ed8" font-size="10">Chứa HTML, CSS, JSON (~1.5MB)</text>
+  </g>
+
+  <text x="420" y="240" text-anchor="middle" fill="#334155" font-size="12" font-weight="600">Dữ liệu ghi vào vùng NVS (Preferences) hoặc LittleFS được lưu trữ vĩnh viễn kể cả khi mất điện</text>
+</svg>

@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 330" width="100%" height="100%" style="background:#ffffff; font-family: 'Segoe UI', Arial, sans-serif;">
+  <rect x="10" y="10" width="840" height="310" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2"/>
+  <text x="430" y="42" text-anchor="middle" fill="#0f172a" font-size="20" font-weight="800">CẤU TRÚC GÓI DỮ LIỆU NỐI TIẾP UART (FRAME FORMAT)</text>
+  
+  <g transform="translate(50, 75)">
+    <!-- Idle High Line -->
+    <line x1="0" y1="50" x2="50" y2="50" stroke="#475569" stroke-width="3"/>
+    <text x="25" y="38" text-anchor="middle" fill="#475569" font-size="11" font-weight="bold">IDLE (1)</text>
+
+    <!-- Start Bit (0) -->
+    <rect x="50" y="50" width="60" height="70" fill="#fee2e2" stroke="#dc2626" stroke-width="2" rx="2"/>
+    <text x="80" y="90" text-anchor="middle" fill="#dc2626" font-size="12" font-weight="bold">START</text>
+    <text x="80" y="105" text-anchor="middle" fill="#dc2626" font-size="10">(Bit 0)</text>
+
+    <!-- 8 Data Bits -->
+    <g fill="#dcfce7" stroke="#16a34a" stroke-width="1.5">
+      <rect x="110" y="50" width="55" height="70" rx="2"/>
+      <rect x="165" y="50" width="55" height="70" rx="2"/>
+      <rect x="220" y="50" width="55" height="70" rx="2"/>
+      <rect x="275" y="50" width="55" height="70" rx="2"/>
+      <rect x="330" y="50" width="55" height="70" rx="2"/>
+      <rect x="385" y="50" width="55" height="70" rx="2"/>
+      <rect x="440" y="50" width="55" height="70" rx="2"/>
+      <rect x="495" y="50" width="55" height="70" rx="2"/>
+    </g>
+    <g fill="#15803d" font-size="12" font-weight="bold" text-anchor="middle">
+      <text x="137" y="85">D0</text>
+      <text x="137" y="105" font-size="9">(LSB)</text>
+      <text x="192" y="90">D1</text>
+      <text x="247" y="90">D2</text>
+      <text x="302" y="90">D3</text>
+      <text x="357" y="90">D4</text>
+      <text x="412" y="90">D5</text>
+      <text x="467" y="90">D6</text>
+      <text x="522" y="85">D7</text>
+      <text x="522" y="105" font-size="9">(MSB)</text>
+    </g>
+
+    <!-- Parity Bit -->
+    <rect x="550" y="50" width="65" height="70" fill="#fef3c7" stroke="#d97706" stroke-width="1.5" rx="2"/>
+    <text x="582" y="85" text-anchor="middle" fill="#b45309" font-size="11" font-weight="bold">PARITY</text>
+    <text x="582" y="105" text-anchor="middle" fill="#b45309" font-size="9">(Tùy chọn)</text>
+
+    <!-- Stop Bit (1) -->
+    <rect x="615" y="50" width="65" height="70" fill="#dbeafe" stroke="#2563eb" stroke-width="2" rx="2"/>
+    <text x="647" y="85" text-anchor="middle" fill="#1d4ed8" font-size="12" font-weight="bold">STOP</text>
+    <text x="647" y="105" text-anchor="middle" fill="#1d4ed8" font-size="10">(Bit 1)</text>
+
+    <!-- Return to Idle -->
+    <line x1="680" y1="50" x2="740" y2="50" stroke="#475569" stroke-width="3"/>
+    <text x="710" y="38" text-anchor="middle" fill="#475569" font-size="11" font-weight="bold">IDLE (1)</text>
+
+    <!-- Bracket for Data Bits -->
+    <path d="M 110 135 L 110 145 L 325 145 L 325 155 L 335 155 L 335 145 L 550 145 L 550 135" fill="none" stroke="#16a34a" stroke-width="2"/>
+    <text x="330" y="175" text-anchor="middle" fill="#15803d" font-size="12" font-weight="bold">8 BITS DỮ LIỆU (1 BYTE - KÝ TỰ MÃ ASCII)</text>
+  </g>
+
+  <text x="430" y="285" text-anchor="middle" fill="#334155" font-size="12" font-weight="600">Cấu hình tiêu chuẩn: 115200 Baudrate - 8 Data Bits - No Parity - 1 Stop Bit (115200 8-N-1)</text>
+</svg>

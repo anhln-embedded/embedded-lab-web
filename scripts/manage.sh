@@ -60,6 +60,9 @@ sync_database() {
     # Đợi container app sẵn sàng
     sleep 2
     docker exec -u 0 -e HOME=/tmp embedded_lab_web npx prisma db push --skip-generate --accept-data-loss 2>/dev/null || true
+    # Đảm bảo quyền sở hữu cho user nextjs (UID 1001) đối với thư mục và file SQLite
+    docker exec -u 0 embedded_lab_web chown -R nextjs:nodejs /app/prisma /app/public/uploads 2>/dev/null || true
+    docker exec -u 0 embedded_lab_web chmod -R 775 /app/prisma /app/public/uploads 2>/dev/null || true
 }
 
 start_app() {

@@ -8,6 +8,7 @@ interface RouteParams {
 
 export async function GET(request: Request, { params }: RouteParams) {
   try {
+    await ensureTutorialSchema();
     const { id: rawId } = await params;
     const id = decodeURIComponent(rawId);
     const topic = await prisma.tutorialTopic.findFirst({

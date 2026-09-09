@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 350" width="100%" height="100%" style="background:#ffffff; font-family: 'Segoe UI', Arial, sans-serif;">
+  <rect x="10" y="10" width="820" height="330" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2"/>
+  <text x="420" y="38" text-anchor="middle" fill="#0f172a" font-size="18" font-weight="800">ĐIỀU KHIỂN GÓC QUAY ĐỘNG CƠ SERVO SG90 BẰNG ĐỘ RỘNG XUNG (50Hz)</text>
+
+  <!-- 0 Degrees -->
+  <g transform="translate(60, 60)">
+    <text x="0" y="20" fill="#dc2626" font-size="13" font-weight="bold">Góc 0°: Xung High 0.5ms (500us)</text>
+    <path d="M 0 50 L 30 50 L 30 25 L 50 25 L 50 50 L 450 50 L 450 25 L 470 25 L 470 50 L 520 50" fill="none" stroke="#dc2626" stroke-width="2.5"/>
+    <rect x="30" y="25" width="20" height="25" fill="#fee2e2"/>
+    <text x="40" y="18" text-anchor="middle" fill="#dc2626" font-size="10" font-weight="bold">0.5ms</text>
+    <text x="540" y="45" fill="#334155" font-size="11" font-weight="600">Quay hết về bên TRÁI</text>
+  </g>
+
+  <!-- 90 Degrees -->
+  <g transform="translate(60, 145)">
+    <text x="0" y="20" fill="#d97706" font-size="13" font-weight="bold">Góc 90°: Xung High 1.5ms (1500us)</text>
+    <path d="M 0 50 L 30 50 L 30 25 L 90 25 L 90 50 L 450 50 L 450 25 L 510 25 L 510 50 L 520 50" fill="none" stroke="#d97706" stroke-width="2.5"/>
+    <rect x="30" y="25" width="60" height="25" fill="#fef3c7"/>
+    <text x="60" y="18" text-anchor="middle" fill="#d97706" font-size="10" font-weight="bold">1.5ms</text>
+    <text x="540" y="45" fill="#334155" font-size="11" font-weight="600">Vị trí CHÍNH GIỮA</text>
+  </g>
+
+  <!-- 180 Degrees -->
+  <g transform="translate(60, 230)">
+    <text x="0" y="20" fill="#16a34a" font-size="13" font-weight="bold">Góc 180°: Xung High 2.5ms (2500us)</text>
+    <path d="M 0 50 L 30 50 L 30 25 L 130 25 L 130 50 L 450 50 L 450 25 L 550 25 L 550 50 L 520 50" fill="none" stroke="#16a34a" stroke-width="2.5"/>
+    <rect x="30" y="25" width="100" height="25" fill="#dcfce7"/>
+    <text x="80" y="18" text-anchor="middle" fill="#16a34a" font-size="10" font-weight="bold">2.5ms</text>
+    <text x="540" y="45" fill="#334155" font-size="11" font-weight="600">Quay hết về bên PHẢI</text>
+  </g>
+
+  <text x="420" y="325" text-anchor="middle" fill="#475569" font-size="11" font-weight="600">Chu kỳ lặp lại T = 20ms (Tần số chuẩn 50Hz của Servo)</text>
+</svg>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 310" width="100%" height="100%" style="background:#ffffff; font-family: 'Segoe UI', Arial, sans-serif;">
+  <rect x="10" y="10" width="820" height="290" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2"/>
+  <text x="420" y="38" text-anchor="middle" fill="#0f172a" font-size="18" font-weight="800">LUỒNG DỮ LIỆU ĐẨY THÔNG SỐ CẢM BIẾN LÊN THINGSPEAK CLOUD</text>
+
+  <!-- ESP32 Client -->
+  <rect x="50" y="80" width="190" height="160" rx="12" fill="#ffffff" stroke="#16a34a" stroke-width="2"/>
+  <text x="145" y="115" text-anchor="middle" fill="#16a34a" font-size="15" font-weight="bold">ESP32 CLIENT</text>
+  <text x="145" y="135" text-anchor="middle" fill="#334155" font-size="11">Đo nhiệt độ: 28.5°C</text>
+  <text x="145" y="155" text-anchor="middle" fill="#334155" font-size="11">Đo độ ẩm: 65%</text>
+  <rect x="70" y="175" width="150" height="35" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="145" y="197" text-anchor="middle" fill="#ea580c" font-size="11" font-weight="bold">HTTPClient.h</text>
+
+  <!-- Arrow HTTP GET -->
+  <g transform="translate(250, 115)">
+    <line x1="0" y1="30" x2="280" y2="30" stroke="#ea580c" stroke-width="3"/>
+    <polygon points="285,30 275,25 275,35" fill="#ea580c"/>
+    <text x="140" y="20" text-anchor="middle" fill="#ea580c" font-size="11" font-weight="bold">HTTP GET /update?api_key=XXX&amp;field1=28.5&amp;field2=65</text>
+    <text x="140" y="60" text-anchor="middle" fill="#64748b" font-size="10">Gửi qua Internet định kỳ mỗi 20 giây</text>
+  </g>
+
+  <!-- ThingSpeak Cloud -->
+  <rect x="550" y="80" width="240" height="160" rx="12" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+  <text x="670" y="115" text-anchor="middle" fill="#2563eb" font-size="15" font-weight="bold">THINGSPEAK CLOUD</text>
+  <text x="670" y="135" text-anchor="middle" fill="#64748b" font-size="11">(Nền tảng IoT của MathWorks)</text>
+
+  <rect x="575" y="155" width="190" height="55" rx="6" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="670" y="178" text-anchor="middle" fill="#16a34a" font-size="11" font-weight="bold">Vẽ đồ thị trực quan</text>
+  <text x="670" y="196" text-anchor="middle" fill="#334155" font-size="10">Lưu trữ database lịch sử</text>
+
+  <text x="420" y="275" text-anchor="middle" fill="#334155" font-size="12" font-weight="600">Người dùng có thể xem biểu đồ trực tiếp từ bất kỳ trình duyệt nào trên thế giới</text>
+</svg>

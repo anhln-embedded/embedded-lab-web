@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 320" width="100%" height="100%" style="background:#ffffff; font-family: 'Segoe UI', Arial, sans-serif;">
+  <rect x="10" y="10" width="820" height="300" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2"/>
+  <text x="420" y="38" text-anchor="middle" fill="#0f172a" font-size="18" font-weight="800">SƠ ĐỒ LUỒNG THỰC THI NGẮT PHẦN CỨNG (INTERRUPT FLOW)</text>
+  
+  <!-- Main Execution Stream -->
+  <g transform="translate(60, 60)">
+    <rect x="0" y="0" width="220" height="210" rx="10" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+    <text x="110" y="30" text-anchor="middle" fill="#2563eb" font-size="14" font-weight="bold">CHƯƠNG TRÌNH CHÍNH (loop)</text>
+    
+    <rect x="20" y="50" width="180" height="35" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+    <text x="110" y="72" text-anchor="middle" fill="#334155" font-size="11">Đang đọc cảm biến...</text>
+
+    <rect x="20" y="98" width="180" height="35" rx="6" fill="#fef3c7" stroke="#f59e0b"/>
+    <text x="110" y="120" text-anchor="middle" fill="#b45309" font-size="11" font-weight="bold">Chạy delay(2000)...</text>
+
+    <rect x="20" y="145" width="180" height="35" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+    <text x="110" y="167" text-anchor="middle" fill="#334155" font-size="11">Gửi dữ liệu Wi-Fi...</text>
+  </g>
+
+  <!-- Hardware Event -->
+  <g transform="translate(330, 105)">
+    <circle cx="45" cy="45" r="40" fill="#fee2e2" stroke="#ef4444" stroke-width="2.5"/>
+    <text x="45" y="40" text-anchor="middle" fill="#b91c1c" font-size="11" font-weight="bold">NGẮT NGOÀI</text>
+    <text x="45" y="55" text-anchor="middle" fill="#b91c1c" font-size="9" font-weight="bold">(Bấm nút)</text>
+
+    <line x1="-35" y1="15" x2="0" y2="35" stroke="#ef4444" stroke-width="2.5"/>
+    <polygon points="5,38 -8,31 -4,42" fill="#ef4444"/>
+  </g>
+
+  <!-- ISR Area -->
+  <g transform="translate(480, 60)">
+    <rect x="0" y="0" width="300" height="210" rx="10" fill="#ffffff" stroke="#16a34a" stroke-width="2"/>
+    <text x="150" y="30" text-anchor="middle" fill="#16a34a" font-size="14" font-weight="bold">TRÌNH PHỤC VỤ NGẮT (ISR)</text>
+    <text x="150" y="48" text-anchor="middle" fill="#d97706" font-size="10" font-weight="bold">Khai báo IRAM_ATTR (Chạy trên RAM nội)</text>
+
+    <rect x="20" y="65" width="260" height="32" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+    <text x="150" y="85" text-anchor="middle" fill="#334155" font-size="10">1. Lưu ngữ cảnh thanh ghi CPU</text>
+
+    <rect x="20" y="108" width="260" height="34" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="150" y="129" text-anchor="middle" fill="#15803d" font-size="11" font-weight="bold">2. Bật cờ buttonTriggered = true;</text>
+
+    <rect x="20" y="152" width="260" height="32" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+    <text x="150" y="172" text-anchor="middle" fill="#334155" font-size="10">3. Khôi phục CPU &amp; Quay lại loop</text>
+  </g>
+
+  <!-- Return Arrow -->
+  <path d="M 480 220 Q 380 265 290 220" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-dasharray="4"/>
+  <polygon points="285,217 298,216 293,226" fill="#16a34a"/>
+  <text x="385" y="270" text-anchor="middle" fill="#16a34a" font-size="11" font-weight="bold">Tự động quay lại tiếp tục lệnh cũ</text>
+</svg>

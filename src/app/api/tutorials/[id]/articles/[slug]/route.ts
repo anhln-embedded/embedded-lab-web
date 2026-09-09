@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { ensureTutorialSchema } from "@/lib/db-sync";
 
 interface RouteParams {
   params: Promise<{ id: string; slug: string }>;
@@ -8,6 +9,7 @@ interface RouteParams {
 // 1. GET: Lấy thông tin bài viết và toàn bộ lịch sử chỉnh sửa
 export async function GET(request: Request, { params }: RouteParams) {
   try {
+    await ensureTutorialSchema();
     const { id: topicIdOrSlug, slug: articleSlug } = await params;
 
     // Tìm chuyên đề trước
@@ -77,6 +79,7 @@ export async function GET(request: Request, { params }: RouteParams) {
 // 2. PUT: Chỉnh sửa nhanh bài viết và ghi lịch sử chỉnh sửa của User
 export async function PUT(request: Request, { params }: RouteParams) {
   try {
+    await ensureTutorialSchema();
     const { id: topicIdOrSlug, slug: articleSlug } = await params;
     const body = await request.json();
     const {

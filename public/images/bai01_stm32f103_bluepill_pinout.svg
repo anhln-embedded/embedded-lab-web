@@ -1,0 +1,471 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 920" width="100%" height="100%" style="font-family: 'Segoe UI', Arial, -apple-system, sans-serif;">
+  <defs>
+    <style>
+      :root {
+        --canvas-bg: #f8fafc;
+        --canvas-border: #e2e8f0;
+        --card-bg: #ffffff;
+        --title-color: #0f172a;
+        --subtitle-color: #475569;
+        --board-pcb: #1e3a8a;
+        --board-border: #172554;
+        --chip-body: #0f172a;
+        --chip-border: #334155;
+        --chip-text: #e2e8f0;
+        --pin-silver: #cbd5e1;
+        --pin-stroke: #64748b;
+        --label-box-bg: #ffffff;
+        --label-border: #cbd5e1;
+        --text-primary: #1e293b;
+        --text-muted: #64748b;
+        --wire-line: #94a3b8;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --canvas-bg: #0b0f19;
+          --canvas-border: #1e293b;
+          --card-bg: #111827;
+          --title-color: #f8fafc;
+          --subtitle-color: #94a3b8;
+          --board-pcb: #172554;
+          --board-border: #1e3a8a;
+          --chip-body: #030712;
+          --chip-border: #1e293b;
+          --chip-text: #f1f5f9;
+          --pin-silver: #475569;
+          --pin-stroke: #334155;
+          --label-box-bg: #1e293b;
+          --label-border: #334155;
+          --text-primary: #f8fafc;
+          --text-muted: #94a3b8;
+          --wire-line: #475569;
+        }
+      }
+
+      .canvas-bg { fill: var(--canvas-bg); stroke: var(--canvas-border); }
+      .title-text { fill: var(--title-color); font-weight: 800; font-size: 24px; text-anchor: middle; }
+      .subtitle-text { fill: var(--subtitle-color); font-weight: 600; font-size: 13px; text-anchor: middle; }
+      .pcb { fill: var(--board-pcb); stroke: var(--board-border); stroke-width: 3; rx: 14; }
+      .mcu { fill: var(--chip-body); stroke: var(--chip-border); stroke-width: 2; rx: 8; }
+      .mcu-label { fill: var(--chip-text); font-weight: 700; text-anchor: middle; }
+      .pin-box { fill: var(--label-box-bg); stroke: var(--label-border); stroke-width: 1.5; rx: 5; }
+      .pin-txt { fill: var(--text-primary); font-size: 11px; font-weight: 700; font-family: monospace; }
+      .pin-desc { fill: var(--text-muted); font-size: 10px; font-weight: 600; }
+      .wire { stroke: var(--wire-line); stroke-width: 1.5; fill: none; }
+      .hdr-pin { fill: var(--pin-silver); stroke: var(--pin-stroke); stroke-width: 1.5; rx: 2; }
+    </style>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Outer Canvas -->
+  <rect x="10" y="10" width="1040" height="900" class="canvas-bg" rx="16" stroke-width="2"/>
+
+  <!-- Title & Subtitle -->
+  <text x="530" y="48" class="title-text">SƠ ĐỒ BẢN ĐỒ CHÂN (PINOUT) STM32F103C8T6 BLUE PILL</text>
+  <text x="530" y="73" class="subtitle-text">Lõi ARM Cortex-M3 32-bit (72MHz, 64KB Flash, 20KB SRAM) - Hỗ trợ Giao diện Sáng / Tối</text>
+
+  <!-- Legend -->
+  <g transform="translate(130, 92)" font-size="11" font-weight="700">
+    <rect x="0" y="0" width="14" height="14" fill="#ef4444" rx="3"/>
+    <text x="20" y="12" fill="#ef4444">Nguồn (3.3V, 5V, VBAT)</text>
+
+    <rect x="200" y="0" width="14" height="14" fill="#64748b" rx="3"/>
+    <text x="220" y="12" class="pin-desc">GND (Mass)</text>
+
+    <rect x="330" y="0" width="14" height="14" fill="#10b981" rx="3"/>
+    <text x="350" y="12" fill="#10b981">GPIO thường (3.3V)</text>
+
+    <rect x="500" y="0" width="14" height="14" fill="#06b6d4" rx="3"/>
+    <text x="520" y="12" fill="#06b6d4">5V-Tolerant (Chịu 5V)</text>
+
+    <rect x="680" y="0" width="14" height="14" fill="#f59e0b" rx="3"/>
+    <text x="700" y="12" fill="#f59e0b">Analog / ADC</text>
+  </g>
+
+  <!-- BLUE PILL BOARD (CENTER: X=390, Y=130, W=280, H=740) -->
+  <g filter="url(#dropShadow)">
+    <rect x="390" y="130" width="280" height="740" class="pcb"/>
+
+    <!-- Micro-USB Port (Top) -->
+    <rect x="495" y="118" width="70" height="36" rx="4" fill="#94a3b8" stroke="#475569" stroke-width="2"/>
+    <rect x="510" y="112" width="40" height="10" rx="2" fill="#64748b"/>
+    <text x="530" y="142" font-size="9" font-weight="800" fill="#0f172a" text-anchor="middle">USB</text>
+
+    <!-- Reset Button -->
+    <rect x="430" y="170" width="34" height="34" rx="6" fill="#ef4444" stroke="#991b1b" stroke-width="2"/>
+    <circle cx="447" cy="187" r="10" fill="#dc2626"/>
+    <text x="447" y="191" font-size="8" font-weight="900" fill="#ffffff" text-anchor="middle">RST</text>
+
+    <!-- Boot Jumpers -->
+    <rect x="580" y="165" width="56" height="42" rx="4" fill="#334155" stroke="#475569"/>
+    <rect x="585" y="170" width="20" height="14" rx="2" fill="#eab308"/>
+    <rect x="610" y="170" width="20" height="14" rx="2" fill="#eab308"/>
+    <text x="595" y="198" font-size="8" font-weight="700" fill="#cbd5e1" text-anchor="middle">BT0</text>
+    <text x="620" y="198" font-size="8" font-weight="700" fill="#cbd5e1" text-anchor="middle">BT1</text>
+
+    <!-- Crystal 8MHz (HSE) -->
+    <rect x="500" y="270" width="60" height="30" rx="8" fill="#cbd5e1" stroke="#94a3b8" stroke-width="2"/>
+    <text x="530" y="289" font-size="9" font-weight="800" fill="#334155" text-anchor="middle">8.000 MHz</text>
+
+    <!-- MCU STM32F103C8T6 (LQFP-48) -->
+    <g transform="translate(460, 340)">
+      <rect x="0" y="0" width="140" height="140" class="mcu"/>
+      <circle cx="16" cy="16" r="4" fill="#64748b"/>
+      <text x="70" y="55" class="mcu-label" font-size="13">ARM Cortex-M3</text>
+      <text x="70" y="75" class="mcu-label" font-size="14" fill="#38bdf8">STM32F103</text>
+      <text x="70" y="93" class="mcu-label" font-size="12">C8T6</text>
+      <text x="70" y="115" font-size="9" fill="#94a3b8" text-anchor="middle">STMicroelectronics</text>
+    </g>
+
+    <!-- LEDs: Power (Red) and PC13 (Green) -->
+    <circle cx="435" cy="275" r="7" fill="#ef4444" stroke="#991b1b" stroke-width="1.5"/>
+    <text x="435" y="297" font-size="8" font-weight="700" fill="#fca5a5" text-anchor="middle">PWR</text>
+
+    <circle cx="435" cy="320" r="7" fill="#22c55e" stroke="#15803d" stroke-width="1.5"/>
+    <text x="435" y="342" font-size="8" font-weight="700" fill="#86efac" text-anchor="middle">PC13</text>
+
+    <!-- 32.768kHz RTC Crystal (LSE) -->
+    <rect x="510" y="510" width="40" height="14" rx="4" fill="#94a3b8"/>
+    <text x="530" y="521" font-size="7" font-weight="700" fill="#1e293b" text-anchor="middle">32.768K</text>
+
+    <!-- SWD Header Pins (Bottom) -->
+    <g transform="translate(470, 830)">
+      <rect x="0" y="0" width="120" height="28" rx="4" fill="#0f172a" stroke="#475569"/>
+      <circle cx="18" cy="14" r="5" class="hdr-pin"/>
+      <circle cx="46" cy="14" r="5" class="hdr-pin"/>
+      <circle cx="74" cy="14" r="5" class="hdr-pin"/>
+      <circle cx="102" cy="14" r="5" class="hdr-pin"/>
+      <text x="18" y="38" font-size="8" font-weight="700" fill="#ef4444" text-anchor="middle">3.3V</text>
+      <text x="46" y="38" font-size="8" font-weight="700" fill="#38bdf8" text-anchor="middle">SWIO</text>
+      <text x="74" y="38" font-size="8" font-weight="700" fill="#38bdf8" text-anchor="middle">SWCLK</text>
+      <text x="102" y="38" font-size="8" font-weight="700" fill="#94a3b8" text-anchor="middle">GND</text>
+    </g>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- LEFT SIDE PINS (20 Pins): X=400 to Left Label Boxes                      -->
+  <!-- ========================================================================= -->
+  <!-- Helper python generated Left Pins -->
+<circle cx="410" cy="170" r="4" class="hdr-pin"/>
+<line x1="404" y1="170" x2="350" y2="170" class="wire"/>
+<g transform="translate(30, 160)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box"/>
+      <rect x="250" y="2" width="60" height="19" rx="3" fill="#06b6d4" opacity="0.2"/>
+      <text x="280" y="15" fill="#06b6d4" font-size="9" font-weight="800" text-anchor="middle">PB12</text>
+      <text x="240" y="15" text-anchor="end" class="pin-desc">SPI2_NSS / I2C2_SMBA</text>
+    </g>
+<circle cx="410" cy="203" r="4" class="hdr-pin"/>
+<line x1="404" y1="203" x2="350" y2="203" class="wire"/>
+<g transform="translate(30, 193)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box"/>
+      <rect x="250" y="2" width="60" height="19" rx="3" fill="#06b6d4" opacity="0.2"/>
+      <text x="280" y="15" fill="#06b6d4" font-size="9" font-weight="800" text-anchor="middle">PB13</text>
+      <text x="240" y="15" text-anchor="end" class="pin-desc">SPI2_SCK / I2C2_SCL</text>
+    </g>
+<circle cx="410" cy="236" r="4" class="hdr-pin"/>
+<line x1="404" y1="236" x2="350" y2="236" class="wire"/>
+<g transform="translate(30, 226)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box"/>
+      <rect x="250" y="2" width="60" height="19" rx="3" fill="#06b6d4" opacity="0.2"/>
+      <text x="280" y="15" fill="#06b6d4" font-size="9" font-weight="800" text-anchor="middle">PB14</text>
+      <text x="240" y="15" text-anchor="end" class="pin-desc">SPI2_MISO / USART3_RTS</text>
+    </g>
+<circle cx="410" cy="269" r="4" class="hdr-pin"/>
+<line x1="404" y1="269" x2="350" y2="269" class="wire"/>
+<g transform="translate(30, 259)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box"/>
+      <rect x="250" y="2" width="60" height="19" rx="3" fill="#06b6d4" opacity="0.2"/>
+      <text x="280" y="15" fill="#06b6d4" font-size="9" font-weight="800" text-anchor="middle">PB15</text>
+      <text x="240" y="15" text-anchor="end" class="pin-desc">SPI2_MOSI</text>
+    </g>
+<circle cx="410" cy="302" r="4" class="hdr-pin"/>
+<line x1="404" y1="302" x2="350" y2="302" class="wire"/>
+<g transform="translate(30, 292)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box"/>
+      <rect x="250" y="2" width="60" height="19" rx="3" fill="#06b6d4" opacity="0.2"/>
+      <text x="280" y="15" fill="#06b6d4" font-size="9" font-weight="800" text-anchor="middle">PA8</text>
+      <text x="240" y="15" text-anchor="end" class="pin-desc">USART1_CK / MCO / TIM1_CH1</text>
+    </g>
+<circle cx="410" cy="335" r="4" class="hdr-pin"/>
+<line x1="404" y1="335" x2="350" y2="335" class="wire"/>
+<g transform="translate(30, 325)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box"/>
+      <rect x="250" y="2" width="60" height="19" rx="3" fill="#06b6d4" opacity="0.2"/>
+      <text x="280" y="15" fill="#06b6d4" font-size="9" font-weight="800" text-anchor="middle">PA9</text>
+      <text x="240" y="15" text-anchor="end" class="pin-desc">USART1_TX / TIM1_CH2</text>
+    </g>
+<circle cx="410" cy="368" r="4" class="hdr-pin"/>
+<line x1="404" y1="368" x2="350" y2="368" class="wire"/>
+<g transform="translate(30, 358)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box"/>
+      <rect x="250" y="2" width="60" height="19" rx="3" fill="#06b6d4" opacity="0.2"/>
+      <text x="280" y="15" fill="#06b6d4" font-size="9" font-weight="800" text-anchor="middle">PA10</text>
+      <text x="240" y="15" text-anchor="end" class="pin-desc">USART1_RX / TIM1_CH3</text>
+    </g>
+<circle cx="410" cy="401" r="4" class="hdr-pin"/>
+<line x1="404" y1="401" x2="350" y2="401" class="wire"/>
+<g transform="translate(30, 391)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box"/>
+      <rect x="250" y="2" width="60" height="19" rx="3" fill="#06b6d4" opacity="0.2"/>
+      <text x="280" y="15" fill="#06b6d4" font-size="9" font-weight="800" text-anchor="middle">PA11</text>
+      <text x="240" y="15" text-anchor="end" class="pin-desc">USB_DM / CAN_RX / TIM1_CH4</text>
+    </g>
+<circle cx="410" cy="434" r="4" class="hdr-pin"/>
+<line x1="404" y1="434" x2="350" y2="434" class="wire"/>
+<g transform="translate(30, 424)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box"/>
+      <rect x="250" y="2" width="60" height="19" rx="3" fill="#06b6d4" opacity="0.2"/>
+      <text x="280" y="15" fill="#06b6d4" font-size="9" font-weight="800" text-anchor="middle">PA12</text>
+      <text x="240" y="15" text-anchor="end" class="pin-desc">USB_DP / CAN_TX / TIM1_ETR</text>
+    </g>
+<circle cx="410" cy="467" r="4" class="hdr-pin"/>
+<line x1="404" y1="467" x2="350" y2="467" class="wire"/>
+<g transform="translate(30, 457)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box"/>
+      <rect x="250" y="2" width="60" height="19" rx="3" fill="#06b6d4" opacity="0.2"/>
+      <text x="280" y="15" fill="#06b6d4" font-size="9" font-weight="800" text-anchor="middle">PA15</text>
+      <text x="240" y="15" text-anchor="end" class="pin-desc">JTDI / SPI1_NSS</text>
+    </g>
+<circle cx="410" cy="500" r="4" class="hdr-pin"/>
+<line x1="404" y1="500" x2="350" y2="500" class="wire"/>
+<g transform="translate(30, 490)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box"/>
+      <rect x="250" y="2" width="60" height="19" rx="3" fill="#06b6d4" opacity="0.2"/>
+      <text x="280" y="15" fill="#06b6d4" font-size="9" font-weight="800" text-anchor="middle">PB3</text>
+      <text x="240" y="15" text-anchor="end" class="pin-desc">JTDO / SPI1_SCK</text>
+    </g>
+<circle cx="410" cy="533" r="4" class="hdr-pin"/>
+<line x1="404" y1="533" x2="350" y2="533" class="wire"/>
+<g transform="translate(30, 523)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box"/>
+      <rect x="250" y="2" width="60" height="19" rx="3" fill="#06b6d4" opacity="0.2"/>
+      <text x="280" y="15" fill="#06b6d4" font-size="9" font-weight="800" text-anchor="middle">PB4</text>
+      <text x="240" y="15" text-anchor="end" class="pin-desc">NJTRST / SPI1_MISO</text>
+    </g>
+<circle cx="410" cy="566" r="4" class="hdr-pin"/>
+<line x1="404" y1="566" x2="350" y2="566" class="wire"/>
+<g transform="translate(30, 556)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box"/>
+      <rect x="250" y="2" width="60" height="19" rx="3" fill="#10b981" opacity="0.2"/>
+      <text x="280" y="15" fill="#10b981" font-size="9" font-weight="800" text-anchor="middle">PB5</text>
+      <text x="240" y="15" text-anchor="end" class="pin-desc">I2C1_SMBA / SPI1_MOSI</text>
+    </g>
+<circle cx="410" cy="599" r="4" class="hdr-pin"/>
+<line x1="404" y1="599" x2="350" y2="599" class="wire"/>
+<g transform="translate(30, 589)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box"/>
+      <rect x="250" y="2" width="60" height="19" rx="3" fill="#06b6d4" opacity="0.2"/>
+      <text x="280" y="15" fill="#06b6d4" font-size="9" font-weight="800" text-anchor="middle">PB6</text>
+      <text x="240" y="15" text-anchor="end" class="pin-desc">I2C1_SCL / TIM4_CH1</text>
+    </g>
+<circle cx="410" cy="632" r="4" class="hdr-pin"/>
+<line x1="404" y1="632" x2="350" y2="632" class="wire"/>
+<g transform="translate(30, 622)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box"/>
+      <rect x="250" y="2" width="60" height="19" rx="3" fill="#06b6d4" opacity="0.2"/>
+      <text x="280" y="15" fill="#06b6d4" font-size="9" font-weight="800" text-anchor="middle">PB7</text>
+      <text x="240" y="15" text-anchor="end" class="pin-desc">I2C1_SDA / TIM4_CH2</text>
+    </g>
+<circle cx="410" cy="665" r="4" class="hdr-pin"/>
+<line x1="404" y1="665" x2="350" y2="665" class="wire"/>
+<g transform="translate(30, 655)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box"/>
+      <rect x="250" y="2" width="60" height="19" rx="3" fill="#06b6d4" opacity="0.2"/>
+      <text x="280" y="15" fill="#06b6d4" font-size="9" font-weight="800" text-anchor="middle">PB8</text>
+      <text x="240" y="15" text-anchor="end" class="pin-desc">TIM4_CH3 / CAN_RX (Remap)</text>
+    </g>
+<circle cx="410" cy="698" r="4" class="hdr-pin"/>
+<line x1="404" y1="698" x2="350" y2="698" class="wire"/>
+<g transform="translate(30, 688)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box"/>
+      <rect x="250" y="2" width="60" height="19" rx="3" fill="#06b6d4" opacity="0.2"/>
+      <text x="280" y="15" fill="#06b6d4" font-size="9" font-weight="800" text-anchor="middle">PB9</text>
+      <text x="240" y="15" text-anchor="end" class="pin-desc">TIM4_CH4 / CAN_TX (Remap)</text>
+    </g>
+<circle cx="410" cy="731" r="4" class="hdr-pin"/>
+<line x1="404" y1="731" x2="350" y2="731" class="wire"/>
+<g transform="translate(30, 721)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box"/>
+      <rect x="250" y="2" width="60" height="19" rx="3" fill="#ef4444" opacity="0.2"/>
+      <text x="280" y="15" fill="#ef4444" font-size="9" font-weight="800" text-anchor="middle">5V</text>
+      <text x="240" y="15" text-anchor="end" class="pin-desc">Nguồn 5V đầu vào (từ USB)</text>
+    </g>
+<circle cx="410" cy="764" r="4" class="hdr-pin"/>
+<line x1="404" y1="764" x2="350" y2="764" class="wire"/>
+<g transform="translate(30, 754)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box"/>
+      <rect x="250" y="2" width="60" height="19" rx="3" fill="#64748b" opacity="0.2"/>
+      <text x="280" y="15" fill="#64748b" font-size="9" font-weight="800" text-anchor="middle">GND</text>
+      <text x="240" y="15" text-anchor="end" class="pin-desc">Mass chuẩn hệ thống</text>
+    </g>
+<circle cx="410" cy="797" r="4" class="hdr-pin"/>
+<line x1="404" y1="797" x2="350" y2="797" class="wire"/>
+<g transform="translate(30, 787)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box"/>
+      <rect x="250" y="2" width="60" height="19" rx="3" fill="#ef4444" opacity="0.2"/>
+      <text x="280" y="15" fill="#ef4444" font-size="9" font-weight="800" text-anchor="middle">3.3V</text>
+      <text x="240" y="15" text-anchor="end" class="pin-desc">Nguồn 3.3V đầu ra LDO (Tối đa 300mA)</text>
+    </g><circle cx="650" cy="170" r="4" class="hdr-pin"/>
+<line x1="656" y1="170" x2="710" y2="170" class="wire"/>
+<g transform="translate(715, 160)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box" rx="5" fill="var(--label-box-bg)"/>
+      <rect x="5" y="2" width="60" height="19" rx="3" fill="#06b6d4" opacity="0.2"/>
+      <text x="35" y="15" fill="#06b6d4" font-size="9" font-weight="800" text-anchor="middle">PB11</text>
+      <text x="75" y="15" class="pin-desc">I2C2_SDA / USART3_RX</text>
+    </g>
+<circle cx="650" cy="203" r="4" class="hdr-pin"/>
+<line x1="656" y1="203" x2="710" y2="203" class="wire"/>
+<g transform="translate(715, 193)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box" rx="5" fill="var(--label-box-bg)"/>
+      <rect x="5" y="2" width="60" height="19" rx="3" fill="#06b6d4" opacity="0.2"/>
+      <text x="35" y="15" fill="#06b6d4" font-size="9" font-weight="800" text-anchor="middle">PB10</text>
+      <text x="75" y="15" class="pin-desc">I2C2_SCL / USART3_TX</text>
+    </g>
+<circle cx="650" cy="236" r="4" class="hdr-pin"/>
+<line x1="656" y1="236" x2="710" y2="236" class="wire"/>
+<g transform="translate(715, 226)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box" rx="5" fill="var(--label-box-bg)"/>
+      <rect x="5" y="2" width="60" height="19" rx="3" fill="#f59e0b" opacity="0.2"/>
+      <text x="35" y="15" fill="#f59e0b" font-size="9" font-weight="800" text-anchor="middle">PB1</text>
+      <text x="75" y="15" class="pin-desc">ADC12_IN9 / TIM3_CH4</text>
+    </g>
+<circle cx="650" cy="269" r="4" class="hdr-pin"/>
+<line x1="656" y1="269" x2="710" y2="269" class="wire"/>
+<g transform="translate(715, 259)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box" rx="5" fill="var(--label-box-bg)"/>
+      <rect x="5" y="2" width="60" height="19" rx="3" fill="#f59e0b" opacity="0.2"/>
+      <text x="35" y="15" fill="#f59e0b" font-size="9" font-weight="800" text-anchor="middle">PB0</text>
+      <text x="75" y="15" class="pin-desc">ADC12_IN8 / TIM3_CH3</text>
+    </g>
+<circle cx="650" cy="302" r="4" class="hdr-pin"/>
+<line x1="656" y1="302" x2="710" y2="302" class="wire"/>
+<g transform="translate(715, 292)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box" rx="5" fill="var(--label-box-bg)"/>
+      <rect x="5" y="2" width="60" height="19" rx="3" fill="#f59e0b" opacity="0.2"/>
+      <text x="35" y="15" fill="#f59e0b" font-size="9" font-weight="800" text-anchor="middle">PA7</text>
+      <text x="75" y="15" class="pin-desc">ADC12_IN7 / SPI1_MOSI / TIM3_CH2</text>
+    </g>
+<circle cx="650" cy="335" r="4" class="hdr-pin"/>
+<line x1="656" y1="335" x2="710" y2="335" class="wire"/>
+<g transform="translate(715, 325)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box" rx="5" fill="var(--label-box-bg)"/>
+      <rect x="5" y="2" width="60" height="19" rx="3" fill="#f59e0b" opacity="0.2"/>
+      <text x="35" y="15" fill="#f59e0b" font-size="9" font-weight="800" text-anchor="middle">PA6</text>
+      <text x="75" y="15" class="pin-desc">ADC12_IN6 / SPI1_MISO / TIM3_CH1</text>
+    </g>
+<circle cx="650" cy="368" r="4" class="hdr-pin"/>
+<line x1="656" y1="368" x2="710" y2="368" class="wire"/>
+<g transform="translate(715, 358)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box" rx="5" fill="var(--label-box-bg)"/>
+      <rect x="5" y="2" width="60" height="19" rx="3" fill="#f59e0b" opacity="0.2"/>
+      <text x="35" y="15" fill="#f59e0b" font-size="9" font-weight="800" text-anchor="middle">PA5</text>
+      <text x="75" y="15" class="pin-desc">ADC12_IN5 / SPI1_SCK</text>
+    </g>
+<circle cx="650" cy="401" r="4" class="hdr-pin"/>
+<line x1="656" y1="401" x2="710" y2="401" class="wire"/>
+<g transform="translate(715, 391)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box" rx="5" fill="var(--label-box-bg)"/>
+      <rect x="5" y="2" width="60" height="19" rx="3" fill="#f59e0b" opacity="0.2"/>
+      <text x="35" y="15" fill="#f59e0b" font-size="9" font-weight="800" text-anchor="middle">PA4</text>
+      <text x="75" y="15" class="pin-desc">ADC12_IN4 / SPI1_NSS / USART2_CK</text>
+    </g>
+<circle cx="650" cy="434" r="4" class="hdr-pin"/>
+<line x1="656" y1="434" x2="710" y2="434" class="wire"/>
+<g transform="translate(715, 424)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box" rx="5" fill="var(--label-box-bg)"/>
+      <rect x="5" y="2" width="60" height="19" rx="3" fill="#f59e0b" opacity="0.2"/>
+      <text x="35" y="15" fill="#f59e0b" font-size="9" font-weight="800" text-anchor="middle">PA3</text>
+      <text x="75" y="15" class="pin-desc">ADC12_IN3 / USART2_RX / TIM2_CH4</text>
+    </g>
+<circle cx="650" cy="467" r="4" class="hdr-pin"/>
+<line x1="656" y1="467" x2="710" y2="467" class="wire"/>
+<g transform="translate(715, 457)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box" rx="5" fill="var(--label-box-bg)"/>
+      <rect x="5" y="2" width="60" height="19" rx="3" fill="#f59e0b" opacity="0.2"/>
+      <text x="35" y="15" fill="#f59e0b" font-size="9" font-weight="800" text-anchor="middle">PA2</text>
+      <text x="75" y="15" class="pin-desc">ADC12_IN2 / USART2_TX / TIM2_CH3</text>
+    </g>
+<circle cx="650" cy="500" r="4" class="hdr-pin"/>
+<line x1="656" y1="500" x2="710" y2="500" class="wire"/>
+<g transform="translate(715, 490)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box" rx="5" fill="var(--label-box-bg)"/>
+      <rect x="5" y="2" width="60" height="19" rx="3" fill="#f59e0b" opacity="0.2"/>
+      <text x="35" y="15" fill="#f59e0b" font-size="9" font-weight="800" text-anchor="middle">PA1</text>
+      <text x="75" y="15" class="pin-desc">ADC12_IN1 / USART2_RTS / TIM2_CH2</text>
+    </g>
+<circle cx="650" cy="533" r="4" class="hdr-pin"/>
+<line x1="656" y1="533" x2="710" y2="533" class="wire"/>
+<g transform="translate(715, 523)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box" rx="5" fill="var(--label-box-bg)"/>
+      <rect x="5" y="2" width="60" height="19" rx="3" fill="#f59e0b" opacity="0.2"/>
+      <text x="35" y="15" fill="#f59e0b" font-size="9" font-weight="800" text-anchor="middle">PA0</text>
+      <text x="75" y="15" class="pin-desc">ADC12_IN0 / WKUP / USART2_CTS</text>
+    </g>
+<circle cx="650" cy="566" r="4" class="hdr-pin"/>
+<line x1="656" y1="566" x2="710" y2="566" class="wire"/>
+<g transform="translate(715, 556)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box" rx="5" fill="var(--label-box-bg)"/>
+      <rect x="5" y="2" width="60" height="19" rx="3" fill="#10b981" opacity="0.2"/>
+      <text x="35" y="15" fill="#10b981" font-size="9" font-weight="800" text-anchor="middle">PC15</text>
+      <text x="75" y="15" class="pin-desc">OSC32_OUT / Chân I/O thường</text>
+    </g>
+<circle cx="650" cy="599" r="4" class="hdr-pin"/>
+<line x1="656" y1="599" x2="710" y2="599" class="wire"/>
+<g transform="translate(715, 589)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box" rx="5" fill="var(--label-box-bg)"/>
+      <rect x="5" y="2" width="60" height="19" rx="3" fill="#10b981" opacity="0.2"/>
+      <text x="35" y="15" fill="#10b981" font-size="9" font-weight="800" text-anchor="middle">PC14</text>
+      <text x="75" y="15" class="pin-desc">OSC32_IN / Chân I/O thường</text>
+    </g>
+<circle cx="650" cy="632" r="4" class="hdr-pin"/>
+<line x1="656" y1="632" x2="710" y2="632" class="wire"/>
+<g transform="translate(715, 622)">
+      <rect x="0" y="0" width="315" height="23" stroke="#22c55e" stroke-width="2" rx="5" fill="var(--label-box-bg)"/>
+      <rect x="5" y="2" width="60" height="19" rx="3" fill="#22c55e" opacity="0.2"/>
+      <text x="35" y="15" fill="#22c55e" font-size="9" font-weight="800" text-anchor="middle">PC13</text>
+      <text x="75" y="15" class="pin-desc">TAMPER-RTC / ĐÈN LED TÍCH HỢP (Active-Low)</text>
+    </g>
+<circle cx="650" cy="665" r="4" class="hdr-pin"/>
+<line x1="656" y1="665" x2="710" y2="665" class="wire"/>
+<g transform="translate(715, 655)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box" rx="5" fill="var(--label-box-bg)"/>
+      <rect x="5" y="2" width="60" height="19" rx="3" fill="#ef4444" opacity="0.2"/>
+      <text x="35" y="15" fill="#ef4444" font-size="9" font-weight="800" text-anchor="middle">VBAT</text>
+      <text x="75" y="15" class="pin-desc">Nguồn cấp Pin 3V nuôi RTC khi mất điện</text>
+    </g>
+<circle cx="650" cy="698" r="4" class="hdr-pin"/>
+<line x1="656" y1="698" x2="710" y2="698" class="wire"/>
+<g transform="translate(715, 688)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box" rx="5" fill="var(--label-box-bg)"/>
+      <rect x="5" y="2" width="60" height="19" rx="3" fill="#ef4444" opacity="0.2"/>
+      <text x="35" y="15" fill="#ef4444" font-size="9" font-weight="800" text-anchor="middle">3.3V</text>
+      <text x="75" y="15" class="pin-desc">Nguồn 3.3V đầu ra</text>
+    </g>
+<circle cx="650" cy="731" r="4" class="hdr-pin"/>
+<line x1="656" y1="731" x2="710" y2="731" class="wire"/>
+<g transform="translate(715, 721)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box" rx="5" fill="var(--label-box-bg)"/>
+      <rect x="5" y="2" width="60" height="19" rx="3" fill="#64748b" opacity="0.2"/>
+      <text x="35" y="15" fill="#64748b" font-size="9" font-weight="800" text-anchor="middle">GND</text>
+      <text x="75" y="15" class="pin-desc">Mass chuẩn hệ thống</text>
+    </g>
+<circle cx="650" cy="764" r="4" class="hdr-pin"/>
+<line x1="656" y1="764" x2="710" y2="764" class="wire"/>
+<g transform="translate(715, 754)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box" rx="5" fill="var(--label-box-bg)"/>
+      <rect x="5" y="2" width="60" height="19" rx="3" fill="#64748b" opacity="0.2"/>
+      <text x="35" y="15" fill="#64748b" font-size="9" font-weight="800" text-anchor="middle">GND</text>
+      <text x="75" y="15" class="pin-desc">Mass chuẩn hệ thống</text>
+    </g>
+<circle cx="650" cy="797" r="4" class="hdr-pin"/>
+<line x1="656" y1="797" x2="710" y2="797" class="wire"/>
+<g transform="translate(715, 787)">
+      <rect x="0" y="0" width="315" height="23" class="pin-box" rx="5" fill="var(--label-box-bg)"/>
+      <rect x="5" y="2" width="60" height="19" rx="3" fill="#ef4444" opacity="0.2"/>
+      <text x="35" y="15" fill="#ef4444" font-size="9" font-weight="800" text-anchor="middle">3.3V</text>
+      <text x="75" y="15" class="pin-desc">Nguồn 3.3V đầu ra</text>
+    </g>
+</svg>

@@ -1,0 +1,160 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" width="100%" height="100%" style="font-family: 'Segoe UI', Arial, -apple-system, sans-serif;">
+  <defs>
+    <style>
+      :root {
+        --canvas-bg: #f8fafc;
+        --canvas-border: #e2e8f0;
+        --card-bg: #ffffff;
+        --card-border: #cbd5e1;
+        --title-color: #0f172a;
+        --subtitle-color: #475569;
+        --text-primary: #1e293b;
+        --text-muted: #64748b;
+        --panel-bg: #f1f5f9;
+        --panel-border: #cbd5e1;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --canvas-bg: #0b0f19;
+          --canvas-border: #1e293b;
+          --card-bg: #111827;
+          --card-border: #334155;
+          --title-color: #f8fafc;
+          --subtitle-color: #94a3b8;
+          --text-primary: #f8fafc;
+          --text-muted: #94a3b8;
+          --panel-bg: #1e293b;
+          --panel-border: #334155;
+        }
+      }
+
+      .canvas-bg { fill: var(--canvas-bg); stroke: var(--canvas-border); }
+      .card-box { fill: var(--card-bg); stroke: var(--card-border); stroke-width: 2; rx: 12; }
+      .panel-box { fill: var(--panel-bg); stroke: var(--panel-border); stroke-width: 1.5; rx: 8; }
+      .title-text { fill: var(--title-color); font-weight: 800; font-size: 19px; text-anchor: middle; }
+      .subtitle-text { fill: var(--subtitle-color); font-weight: 600; font-size: 13px; text-anchor: middle; }
+      .txt-p { fill: var(--text-primary); font-weight: 700; font-size: 13px; }
+      .txt-m { fill: var(--text-muted); font-size: 12px; }
+    </style>
+    <filter id="shadowBox" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+
+  <!-- Outer Canvas -->
+  <rect x="10" y="10" width="940" height="540" class="canvas-bg" rx="16" stroke-width="2"/>
+
+  <!-- Title -->
+  <text x="480" y="45" class="title-text">SƠ ĐỒ NẠP CODE ST-LINK V2 &amp; MẠCH NGUYÊN LÝ LED PC13 (ACTIVE-LOW)</text>
+  <text x="480" y="68" class="subtitle-text">Giao thức Serial Wire Debug (SWD) 4 Dây Chuẩn - Hỗ trợ Giao diện Sáng / Tối</text>
+
+  <!-- LEFT SECTION: ST-LINK V2 to STM32 BLUE PILL (X=30, Y=95, W=465, H=430) -->
+  <g transform="translate(30, 95)" filter="url(#shadowBox)">
+    <rect x="0" y="0" width="465" height="430" class="card-box"/>
+    <text x="232" y="32" class="title-text" font-size="15">1. Kết Nối Mạch Nạp ST-Link V2 (SWD Header)</text>
+
+    <!-- ST-Link Body -->
+    <rect x="30" y="70" width="110" height="280" rx="8" fill="#2563eb" stroke="#1d4ed8" stroke-width="2"/>
+    <rect x="50" y="55" width="70" height="20" rx="3" fill="#94a3b8"/>
+    <text x="85" y="69" font-size="9" font-weight="bold" fill="#0f172a" text-anchor="middle">USB PC</text>
+    <text x="85" y="170" font-size="14" font-weight="900" fill="#ffffff" text-anchor="middle" transform="rotate(-90, 85, 170)">ST-LINK V2</text>
+
+    <!-- ST-Link 4 Pins -->
+    <circle cx="130" cy="120" r="5" fill="#ef4444"/>
+    <circle cx="130" cy="170" r="5" fill="#06b6d4"/>
+    <circle cx="130" cy="220" r="5" fill="#3b82f6"/>
+    <circle cx="130" cy="270" r="5" fill="#64748b"/>
+
+    <!-- Blue Pill Target -->
+    <rect x="325" y="70" width="115" height="280" rx="8" fill="#1e3a8a" stroke="#172554" stroke-width="2"/>
+    <text x="382" y="190" font-size="13" font-weight="bold" fill="#ffffff" text-anchor="middle" transform="rotate(-90, 382, 190)">STM32 BLUE PILL</text>
+    <circle cx="335" cy="120" r="5" fill="#ef4444"/>
+    <circle cx="335" cy="170" r="5" fill="#06b6d4"/>
+    <circle cx="335" cy="220" r="5" fill="#3b82f6"/>
+    <circle cx="335" cy="270" r="5" fill="#64748b"/>
+
+    <!-- Connecting Wires -->
+    <!-- 3.3V Line -->
+    <path d="M 130 120 L 335 120" stroke="#ef4444" stroke-width="3" fill="none"/>
+    <rect x="195" y="108" width="76" height="22" rx="4" fill="#ef4444"/>
+    <text x="233" y="123" font-size="11" font-weight="800" fill="#ffffff" text-anchor="middle">3.3V (VCC)</text>
+
+    <!-- SWDIO Line -->
+    <path d="M 130 170 L 335 170" stroke="#06b6d4" stroke-width="3" fill="none"/>
+    <rect x="183" y="158" width="100" height="22" rx="4" fill="#06b6d4"/>
+    <text x="233" y="173" font-size="11" font-weight="800" fill="#0f172a" text-anchor="middle">SWDIO (PA13)</text>
+
+    <!-- SWCLK Line -->
+    <path d="M 130 220 L 335 220" stroke="#3b82f6" stroke-width="3" fill="none"/>
+    <rect x="183" y="208" width="100" height="22" rx="4" fill="#3b82f6"/>
+    <text x="233" y="223" font-size="11" font-weight="800" fill="#ffffff" text-anchor="middle">SWCLK (PA14)</text>
+
+    <!-- GND Line -->
+    <path d="M 130 270 L 335 270" stroke="#64748b" stroke-width="3" fill="none"/>
+    <rect x="195" y="258" width="76" height="22" rx="4" fill="#64748b"/>
+    <text x="233" y="273" font-size="11" font-weight="800" fill="#ffffff" text-anchor="middle">GND (0V)</text>
+
+    <text x="232" y="385" class="txt-m" text-anchor="middle">Lưu ý: Không cắm nhầm nguồn 5V vào chân 3.3V của chip!</text>
+  </g>
+
+  <!-- RIGHT SECTION: ACTIVE-LOW LED SCHEMATIC (X=515, Y=95, W=415, H=430) -->
+  <g transform="translate(515, 95)" filter="url(#shadowBox)">
+    <rect x="0" y="0" width="415" height="430" class="card-box"/>
+    <text x="208" y="32" class="title-text" font-size="15">2. Sơ Đồ Mạch LED PC13 (Active-Low)</text>
+
+    <!-- Schematic Box -->
+    <g transform="translate(48, 65)">
+      <!-- VCC 3.3V Rail -->
+      <line x1="160" y1="20" x2="160" y2="60" stroke="#ef4444" stroke-width="3"/>
+      <polygon points="160,10 150,25 170,25" fill="#ef4444"/>
+      <text x="160" y="2" font-size="12" font-weight="900" fill="#ef4444" text-anchor="middle">+3.3V (VCC)</text>
+
+      <!-- Resistor R = 510 Ohm -->
+      <rect x="145" y="60" width="30" height="45" rx="3" fill="#f59e0b" stroke="#d97706" stroke-width="2"/>
+      <text x="160" y="87" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">510Ω</text>
+      <line x1="160" y1="105" x2="160" y2="135" stroke="var(--text-primary)" stroke-width="2.5"/>
+
+      <!-- LED Green -->
+      <!-- Triangle -->
+      <polygon points="145,135 175,135 160,165" fill="#22c55e" stroke="#16a34a" stroke-width="2"/>
+      <!-- Cathode Bar -->
+      <line x1="145" y1="165" x2="175" y2="165" stroke="#16a34a" stroke-width="3"/>
+      <!-- Photons Emission arrows -->
+      <line x1="172" y1="140" x2="190" y2="130" stroke="#22c55e" stroke-width="2"/>
+      <polygon points="190,130 183,135 186,140" fill="#22c55e"/>
+      <line x1="175" y1="150" x2="193" y2="140" stroke="#22c55e" stroke-width="2"/>
+      <polygon points="193,140 186,145 189,150" fill="#22c55e"/>
+      <text x="212" y="152" font-size="11" font-weight="bold" fill="#22c55e">LED Xanh</text>
+
+      <!-- Connection to PC13 -->
+      <line x1="160" y1="165" x2="160" y2="215" stroke="var(--text-primary)" stroke-width="2.5"/>
+      <rect x="110" y="215" width="100" height="30" rx="6" fill="#1e3a8a" stroke="#38bdf8" stroke-width="1.5"/>
+      <text x="160" y="235" font-size="12" font-weight="800" fill="#ffffff" text-anchor="middle">Chân PC13</text>
+    </g>
+
+    <!-- Logic Explanation Table -->
+    <g transform="translate(20, 312)">
+      <rect x="0" y="0" width="375" height="98" class="panel-box"/>
+      
+      <!-- Row 1: Low Level -> ON -->
+      <g transform="translate(10, 10)">
+        <rect x="0" y="0" width="355" height="24" rx="5" fill="#22c55e" fill-opacity="0.12" stroke="#22c55e" stroke-opacity="0.35"/>
+        <text x="10" y="16" font-size="11.5" font-weight="700" fill="var(--text-primary)">• Mức 0 (0V):</text>
+        <text x="96" y="16" font-size="11.5" font-weight="700" fill="#22c55e">Có dòng qua LED → BẬT SÁNG</text>
+        <text x="345" y="16" font-size="10.5" font-weight="700" fill="#16a34a" text-anchor="end">ResetBits()</text>
+      </g>
+
+      <!-- Row 2: High Level -> OFF -->
+      <g transform="translate(10, 38)">
+        <rect x="0" y="0" width="355" height="24" rx="5" fill="#ef4444" fill-opacity="0.12" stroke="#ef4444" stroke-opacity="0.35"/>
+        <text x="10" y="16" font-size="11.5" font-weight="700" fill="var(--text-primary)">• Mức 1 (3.3V):</text>
+        <text x="96" y="16" font-size="11.5" font-weight="700" fill="#ef4444">Cân bằng áp 3.3V → TẮT</text>
+        <text x="345" y="16" font-size="10.5" font-weight="700" fill="#dc2626" text-anchor="end">SetBits()</text>
+      </g>
+
+      <!-- Row 3: Bottom note -->
+      <text x="187" y="84" font-size="10.5" font-weight="600" fill="var(--text-muted)" text-anchor="middle">Cơ chế Active-Low: Kéo chân về 0V (Reset) để sáng đèn</text>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 330" width="100%" height="100%" style="background:#ffffff; font-family: 'Segoe UI', Arial, sans-serif;">
+  <rect x="10" y="10" width="820" height="310" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2"/>
+  <text x="420" y="38" text-anchor="middle" fill="#0f172a" font-size="18" font-weight="800">SO SÁNH 2 CHẾ ĐỘ WI-FI TRÊN ESP32: STATION VÀ ACCESS POINT</text>
+
+  <!-- Left: Station Mode -->
+  <g transform="translate(55, 60)">
+    <rect x="0" y="0" width="340" height="230" rx="12" fill="#ffffff" stroke="#16a34a" stroke-width="2"/>
+    <text x="170" y="30" text-anchor="middle" fill="#16a34a" font-size="14" font-weight="bold">1. CHẾ ĐỘ STATION (WIFI_STA)</text>
+    <text x="170" y="50" text-anchor="middle" fill="#64748b" font-size="11">ESP32 kết nối vào Router Wi-Fi có sẵn</text>
+
+    <!-- Router -->
+    <rect x="25" y="80" width="105" height="75" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+    <text x="77" y="112" text-anchor="middle" fill="#ea580c" font-size="12" font-weight="bold">ROUTER</text>
+    <text x="77" y="128" text-anchor="middle" fill="#64748b" font-size="10">Gia đình / Cty</text>
+
+    <!-- Waves -->
+    <path d="M 140 115 Q 170 95 200 115" fill="none" stroke="#16a34a" stroke-width="2.5"/>
+    <text x="170" y="90" text-anchor="middle" fill="#16a34a" font-size="10" font-weight="bold">Sóng Wi-Fi</text>
+
+    <!-- ESP32 -->
+    <rect x="210" y="80" width="105" height="75" rx="8" fill="#1e293b"/>
+    <text x="262" y="112" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="bold">ESP32</text>
+    <text x="262" y="128" text-anchor="middle" fill="#94a3b8" font-size="10">Client nhận IP</text>
+
+    <text x="170" y="190" text-anchor="middle" fill="#334155" font-size="11" font-weight="600">Mục đích: Ra Internet gửi MQTT / HTTP</text>
+  </g>
+
+  <!-- Right: SoftAP Mode -->
+  <g transform="translate(445, 60)">
+    <rect x="0" y="0" width="340" height="230" rx="12" fill="#ffffff" stroke="#d97706" stroke-width="2"/>
+    <text x="170" y="30" text-anchor="middle" fill="#d97706" font-size="14" font-weight="bold">2. CHẾ ĐỘ SOFTAP (WIFI_AP)</text>
+    <text x="170" y="50" text-anchor="middle" fill="#64748b" font-size="11">ESP32 tự phát sóng Wi-Fi cho điện thoại kết nối</text>
+
+    <!-- ESP32 AP -->
+    <rect x="25" y="80" width="105" height="75" rx="8" fill="#1e293b"/>
+    <text x="77" y="112" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="bold">ESP32</text>
+    <text x="77" y="128" text-anchor="middle" fill="#f59e0b" font-size="10" font-weight="bold">Phát Wi-Fi</text>
+
+    <!-- Waves -->
+    <path d="M 140 115 Q 170 95 200 115" fill="none" stroke="#d97706" stroke-width="2.5"/>
+    <text x="170" y="90" text-anchor="middle" fill="#d97706" font-size="10" font-weight="bold">Tự phát SSID</text>
+
+    <!-- Smartphone -->
+    <rect x="210" y="80" width="105" height="75" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+    <text x="262" y="112" text-anchor="middle" fill="#7c3aed" font-size="12" font-weight="bold">ĐIỆN THOẠI</text>
+    <text x="262" y="128" text-anchor="middle" fill="#64748b" font-size="10">Bắt sóng cấu hình</text>
+
+    <text x="170" y="190" text-anchor="middle" fill="#334155" font-size="11" font-weight="600">Mục đích: Cài đặt thiết bị khi chưa có mạng</text>
+  </g>
+</svg>

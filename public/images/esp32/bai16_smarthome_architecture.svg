@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 460" width="100%" height="100%" style="background:#ffffff; font-family: 'Segoe UI', Arial, sans-serif;">
+  <rect x="10" y="10" width="900" height="440" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2"/>
+  <text x="460" y="42" text-anchor="middle" fill="#0f172a" font-size="22" font-weight="800">SƠ ĐỒ KHỐI TỔNG THỂ HỆ THỐNG SMART HOME IOT ĐA NHIỆM</text>
+
+  <!-- Central Microcontroller: ESP32 -->
+  <rect x="340" y="80" width="240" height="260" rx="14" fill="#ffffff" stroke="#2563eb" stroke-width="3"/>
+  <text x="460" y="115" text-anchor="middle" fill="#1d4ed8" font-size="18" font-weight="bold">ESP32 DUAL-CORE</text>
+  <text x="460" y="135" text-anchor="middle" fill="#64748b" font-size="12">Tensilica Xtensa LX6 (240MHz)</text>
+
+  <rect x="360" y="150" width="200" height="40" rx="6" fill="#fee2e2" stroke="#ef4444"/>
+  <text x="460" y="175" text-anchor="middle" fill="#b91c1c" font-size="11" font-weight="bold">Core 0: Wi-Fi &amp; MQTT Cloud</text>
+
+  <rect x="360" y="200" width="200" height="40" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="460" y="225" text-anchor="middle" fill="#15803d" font-size="11" font-weight="bold">Core 1: Sensor, Actuator, LCD</text>
+
+  <rect x="360" y="250" width="200" height="40" rx="6" fill="#f3e8ff" stroke="#9333ea"/>
+  <text x="460" y="275" text-anchor="middle" fill="#7e22ce" font-size="11" font-weight="bold">FreeRTOS: Queue &amp; Mutex</text>
+
+  <!-- LEFT: SENSORS (INPUTS) -->
+  <!-- DHT22 -->
+  <rect x="40" y="80" width="190" height="60" rx="8" fill="#ffffff" stroke="#16a34a" stroke-width="2"/>
+  <text x="135" y="105" text-anchor="middle" fill="#16a34a" font-size="13" font-weight="bold">CẢM BIẾN DHT22</text>
+  <text x="135" y="125" text-anchor="middle" fill="#334155" font-size="11">Nhiệt độ &amp; Độ ẩm (GPIO 15)</text>
+  <line x1="230" y1="110" x2="340" y2="150" stroke="#16a34a" stroke-width="2.5"/>
+
+  <!-- LDR Sensor -->
+  <rect x="40" y="160" width="190" height="60" rx="8" fill="#ffffff" stroke="#ea580c" stroke-width="2"/>
+  <text x="135" y="185" text-anchor="middle" fill="#ea580c" font-size="13" font-weight="bold">QUANG TRỞ (LDR)</text>
+  <text x="135" y="205" text-anchor="middle" fill="#334155" font-size="11">Cường độ sáng (ADC 34)</text>
+  <line x1="230" y1="190" x2="340" y2="190" stroke="#ea580c" stroke-width="2.5"/>
+
+  <!-- SOS Button -->
+  <rect x="40" y="240" width="190" height="60" rx="8" fill="#ffffff" stroke="#dc2626" stroke-width="2"/>
+  <text x="135" y="265" text-anchor="middle" fill="#dc2626" font-size="13" font-weight="bold">NÚT BẤM KHẨN CẤP</text>
+  <text x="135" y="285" text-anchor="middle" fill="#334155" font-size="11">Ngắt ngoài GPIO 4 (IRAM)</text>
+  <line x1="230" y1="270" x2="340" y2="230" stroke="#dc2626" stroke-width="2.5"/>
+
+  <!-- RIGHT: ACTUATORS & DISPLAY (OUTPUTS) -->
+  <!-- LCD 1602 -->
+  <rect x="690" y="80" width="190" height="60" rx="8" fill="#ffffff" stroke="#d97706" stroke-width="2"/>
+  <text x="785" y="105" text-anchor="middle" fill="#d97706" font-size="13" font-weight="bold">MÀN HÌNH LCD 1602</text>
+  <text x="785" y="125" text-anchor="middle" fill="#334155" font-size="11">Giao tiếp I2C (SDA 21, SCL 22)</text>
+  <line x1="580" y1="150" x2="690" y2="110" stroke="#d97706" stroke-width="2.5"/>
+
+  <!-- Servo Door -->
+  <rect x="690" y="160" width="190" height="60" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+  <text x="785" y="185" text-anchor="middle" fill="#2563eb" font-size="13" font-weight="bold">CỬA TỰ ĐỘNG SERVO</text>
+  <text x="785" y="205" text-anchor="middle" fill="#334155" font-size="11">PWM 50Hz (GPIO 18)</text>
+  <line x1="580" y1="190" x2="690" y2="190" stroke="#2563eb" stroke-width="2.5"/>
+
+  <!-- Smart Light -->
+  <rect x="690" y="240" width="190" height="60" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="2"/>
+  <text x="785" y="265" text-anchor="middle" fill="#7c3aed" font-size="13" font-weight="bold">ĐÈN CHIẾU SÁNG</text>
+  <text x="785" y="285" text-anchor="middle" fill="#334155" font-size="11">Output GPIO 2 (LED)</text>
+  <line x1="580" y1="230" x2="690" y2="270" stroke="#7c3aed" stroke-width="2.5"/>
+
+  <!-- BOTTOM: CLOUD IOT -->
+  <rect x="260" y="375" width="400" height="60" rx="10" fill="#ffffff" stroke="#ea580c" stroke-width="2"/>
+  <text x="460" y="400" text-anchor="middle" fill="#ea580c" font-size="14" font-weight="bold">CLOUD IOT &amp; APP DI ĐỘNG</text>
+  <text x="460" y="420" text-anchor="middle" fill="#475569" font-size="11">Wi-Fi 802.11 b/g/n + Giao thức MQTT (broker.hivemq.com)</text>
+  <line x1="460" y1="340" x2="460" y2="375" stroke="#ea580c" stroke-width="3"/>
+</svg>

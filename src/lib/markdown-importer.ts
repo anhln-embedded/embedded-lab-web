@@ -95,7 +95,7 @@ function formatInlineMarkdown(text: string): string {
   c = c.replace(/\*(.*?)\*/g, '<em>$1</em>');
   c = c.replace(/_([^_]+)_/g, '<em>$1</em>');
   c = c.replace(/~~(.*?)~~/g, '<del class="line-through text-text-muted">$1</del>');
-  c = c.replace(/`([^`]+)`/g, (_, code) => `<code class="px-1.5 py-0.5 rounded bg-bg-elevated border border-border text-accent font-mono text-[11px] font-semibold">${escapeHtml(code)}</code>`);
+  c = c.replace(/`([^`]+)`/g, '<code class="px-1.5 py-0.5 rounded bg-bg-elevated border border-border text-accent font-mono text-[11px] font-semibold">$1</code>');
   c = c.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-accent hover:underline font-semibold">$1</a>');
   return c;
 }
@@ -142,8 +142,8 @@ function parseMarkdownTables(markdown: string): string {
     const tbodyHtml = `
       <tbody class="divide-y divide-border/60 bg-bg-panel/40 text-xs sm:text-sm">
         ${bodyRows
-          .map(
-            (row) => `
+        .map(
+          (row) => `
           <tr class="hover:bg-bg-elevated/30 transition-colors">
             ${row
               .map(
@@ -153,8 +153,8 @@ function parseMarkdownTables(markdown: string): string {
               .join("")}
           </tr>
         `
-          )
-          .join("")}
+        )
+        .join("")}
       </tbody>
     `;
 
@@ -185,16 +185,11 @@ export function extractHeadingsFromContent(htmlOrMarkdown: string): HeadingItem[
     const innerHtml = match[2];
 
     const idMatch = fullTag.match(/id="([^"]+)"/i);
-    // Bỏ thẻ anchor link # ở cuối, bỏ các thẻ HTML khác và loại bỏ backtick thô nếu còn sót
-    const cleanInner = innerHtml
-      .replace(/<a\b[^>]*>[\s\S]*?<\/a>/gi, "")
-      .replace(/<[^>]*>/g, "")
-      .replace(/`/g, "")
-      .trim();
+    const text = innerHtml.replace(/<[^>]*>/g, "").replace(/#/g, "").trim();
 
-    if (cleanInner) {
-      const id = idMatch ? idMatch[1] : slugifyHeading(cleanInner);
-      headings.push({ id, text: cleanInner, level });
+    if (text) {
+      const id = idMatch ? idMatch[1] : slugifyHeading(text);
+      headings.push({ id, text, level });
     }
   }
 
@@ -205,13 +200,13 @@ export function extractHeadingsFromContent(htmlOrMarkdown: string): HeadingItem[
   lines.forEach((line) => {
     const h2 = line.match(/^##\s+(.+)$/);
     if (h2) {
-      const text = h2[1].replace(/`/g, "").trim();
+      const text = h2[1].trim();
       headings.push({ id: slugifyHeading(text), text, level: 2 });
       return;
     }
     const h3 = line.match(/^###\s+(.+)$/);
     if (h3) {
-      const text = h3[1].replace(/`/g, "").trim();
+      const text = h3[1].trim();
       headings.push({ id: slugifyHeading(text), text, level: 3 });
     }
   });
@@ -231,23 +226,17 @@ const labMarkedInstance = new Marked({
 
 labMarkedInstance.use({
   renderer: {
-    codespan({ text }) {
-      return `<code class="px-1.5 py-0.5 mx-0.5 rounded bg-bg-elevated border border-border/80 text-accent font-mono text-[0.88em] font-semibold">${escapeHtml(text)}</code>`;
-    },
-
-    heading(token) {
-      const { depth, tokens, text } = token;
-      const content = tokens ? this.parser.parseInline(tokens) : text;
-      const cleanText = text.replace(/<[^>]*>/g, "").replace(/`/g, "").trim();
+    heading({ depth, text }) {
+      const cleanText = text.replace(/<[^>]*>/g, "").trim();
       const id = slugifyHeading(cleanText);
 
       if (depth === 1 || depth === 2) {
-        return `<h2 id="${id}" class="scroll-mt-28 text-xl sm:text-2xl font-extrabold text-text-primary mt-12 mb-5 pb-3 border-b border-border/80 tracking-tight flex items-center justify-between group"><span>${content}</span><a href="#${id}" class="opacity-0 group-hover:opacity-100 text-accent/60 hover:text-accent text-base transition-opacity font-mono">#</a></h2>\n`;
+        return `<h2 id="${id}" class="scroll-mt-28 text-xl sm:text-2xl font-extrabold text-text-primary mt-12 mb-5 pb-3 border-b border-border/80 tracking-tight flex items-center justify-between group"><span>${text}</span><a href="#${id}" class="opacity-0 group-hover:opacity-100 text-accent/60 hover:text-accent text-base transition-opacity font-mono">#</a></h2>\n`;
       }
       if (depth === 3) {
-        return `<h3 id="${id}" class="scroll-mt-28 text-lg sm:text-xl font-bold text-accent mt-8 mb-4 flex items-center gap-2 group border-l-4 border-accent pl-3"><span>${content}</span><a href="#${id}" class="opacity-0 group-hover:opacity-100 text-text-muted hover:text-accent ml-2 text-sm transition-opacity font-mono">#</a></h3>\n`;
+        return `<h3 id="${id}" class="scroll-mt-28 text-lg sm:text-xl font-bold text-accent mt-8 mb-4 flex items-center gap-2 group border-l-4 border-accent pl-3"><span>${text}</span><a href="#${id}" class="opacity-0 group-hover:opacity-100 text-text-muted hover:text-accent ml-2 text-sm transition-opacity font-mono">#</a></h3>\n`;
       }
-      return `<h${depth} class="text-base font-bold text-text-primary mt-6 mb-3">${content}</h${depth}>\n`;
+      return `<h${depth} class="text-base font-bold text-text-primary mt-6 mb-3">${text}</h${depth}>\n`;
     },
 
     code({ text, lang: rawLang }) {
@@ -284,14 +273,14 @@ labMarkedInstance.use({
         effectiveLang === "c"
           ? "C (Embedded)"
           : effectiveLang === "cpp"
-          ? "C++ (ESP32)"
-          : effectiveLang === "python"
-          ? "Python"
-          : effectiveLang === "rust"
-          ? "Rust"
-          : effectiveLang === "bash"
-          ? "Bash / Shell"
-          : effectiveLang.toUpperCase();
+            ? "C++ (ESP32)"
+            : effectiveLang === "python"
+              ? "Python"
+              : effectiveLang === "rust"
+                ? "Rust"
+                : effectiveLang === "bash"
+                  ? "Bash / Shell"
+                  : effectiveLang.toUpperCase();
 
       const highlightedCodeHtml = highlightCodeWithLineNumbers(text, effectiveLang, true);
       const b64Code = safeBase64Encode(text);
@@ -416,8 +405,13 @@ export function markdownToLabHtml(markdown: string): string {
 
   let preprocessed = markdown.replace(imgBlockRegex, (fullMatch, attrs) => {
     const srcMatch = attrs.match(/src\s*=\s*["']?([^"'\s>]+)["']?/i);
-    const src = srcMatch ? srcMatch[1] : "";
+    let src = srcMatch ? srcMatch[1] : "";
     if (!src) return fullMatch;
+
+    // Chuẩn hóa đường dẫn ảnh tương đối images/ thành /images/ để Next.js phục vụ từ thư mục public
+    if (src.startsWith("images/")) {
+      src = "/" + src;
+    }
 
     const altMatch = attrs.match(/alt\s*=\s*["']?([^"'>]*)["']?/i);
     const alt = altMatch ? altMatch[1] : "";
@@ -546,14 +540,23 @@ export function parseSingleMarkdownArticle(
   }
 
   // Kiểm tra xem rawH1 có phải là tiêu đề chung chung (generic) không
-  const isGenericH1 = !rawH1 || 
+  const isGenericH1 = !rawH1 ||
     /^\s*\d+[\.\)]\s*(khái niệm|tổng quan|giới thiệu|định nghĩa|mục tiêu)/i.test(rawH1) ||
     /^\s*(khái niệm|tổng quan|giới thiệu|định nghĩa|mục tiêu)\s*$/i.test(rawH1) ||
     /^\s*\d+[\.\s]/i.test(rawH1);
 
   if (topicFromFilename) {
-    if (rawH1 && !isGenericH1 && !rawH1.toLowerCase().includes(topicFromFilename.toLowerCase())) {
+    const rawNoAccent = slugifyHeading(rawH1);
+    const topicNoAccent = slugifyHeading(topicFromFilename);
+    const isSameTitle =
+      rawNoAccent.includes(topicNoAccent) ||
+      topicNoAccent.includes(rawNoAccent) ||
+      /^bài\s*\d+/i.test(rawH1);
+
+    if (rawH1 && !isGenericH1 && !isSameTitle) {
       title = `Bài ${lessonOrder}: ${topicFromFilename} - ${rawH1}`;
+    } else if (rawH1 && !isGenericH1 && /^bài\s*\d+/i.test(rawH1)) {
+      title = rawH1;
     } else if (topicFromFilename) {
       title = `Bài ${lessonOrder}: ${topicFromFilename}`;
     }

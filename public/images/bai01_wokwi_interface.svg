@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 490" width="100%" height="100%" style="background:#ffffff; font-family: 'Segoe UI', Arial, sans-serif;">
+  <!-- Container Card -->
+  <rect x="10" y="10" width="840" height="470" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2"/>
+
+  <text x="430" y="42" text-anchor="middle" fill="#0f172a" font-size="20" font-weight="800">HƯỚNG DẪN GIAO DIỆN MÔ PHỎNG WOKWI ESP32</text>
+  <text x="430" y="65" text-anchor="middle" fill="#0284c7" font-size="12" font-weight="600">https://wokwi.com/projects/new/esp32</text>
+
+  <!-- Top Toolbar -->
+  <rect x="30" y="85" width="800" height="42" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="45" y="93" width="85" height="26" rx="6" fill="#16a34a"/>
+  <text x="87" y="110" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="bold">► Start</text>
+  <rect x="140" y="93" width="95" height="26" rx="6" fill="#2563eb"/>
+  <text x="187" y="110" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="bold">+ Add Part</text>
+  <rect x="245" y="93" width="70" height="26" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="280" y="110" text-anchor="middle" fill="#334155" font-size="11" font-weight="600">Restart</text>
+  <text x="810" y="111" text-anchor="end" fill="#ea580c" font-size="12" font-weight="bold">ESP32 DevKit V4</text>
+
+  <!-- Left: Code Editor -->
+  <rect x="30" y="140" width="385" height="240" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="30" y="140" width="385" height="32" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="45" y="161" fill="#2563eb" font-size="12" font-weight="bold">sketch.ino</text>
+  <text x="135" y="161" fill="#64748b" font-size="12">diagram.json</text>
+  <text x="235" y="161" fill="#64748b" font-size="12">libraries.txt</text>
+
+  <text x="45" y="195" fill="#7c3aed" font-size="11" font-weight="600">#define LED_PIN 2</text>
+  <text x="45" y="215" fill="#0f172a" font-size="11" font-weight="600">void setup() {</text>
+  <text x="65" y="235" fill="#2563eb" font-size="11">Serial.begin(115200);</text>
+  <text x="65" y="255" fill="#16a34a" font-size="11">pinMode(LED_PIN, OUTPUT);</text>
+  <text x="45" y="275" fill="#0f172a" font-size="11" font-weight="600">}</text>
+  <text x="45" y="295" fill="#0f172a" font-size="11" font-weight="600">void loop() { ... }</text>
+
+  <!-- Right: Simulation Board Area -->
+  <rect x="435" y="140" width="395" height="240" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="632" y="165" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="bold">KHÔNG GIAN LẮP RÁP MẠCH ĐIỆN TỬ</text>
+  
+  <!-- Mini ESP32 -->
+  <rect x="470" y="185" width="105" height="175" rx="6" fill="#1e293b" stroke="#0f172a"/>
+  <text x="522" y="270" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="bold">ESP32</text>
+  
+  <!-- LED & Resistor -->
+  <circle cx="670" cy="225" r="15" fill="#ef4444" stroke="#dc2626" stroke-width="2"/>
+  <text x="670" y="229" text-anchor="middle" fill="#ffffff" font-size="9" font-weight="bold">LED</text>
+  <rect x="655" y="260" width="30" height="12" fill="#d97706" rx="2"/>
+  <text x="670" y="288" text-anchor="middle" fill="#475569" font-size="10" font-weight="bold">220Ω</text>
+
+  <!-- Wires -->
+  <path d="M 575 215 Q 620 215 655 225" fill="none" stroke="#16a34a" stroke-width="2.5"/>
+  <path d="M 670 240 L 670 260" fill="none" stroke="#ef4444" stroke-width="2.5"/>
+  <path d="M 670 272 Q 670 330 575 340" fill="none" stroke="#475569" stroke-width="2.5"/>
+
+  <!-- Bottom: Serial Monitor -->
+  <rect x="30" y="395" width="800" height="70" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="45" y="415" fill="#475569" font-size="11" font-weight="bold">SERIAL MONITOR (115200 BAUD)</text>
+  <text x="45" y="435" fill="#16a34a" font-size="11" font-weight="600">[SYSTEM] ESP32 Ready! Ket noi thanh cong!</text>
+  <text x="45" y="452" fill="#0f172a" font-size="11">[LOG] LED: BAT (HIGH - 3.3V)</text>
+</svg>

@@ -68,7 +68,6 @@ export function FanpageHeader() {
 
   const [coverUrl, setCoverUrl] = useState<string>("");
   const [avatarUrl, setAvatarUrl] = useState<string>("/images/logo.png");
-  const [coverError, setCoverError] = useState(false);
   const [showCoverModal, setShowCoverModal] = useState(false);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
 
@@ -85,10 +84,7 @@ export function FanpageHeader() {
     // 1. Tải trước từ cache cục bộ nếu có
     const localCover = safeStorage.getItem(COVER_KEY);
     const localAvatar = safeStorage.getItem(AVATAR_KEY);
-    if (localCover) {
-      setCoverUrl(localCover);
-      setCoverError(false);
-    }
+    if (localCover) setCoverUrl(localCover);
     if (localAvatar) setAvatarUrl(localAvatar);
 
     // 2. Tải cấu hình chính thức từ Server
@@ -101,7 +97,6 @@ export function FanpageHeader() {
 
           if (serverCover) {
             setCoverUrl(serverCover);
-            setCoverError(false);
             safeStorage.setItem(COVER_KEY, serverCover);
           } else if (localCover && (user?.role === "superadmin" || user?.role === "admin")) {
             // TỰ ĐỘNG MIGRATION: Nếu máy Admin đang có ảnh trong localStorage mà trên Server chưa có ảnh
@@ -127,7 +122,6 @@ export function FanpageHeader() {
   }, [user?.role]);
 
   const handleSaveCover = async (url: string) => {
-    setCoverError(false);
     setCoverUrl(url);
     safeStorage.setItem(COVER_KEY, url);
     window.dispatchEvent(new Event("embedded_fanpage_branding_updated"));
@@ -194,14 +188,23 @@ export function FanpageHeader() {
 
       const uploadedUrl = json.url;
       if (type === "cover") {
-        setCoverError(false);
         await handleSaveCover(uploadedUrl);
       } else {
         await handleSaveAvatar(uploadedUrl);
       }
     } catch (err: any) {
       console.error("Upload error:", err);
-      alert(err.message || "Tải ảnh lên thất bại. Vui lòng thử lại.");
+      // Dự phòng nếu API upload gặp sự cố: dùng FileReader và gửi dữ liệu lên
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        const result = ev.target?.result as string;
+        if (type === "cover") {
+          await handleSaveCover(result);
+        } else {
+          await handleSaveAvatar(result);
+        }
+      };
+      reader.readAsDataURL(file);
     } finally {
       setIsUploading(false);
       if (e.target) e.target.value = "";
@@ -230,12 +233,11 @@ export function FanpageHeader() {
       <div className="rounded-3xl bg-bg-panel border border-border overflow-hidden shadow-xl">
         {/* 1. Cover Photo Area */}
         <div className="relative h-48 sm:h-60 md:h-72 bg-gradient-to-r from-bg-code via-accent-muted/40 to-bg-panel border-b border-border/80 overflow-hidden group">
-          {coverUrl && !coverError ? (
+          {coverUrl ? (
             <img
               src={coverUrl}
               alt="Embedded-AIoT Lab Cover"
               className="w-full h-full object-cover"
-              onError={() => setCoverError(true)}
             />
           ) : (
             <>
@@ -279,9 +281,6 @@ export function FanpageHeader() {
                       src={avatarUrl}
                       alt="Embedded-AIoT Lab Logo"
                       className="w-full h-full object-contain p-2 rounded-full bg-white dark:bg-bg-panel"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/images/logo.png";
-                      }}
                     />
                   </div>
 

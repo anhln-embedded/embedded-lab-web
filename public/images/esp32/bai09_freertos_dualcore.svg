@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 390" width="100%" height="100%" style="background:#ffffff; font-family: 'Segoe UI', Arial, sans-serif;">
+  <rect x="10" y="10" width="840" height="370" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2"/>
+  <text x="430" y="42" text-anchor="middle" fill="#0f172a" font-size="20" font-weight="800">KIẾN TRÚC ĐA TÁC VỤ FREERTOS TRÊN 2 NHÂN (DUAL-CORE) ESP32</text>
+
+  <!-- Core 0 -->
+  <g transform="translate(60, 70)">
+    <rect x="0" y="0" width="345" height="265" rx="12" fill="#ffffff" stroke="#ef4444" stroke-width="2"/>
+    <text x="172" y="30" text-anchor="middle" fill="#dc2626" font-size="16" font-weight="bold">CPU CORE 0 (PRO_CPU)</text>
+    <text x="172" y="50" text-anchor="middle" fill="#64748b" font-size="11">Xử lý giao thức nền &amp; Mạng không dây</text>
+
+    <!-- Task A -->
+    <rect x="25" y="70" width="295" height="50" rx="8" fill="#f5f3ff" stroke="#7c3aed"/>
+    <text x="40" y="92" fill="#7c3aed" font-size="12" font-weight="bold">Wi-Fi &amp; TCP/IP Stack Task</text>
+    <text x="40" y="110" fill="#475569" font-size="10">Duy trì kết nối mạng ngầm của Espressif</text>
+
+    <!-- Task B -->
+    <rect x="25" y="130" width="295" height="50" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+    <text x="40" y="152" fill="#1d4ed8" font-size="12" font-weight="bold">Task_Network (User Created)</text>
+    <text x="40" y="170" fill="#475569" font-size="10">Truyền nhận gói tin MQTT / HTTP Client</text>
+
+    <text x="172" y="230" text-anchor="middle" fill="#16a34a" font-size="12" font-weight="bold">Hoạt động độc lập không gây nghẽn Core 1</text>
+  </g>
+
+  <!-- Core 1 -->
+  <g transform="translate(455, 70)">
+    <rect x="0" y="0" width="345" height="265" rx="12" fill="#ffffff" stroke="#16a34a" stroke-width="2"/>
+    <text x="172" y="30" text-anchor="middle" fill="#16a34a" font-size="16" font-weight="bold">CPU CORE 1 (APP_CPU)</text>
+    <text x="172" y="50" text-anchor="middle" fill="#64748b" font-size="11">Nơi chạy các tác vụ ứng dụng người dùng</text>
+
+    <!-- Task C -->
+    <rect x="25" y="70" width="295" height="50" rx="8" fill="#fff7ed" stroke="#ea580c"/>
+    <text x="40" y="92" fill="#ea580c" font-size="12" font-weight="bold">Task_SensorRead (Mỗi 1s)</text>
+    <text x="40" y="110" fill="#475569" font-size="10">Đọc cảm biến DHT22, siêu âm, ADC</text>
+
+    <!-- Task D -->
+    <rect x="25" y="130" width="295" height="50" rx="8" fill="#fefce8" stroke="#ca8a04"/>
+    <text x="40" y="152" fill="#a16207" font-size="12" font-weight="bold">Task_DisplayLCD &amp; Actuators</text>
+    <text x="40" y="170" fill="#475569" font-size="10">Cập nhật màn hình I2C &amp; Xoay Servo</text>
+
+    <text x="172" y="230" text-anchor="middle" fill="#d97706" font-size="12" font-weight="bold">Mặc định hàm setup() và loop() chạy tại đây</text>
+  </g>
+
+  <text x="430" y="360" text-anchor="middle" fill="#334155" font-size="12" font-weight="600">Bộ lập lịch FreeRTOS tự động điều phối thời gian thực với độ trễ thấp</text>
+</svg>

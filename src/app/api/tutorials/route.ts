@@ -5,6 +5,7 @@ import { ensureTutorialSchema } from "@/lib/db-sync";
 
 export async function GET() {
   try {
+    await ensureTutorialSchema();
     const topics = await prisma.tutorialTopic.findMany({
       include: {
         articles: {
@@ -51,7 +52,30 @@ export async function GET() {
     return NextResponse.json({ success: true, data: formatted });
   } catch (error: any) {
     console.error("GET /api/tutorials error:", error);
-    return NextResponse.json({ success: true, data: [] });
+    try {
+      const basicTopics = await prisma.tutorialTopic.findMany({
+        orderBy: { order: "asc" },
+      });
+      const fallbackData = basicTopics.map((t) => ({
+        id: t.id,
+        slug: t.slug,
+        title: t.title,
+        category: t.category as any,
+        categoryName: t.categoryName,
+        icon: t.icon,
+        badge: t.badge || "Hot Series",
+        level: t.level as any,
+        description: t.description,
+        totalArticles: 0,
+        author: t.author,
+        authorTitle: t.authorTitle || "Mentor Lab",
+        coverImage: t.coverImage || "/images/logo.png",
+        posts: [],
+      }));
+      return NextResponse.json({ success: true, data: fallbackData });
+    } catch {
+      return NextResponse.json({ success: false, data: [], error: error?.message || "Failed to fetch tutorials" });
+    }
   }
 }
 
