@@ -23,10 +23,11 @@ export function Footer() {
   const footerRef = React.useRef<HTMLElement | null>(null);
   const [isVisible, setIsVisible] = React.useState(false);
   const isLoginPage = pathname === "/login" || pathname?.startsWith("/login");
+  const isSimulatorPage = pathname === "/tools/stm32-simulator" || pathname?.startsWith("/tools/stm32-simulator");
 
   // IntersectionObserver: Kích hoạt hiệu ứng Slide-in khi cuộn tới gần chân trang
   React.useEffect(() => {
-    if (isLoginPage) return;
+    if (isLoginPage || isSimulatorPage) return;
     const el = footerRef.current;
     if (!el) return;
 
@@ -42,10 +43,10 @@ export function Footer() {
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, [pathname, isLoginPage]);
+  }, [pathname, isLoginPage, isSimulatorPage]);
 
-  // Ẩn hoàn toàn Footer trên trang đăng nhập
-  if (isLoginPage) {
+  // Ẩn hoàn toàn Footer trên trang đăng nhập và trang mô phỏng studio
+  if (isLoginPage || isSimulatorPage) {
     return null;
   }
 

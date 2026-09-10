@@ -1,0 +1,272 @@
+"use client";
+
+import React, { useRef, useState } from "react";
+import { Upload, FileCode, CheckCircle2, AlertCircle, RefreshCw } from "lucide-react";
+import { parseIntelHex, ParsedHexResult } from "@/lib/emulator/intel-hex";
+
+interface FirmwareUploaderProps {
+  onFirmwareLoaded: (result: ParsedHexResult, filename: string) => void;
+  currentFirmware: ParsedHexResult | null;
+  filename: string | null;
+}
+
+// Firmware mẫu: Chương trình Blink LED PC13 chuẩn Keil MDK cho STM32F103C8 (từ F:\LAP_TRINH_NHUNG\gpio\2. Button and Led\MDK\Objects\blink.hex)
+export const SAMPLE_BLINK_HEX = `:020000040800F2
+:1000000068060020B5010008BD010008BF01000816
+:10001000C1010008C3010008C5010008000000007C
+:10002000000000000000000000000000C701000800
+:10003000C901000800000000CB010008CD01000844
+:10004000CF010008CF010008CF010008CF01000850
+:10005000CF010008CF010008CF010008CF01000840
+:10006000CF010008CF010008CF010008CF01000830
+:10007000CF010008CF010008CF010008CF01000820
+:10008000CF010008CF010008CF010008CF01000810
+:10009000CF010008CF010008CF010008CF01000800
+:1000A000CF010008CF010008CF010008CF010008F0
+:1000B000CF010008CF010008CF010008CF010008E0
+:1000C000CF010008CF010008CF010008CF010008D0
+:1000D000CF010008CF010008CF010008CF010008C0
+:1000E000CF010008CF010008CF01000800F002F89E
+:1000F00000F050F814A696E8000CB244B344DA4578
+:1001000001D100F047F8BAE80F000FA696E83000DA
+:10011000A5EB040504EB0607AAEB0704A7F101070A
+:100120004FEA15154FEA3414A4F10104AC4201D38F
+:1001300000F030F813F0010F18BFFB1A43F0010371
+:1001400000F001F8DBE718474C0600006C060000E1
+:10015000103A24BF78C878C1FAD8520724BF30C8F3
+:1001600030C144BF04680C60704700007047000055
+:100170000023002400250026103A28BF78C1FBD8B0
+:10018000520728BF30C148BF0B6070471FB51FBD65
+:1001900010B510BD00F031F81146FFF7F7FF00F081
+:1001A000DBFA00F04FF803B4FFF7F2FF03BC00F0F6
+:1001B00057F800000948804709480047FEE7FEE776
+:1001C000FEE7FEE7FEE7FEE7FEE7FEE7FEE7FEE707
+:1001D00004480549054A064B70470000B50600086B
+:1001E000ED0000086800002068060020680200207A
+:1001F00068020020704770477047754600F02CF881
+:10020000AE4605006946534620F00700854618B003
+:1002100020B5FFF7DDFFBDE820404FF000064FF0AE
+:1002200000074FF000084FF0000BAC46ACE8C009E7
+:10023000ACE8C009ACE8C009ACE8C00921F007018E
+:100240008D46704710B50446AFF300802046BDE8E8
+:100250001040FFF7A8BF00000048704708000020CA
+:1002600001491820ABBEFEE72600020070470000DF
+:1002700088B00790069100200590049003900290AA
+:10028000019000900698C07800F00F000590069845
+:10029000C078C006002806D5FFE706988178059843
+:1002A00008430590FFE70698007800284BD0FFE749
+:1002B00007980068019000200390FFE70398072843
+:1002C0003DD8FFE7039901208840029006980088F6
+:1002D0000299084004900498029988422AD1FFE7C5
+:1002E00003988000029002990F20884000900099A6
+:1002F0000198884301900598029900FA01F101984C
+:10030000084301900698C078282806D1FFE7039992
+:1003100001208840079948610BE00698C07848287A
+:1003200006D1FFE703990120884007990861FFE79C
+:10033000FFE7FFE7FFE7039801300390BEE701986E
+:1003400007990860FFE706980088B0F5807F50DBCA
+:10035000FFE707984068019000200390FFE70398AB
+:10036000072842D8FFE7039800F1080101208840E0
+:100370000290069800880299084004900498029917
+:1003800088422DD1FFE703988000029002990F2048
+:10039000884000900099019888430190059802993F
+:1003A00000FA01F10198084301900698C0782828C6
+:1003B00008D1FFE7039800F1080101208840079960
+:1003C0004861FFE70698C078482808D1FFE70398FE
+:1003D00000F108010120884007990861FFE7FFE765
+:1003E000FFE7039801300390B9E701980799486047
+:1003F000FFE708B07047000080B582B018200121E7
+:1004000000F014F810208DF807004FF40050ADF8FC
+:10041000040003208DF8060041F20000C4F2010040
+:1004200001A9FFF725FF02B080BD000082B0019056
+:100430008DF803109DF8030048B1FFE7019A41F2DF
+:100440001801C4F2020108681043086008E0019A2C
+:1004500041F21801C4F20201086890430860FFE706
+:1004600002B0704780B500F001F880BD84B0002074
+:100470000390029041F20001C4F20201086840F4C6
+:1004800080300860FFE741F20000C4F2020000681B
+:1004900000F400300290039801300390FFE70299C6
+:1004A0000020019039B9FFE70398B0F5A06018BFAC
+:1004B00001200190FFE70198C0070028E3D1FFE782
+:1004C00041F20000C4F2020000688003002803D556
+:1004D000FFE70120029002E000200290FFE702986F
+:1004E000012851D1FFE742F20001C4F2020108687D
+:1004F00040F010000860086820F0070008600868F5
+:1005000040F00200086041F20401C4F202010091CF
+:100510000868086008680860086840F4806008603F
+:10052000086820F47C100860086840F4E81008604F
+:1005300041F20001C4F20201086840F080700860D6
+:10054000FFE741F20000C4F20200006880010028C9
+:1005500001D4FFE7F5E741F20401C4F202010868A3
+:1005600020F003000860086840F002000860FFE720
+:1005700041F20400C4F20200006800F00C000828F8
+:1005800001D0FFE7F4E700E0FFE704B070470000A8
+:1005900084B0002003900290019041F20400C4F264
+:1005A0000200006800F00C0003900398009040B136
+:1005B000FFE7009804280ED0FFE70098082814D021
+:1005C00056E040F20001C2F2000141F20020C0F208
+:1005D0007A00086056E040F20001C2F2000141F2E8
+:1005E0000020C0F27A0008604CE041F20400C4F23E
+:1005F0000200016801F470110291006800F480307B
+:1006000001900299022000EB91400290019860B99C
+:10061000FFE7029840F60011C0F23D01484340F266
+:100620000001C2F20001086021E041F20400C4F2BE
+:1006300002000068800300280CD5FFE7029840F60E
+:100640000011C0F23D01484340F20001C2F2000136
+:1006500008600BE0029841F20021C0F27A014843A1
+:1006600040F20001C2F200010860FFE7FFE709E085
+:1006700040F20001C2F2000141F20020C0F27A0013
+:100680000860FFE741F20400C4F202000068C0B253
+:10069000010940F28470C0F60000405C0390039AA8
+:1006A00040F20001C2F200010868D040086004B0C6
+:1006B0007047000080B541F20002C4F202021068E7
+:1006C00040F00100106041F20401C4F20201086828
+:1006D0000023CFF6FF031840086010684FF6FF7341
+:1006E000CFF6F66318401060106820F48020106088
+:1006F000086820F4FE00086041F20801C4F202011B
+:100700004FF41F000860FFF7ADFE4EF60851CEF221
+:1007100000014FF00060086080BD000083B00290CF
+:1007200000200190FFE701980299884212D2FFE76A
+:1007300000200090FFE70098C0084A2805D8FFE78E
+:10074000FFE7009801300090F5E7FFE701980130DE
+:100750000190E8E703B0704780B582B000200190B7
+:10076000FFF716FFFFF748FEFFE741F20C01C4F266
+:100770000101086880F4005008604FF4FA70FFF738
+:10078000CDFFF2E7000000000000000001020304BA
+:1007900006070809B4070008000000200400000054
+:1007A00050010008B807000808000020600600009B
+:0807B0007001000800A24A04D8
+:04000005080001B539
+:00000001FF`;
+
+export const FirmwareUploader: React.FC<FirmwareUploaderProps> = ({
+  onFirmwareLoaded,
+  currentFirmware,
+  filename,
+}) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [dragActive, setDragActive] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const processHexText = (content: string, name: string) => {
+    try {
+      setErrorMsg(null);
+      const parsed = parseIntelHex(content);
+      if (parsed.totalBytes === 0) {
+        throw new Error("File HEX không chứa dữ liệu hợp lệ");
+      }
+      onFirmwareLoaded(parsed, name);
+    } catch (err: any) {
+      setErrorMsg(err.message || "Lỗi đọc file HEX");
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      processHexText(text, file.name);
+    };
+    reader.readAsText(file);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragActive(false);
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      processHexText(text, file.name);
+    };
+    reader.readAsText(file);
+  };
+
+  const loadSample = () => {
+    processHexText(SAMPLE_BLINK_HEX, "sample_blink_pc13.hex");
+  };
+
+  return (
+    <div className="bg-bg-panel border border-border rounded-2xl p-4 shadow-sm transition-colors duration-200">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold text-text-primary flex items-center gap-2">
+          <FileCode className="w-4 h-4 text-accent" />
+          Firmware Keil C (.hex)
+        </h3>
+        <button
+          onClick={loadSample}
+          className="text-xs px-2.5 py-1 rounded-lg bg-accent/10 hover:bg-accent hover:text-white text-accent transition-all font-medium flex items-center gap-1.5 cursor-pointer shadow-xs"
+        >
+          <RefreshCw className="w-3 h-3" />
+          Dùng file mẫu Blink PC13
+        </button>
+      </div>
+
+      <div
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragActive(true);
+        }}
+        onDragLeave={() => setDragActive(false)}
+        onDrop={handleDrop}
+        onClick={() => fileInputRef.current?.click()}
+        className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-all ${
+          dragActive
+            ? "border-accent bg-accent/10"
+            : "border-border hover:border-accent hover:bg-accent/5 bg-bg-code/50"
+        }`}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".hex,.ihx"
+          onChange={handleFileChange}
+          className="hidden"
+        />
+
+        <div className="flex flex-col items-center justify-center gap-1.5 text-text-secondary">
+          <Upload className="w-6 h-6 text-accent animate-bounce-short" />
+          <p className="text-xs font-medium text-text-primary">
+            Kéo thả file <span className="text-accent font-semibold">.hex</span> từ Keil C hoặc click để chọn
+          </p>
+          <p className="text-[11px] text-text-muted">
+            Hỗ trợ file Intel HEX chuẩn sinh ra từ Keil C / STM32CubeIDE
+          </p>
+        </div>
+      </div>
+
+      {errorMsg && (
+        <div className="mt-2.5 p-2.5 rounded-lg bg-error/10 border border-error/20 text-error text-xs flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>{errorMsg}</span>
+        </div>
+      )}
+
+      {currentFirmware && (
+        <div className="mt-3 p-3 rounded-xl bg-success/10 border border-success/20 text-xs">
+          <div className="flex items-center gap-2 text-success font-semibold mb-1.5">
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
+            <span>Đã nạp: {filename || "firmware.hex"}</span>
+          </div>
+          <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] text-text-secondary">
+            <div>
+              Dung lượng: <span className="text-text-primary font-mono font-medium">{currentFirmware.totalBytes} bytes</span>
+            </div>
+            <div>
+              Base Flash: <span className="text-text-primary font-mono font-medium">0x{currentFirmware.baseAddress.toString(16).toUpperCase()}</span>
+            </div>
+            <div>
+              Initial MSP: <span className="text-text-primary font-mono font-medium">0x{currentFirmware.initialMSP.toString(16).toUpperCase()}</span>
+            </div>
+            <div>
+              Reset_Handler: <span className="text-accent font-mono font-bold">0x{currentFirmware.resetHandler.toString(16).toUpperCase()}</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};

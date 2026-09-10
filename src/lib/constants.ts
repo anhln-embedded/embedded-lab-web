@@ -22,6 +22,7 @@ export const siteConfig = {
     { label: "Chuyên đề", href: "/tutorials" },
     { label: "Lộ trình học", href: "/roadmap" },
     { label: "Khóa học", href: "/courses" },
+    { label: "Mô phỏng", href: "/tools/stm32-simulator" },
     { label: "Bài viết", href: "/blog" },
   ],
 };

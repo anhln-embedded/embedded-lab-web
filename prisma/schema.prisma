@@ -203,4 +203,21 @@ model SystemSetting {
   updatedAt DateTime @default(now()) @updatedAt
 }
 
+model CircuitPreset {
+  id           String   @id @default(cuid())
+  title        String
+  slug         String   @unique
+  description  String?
+  mcuType      String   @default("stm32") // "stm32", "esp32", "arduino", "rp2040"
+  diagramJson  String   // JSON string of Wokwi diagram.json
+  firmwareHex  String   // Intel HEX string
+  firmwareName String   @default("blink.hex")
+  author       String   @default("Embedded-AIoT Lab PTIT")
+  order        Int      @default(0)
+  isPublished  Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+
 
