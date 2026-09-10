@@ -57,9 +57,17 @@ export async function GET(request: Request) {
         id: u.id,
         name: u.name,
         email: u.email,
-        role: role as "superadmin" | "admin" | "user",
-        avatar: u.avatar || (role === "superadmin" ? "🛡️" : role === "admin" ? "✍️" : "🎓"),
-        bio: u.title || (role === "superadmin" ? "Super Admin Lab PTIT" : "Thành viên Lab PTIT"),
+        role: role as "superadmin" | "admin" | "lab_member" | "user",
+        avatar:
+          u.avatar ||
+          (role === "superadmin" ? "🛡️" : role === "admin" ? "✍️" : role === "lab_member" ? "🔬" : "🎓"),
+        bio:
+          u.title ||
+          (role === "superadmin"
+            ? "Super Admin Lab PTIT"
+            : role === "lab_member"
+            ? "Thành viên Nghiên cứu Lab PTIT"
+            : "Thành viên Lab PTIT"),
         createdAt: u.createdAt.toISOString().split("T")[0],
       };
     });
@@ -107,8 +115,22 @@ export async function POST(request: Request) {
         name: name.trim(),
         email: cleanEmail,
         role: assignedRole,
-        avatar: avatar || (assignedRole === "superadmin" ? "🛡️" : assignedRole === "admin" ? "✍️" : "🎓"),
-        title: title || (assignedRole === "superadmin" ? "Super Admin Lab PTIT" : "Thành viên Lab PTIT"),
+        avatar:
+          avatar ||
+          (assignedRole === "superadmin"
+            ? "🛡️"
+            : assignedRole === "admin"
+            ? "✍️"
+            : assignedRole === "lab_member"
+            ? "🔬"
+            : "🎓"),
+        title:
+          title ||
+          (assignedRole === "superadmin"
+            ? "Super Admin Lab PTIT"
+            : assignedRole === "lab_member"
+            ? "Thành viên Nghiên cứu Lab PTIT"
+            : "Thành viên Lab PTIT"),
       },
     });
 

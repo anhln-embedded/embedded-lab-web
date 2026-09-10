@@ -36,7 +36,7 @@ export function QuickStatusCreator({ onPostCreated }: QuickStatusCreatorProps) {
   const [imageUrl, setImageUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const isAuthorized = user && (user.role === "superadmin" || user.role === "admin");
+  const isAuthorized = user && (user.role === "superadmin" || user.role === "admin" || user.role === "lab_member");
 
   const openWithTemplate = (type: BlogPostType) => {
     setPostType(type);

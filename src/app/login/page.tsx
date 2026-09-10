@@ -328,7 +328,7 @@ function LoginFormContent() {
               <p className="text-[11px] text-text-secondary leading-tight">
                 Bấm 1-click bên dưới để tự động đăng nhập tài khoản mẫu:
               </p>
-              <div className="grid grid-cols-3 gap-1.5 text-xs">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-xs">
                 <button
                   type="button"
                   onClick={() => quickDevLogin("superadmin", getSuperAdminEmails()[0] || "anhln.embedded@gmail.com")}
@@ -342,6 +342,13 @@ function LoginFormContent() {
                   className="flex flex-col items-center justify-center gap-1 rounded-xl border border-accent/30 bg-bg-elevated p-2 text-accent font-bold hover:bg-accent/20 transition-all active:scale-95 shadow-sm"
                 >
                   <span>✍️ Admin</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => quickDevLogin("lab_member", "member@ptit-lab.edu.vn")}
+                  className="flex flex-col items-center justify-center gap-1 rounded-xl border border-cyan-500/30 bg-bg-elevated p-2 text-cyan-400 font-bold hover:bg-cyan-500/20 transition-all active:scale-95 shadow-sm"
+                >
+                  <span>🔬 Lab Member</span>
                 </button>
                 <button
                   type="button"

@@ -210,6 +210,8 @@ export function Header() {
                               ? "#a855f7"
                               : user.role === "admin"
                               ? "#f05a28"
+                              : user.role === "lab_member"
+                              ? "#06b6d4"
                               : "#10b981",
                         }}
                       >
@@ -217,6 +219,8 @@ export function Header() {
                           ? "Superadmin"
                           : user.role === "admin"
                           ? "Admin"
+                          : user.role === "lab_member"
+                          ? "Lab Member"
                           : "Sinh viên"}
                       </span>
                     </div>
@@ -349,12 +353,16 @@ export function Header() {
                               ? "rgba(168, 85, 247, 0.15)"
                               : user.role === "admin"
                               ? "rgba(240, 90, 40, 0.15)"
+                              : user.role === "lab_member"
+                              ? "rgba(6, 182, 212, 0.15)"
                               : "rgba(16, 185, 129, 0.15)",
                           color:
                             user.role === "superadmin"
                               ? "#a855f7"
                               : user.role === "admin"
                               ? "#f05a28"
+                              : user.role === "lab_member"
+                              ? "#06b6d4"
                               : "#10b981",
                         }}
                       >
@@ -362,6 +370,8 @@ export function Header() {
                           ? "Superadmin"
                           : user.role === "admin"
                           ? "Admin"
+                          : user.role === "lab_member"
+                          ? "Lab Member"
                           : "Sinh viên"}
                       </span>
                     </div>

@@ -425,6 +425,14 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
     let slitherSpeed = 2.4;
     let eatSurgeTimer = 0;
 
+    // --- 3D Z-Hop & Deadlock Trap Monitor ---
+    let zHop = 0;
+    let zHopTarget = 0;
+    let trapTimer = 0;
+    let turnAccumulator = 0;
+    let posTrackTimer = 0;
+    const oldHeadPos = new THREE.Vector3(0, 0, 0);
+
     const spineNodes: THREE.Vector3[] = [];
     for (let i = 0; i < MAX_SEGMENTS; i++) {
       spineNodes.push(new THREE.Vector3(0, -i * SEGMENT_DIST, 0));
@@ -859,48 +867,112 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
 
       let desiredHeading = Math.atan2(toTargetY, toTargetX);
 
-      // Self-collision avoidance
-      let avoidanceSteer = 0;
-      const headForwardX = Math.cos(headHeading);
-      const headForwardY = Math.sin(headHeading);
-      const headSideX = -Math.sin(headHeading);
-      const headSideY = Math.cos(headHeading);
+      // --- 3-Ray Whisker Feelers + 3D Z-Hop Escape Kinematics ---
+      const whiskerAngle = 0.62; // ~35.5 degrees lateral spread
+      const lookaheadCenter = 2.4;
+      const lookaheadSide = 1.85;
+
+      const fwdX = Math.cos(headHeading);
+      const fwdY = Math.sin(headHeading);
+      const leftFwdX = Math.cos(headHeading + whiskerAngle);
+      const leftFwdY = Math.sin(headHeading + whiskerAngle);
+      const rightFwdX = Math.cos(headHeading - whiskerAngle);
+      const rightFwdY = Math.sin(headHeading - whiskerAngle);
+
+      let dangerCenter = 0;
+      let dangerLeft = 0;
+      let dangerRight = 0;
+      let minBodyDist = Infinity;
 
       for (let i = 8; i < activeSegments; i++) {
         const bodyNode = spineNodes[i];
         const dx = bodyNode.x - headPos.x;
         const dy = bodyNode.y - headPos.y;
         const dist = Math.hypot(dx, dy);
+        if (dist < minBodyDist) minBodyDist = dist;
 
-        const dotForward = dx * headForwardX + dy * headForwardY;
-        const dotSide = dx * headSideX + dy * headSideY;
-
-        const lookaheadDist = 2.2;
-        const bodySafeWidth = 0.95;
-        if (dotForward > 0.15 && dotForward < lookaheadDist && Math.abs(dotSide) < bodySafeWidth) {
-          const steerSign = dotSide >= 0 ? -1.0 : 1.0;
-          const urgency = (1.0 - dotForward / lookaheadDist) * (1.0 - Math.abs(dotSide) / bodySafeWidth);
-          avoidanceSteer += steerSign * urgency * 7.5;
+        // Center Whisker Feeler (corridor width 0.68)
+        const projCenter = dx * fwdX + dy * fwdY;
+        const perpCenter = Math.abs(-dx * fwdY + dy * fwdX);
+        if (projCenter > 0.15 && projCenter < lookaheadCenter && perpCenter < 0.68) {
+          const u = (1.0 - projCenter / lookaheadCenter) * (1.0 - perpCenter / 0.68);
+          dangerCenter += u;
         }
 
-        const proximityDist = 0.85;
-        if (dist < proximityDist && dist > 0.001) {
-          const steerSign = dotSide >= 0 ? -1.0 : 1.0;
-          const repulse = Math.pow(1.0 - dist / proximityDist, 2);
-          avoidanceSteer += steerSign * repulse * 5.5;
+        // Left Whisker Feeler
+        const projLeft = dx * leftFwdX + dy * leftFwdY;
+        const perpLeft = Math.abs(-dx * leftFwdY + dy * leftFwdX);
+        if (projLeft > 0.15 && projLeft < lookaheadSide && perpLeft < 0.55) {
+          const u = (1.0 - projLeft / lookaheadSide) * (1.0 - perpLeft / 0.55);
+          dangerLeft += u;
+        }
 
-          const hardRadius = 0.28;
-          if (dist < hardRadius) {
-            const push = (hardRadius - dist) * 0.6;
-            headPos.x -= (dx / dist) * push;
-            headPos.y -= (dy / dist) * push;
-          }
+        // Right Whisker Feeler
+        const projRight = dx * rightFwdX + dy * rightFwdY;
+        const perpRight = Math.abs(-dx * rightFwdY + dy * rightFwdX);
+        if (projRight > 0.15 && projRight < lookaheadSide && perpRight < 0.55) {
+          const u = (1.0 - projRight / lookaheadSide) * (1.0 - perpRight / 0.55);
+          dangerRight += u;
+        }
+
+        // Soft planar repulsion only when close to ground plane (zHop low)
+        const pushScale = Math.max(0, 1.0 - zHop / 0.45);
+        if (pushScale > 0.05 && dist < 0.28 && dist > 0.001) {
+          const push = (0.28 - dist) * 0.6 * pushScale;
+          headPos.x -= (dx / dist) * push;
+          headPos.y -= (dy / dist) * push;
         }
       }
 
+      // --- Deadlock & Pocket Trap Detection ---
+      // 1. Surrounded on multiple whiskers (cornered into a concave loop)
+      const isSurrounded = dangerCenter > 0.35 && (dangerLeft > 0.22 || dangerRight > 0.22);
+
+      // 2. Monitoring tight circular looping (deadlock tracker)
+      posTrackTimer += delta;
+      if (posTrackTimer > 1.3) {
+        posTrackTimer = 0;
+        const netDisplacement = headPos.distanceTo(oldHeadPos);
+        // Trapped if moved < 1.35 units while racking up > 3.6 rad of turns
+        if (netDisplacement < 1.35 && turnAccumulator > 3.6) {
+          trapTimer = 2.2;
+        }
+        oldHeadPos.copy(headPos);
+        turnAccumulator = 0;
+      }
+
+      if (isSurrounded || minBodyDist < 0.38) {
+        trapTimer = Math.max(trapTimer, 1.8);
+      }
+
+      // 3D Z-Hop Elevation State Machine
+      if (trapTimer > 0) {
+        trapTimer -= delta;
+        zHopTarget = 0.92; // Arch smoothly over body coils in 3D
+      } else if (minBodyDist > 1.4 && dangerCenter < 0.08) {
+        zHopTarget = 0; // Touch down safely once free space is acquired
+      }
+
+      zHop = THREE.MathUtils.lerp(zHop, zHopTarget, delta * 3.8);
+
+      // Whisker Steer Calculation: Intelligent escape path selection
+      let avoidanceSteer = 0;
+      if (dangerCenter > 0.05) {
+        if (dangerLeft < dangerRight) {
+          avoidanceSteer += (0.9 + dangerRight * 1.3); // Clear opening on the left
+        } else {
+          avoidanceSteer -= (0.9 + dangerLeft * 1.3); // Clear opening on the right
+        }
+      }
+      avoidanceSteer += (dangerRight - dangerLeft) * 1.5;
+
+      // When elevated in 3D, dampen planar avoidance so snake effortlessly glides over itself
+      const steerDamp = Math.max(0.12, 1.0 - zHop / 0.85);
+      avoidanceSteer *= steerDamp;
+
       if (Math.abs(avoidanceSteer) > 0.05) {
-        const maxAvoidTurn = Math.PI * 0.75;
-        const avoidAngle = THREE.MathUtils.clamp(avoidanceSteer * 0.45, -maxAvoidTurn, maxAvoidTurn);
+        const maxAvoidTurn = Math.PI * 0.8;
+        const avoidAngle = THREE.MathUtils.clamp(avoidanceSteer * 0.5, -maxAvoidTurn, maxAvoidTurn);
         desiredHeading += avoidAngle;
       }
 
@@ -930,6 +1002,7 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
         maxTurnRate * delta
       );
       headHeading += turnStep;
+      turnAccumulator += Math.abs(turnStep);
 
       let targetSpeed: number;
       if (isHunting) {
@@ -938,6 +1011,11 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
         targetSpeed = Math.min(6.0, 2.2 + distToTarget * 1.2);
       } else {
         targetSpeed = 2.4 + Math.sin(time * 0.5) * 0.4;
+      }
+
+      // Speed burst during Z-Hop to cleanly traverse over body coils
+      if (zHop > 0.25) {
+        targetSpeed = Math.max(targetSpeed, 4.6);
       }
 
       slitherSpeed = THREE.MathUtils.lerp(slitherSpeed, targetSpeed, 0.12);
@@ -957,7 +1035,7 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
       const stepDist = slitherSpeed * delta;
       headPos.x += Math.cos(currentHeadHeading) * stepDist;
       headPos.y += Math.sin(currentHeadHeading) * stepDist;
-      headPos.z = Math.sin(time * 0.7) * 0.18;
+      headPos.z = Math.sin(time * 0.7) * 0.18 + zHop;
 
       headGlowLight.position.set(headPos.x, headPos.y, headPos.z + 1.2);
 

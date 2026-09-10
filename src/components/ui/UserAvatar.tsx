@@ -27,6 +27,7 @@ export function isImageUrl(url?: string | null): boolean {
 export function getDefaultRoleAvatar(role?: string | null): string {
   if (role === "superadmin") return "🛡️";
   if (role === "admin") return "✍️";
+  if (role === "lab_member") return "🔬";
   return "🎓";
 }
 

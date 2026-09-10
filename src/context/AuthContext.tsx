@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-export type UserRole = "superadmin" | "admin" | "user";
+export type UserRole = "superadmin" | "admin" | "lab_member" | "user";
 
 export interface User {
   id: string;
@@ -70,6 +70,15 @@ const DEFAULT_USERS: User[] = [
     avatar: "🛡️",
     bio: "Quản trị viên tối cao hệ thống Embedded AIoT Laboratory PTIT",
     createdAt: "2026-01-01",
+  },
+  {
+    id: "usr_labmember",
+    name: "Kỹ sư Lab (Nghiên Cứu)",
+    email: "member@ptit-lab.edu.vn",
+    role: "lab_member",
+    avatar: "🔬",
+    bio: "Kỹ sư nghiên cứu & phát triển phần cứng / Firmware Embedded-AIoT Lab PTIT",
+    createdAt: "2026-01-02",
   },
 ];
 
@@ -268,8 +277,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       name: name.trim(),
       email: cleanEmail,
       role: assignedRole,
-      avatar: assignedRole === "superadmin" ? "🛡️" : assignedRole === "admin" ? "✍️" : "🎓",
-      bio: isSuperAdmin ? "Super Admin quản trị viên Embedded-AIoT Lab PTIT" : "Thành viên Embedded-AIoT Lab PTIT",
+      avatar:
+        assignedRole === "superadmin"
+          ? "🛡️"
+          : assignedRole === "admin"
+          ? "✍️"
+          : assignedRole === "lab_member"
+          ? "🔬"
+          : "🎓",
+      bio: isSuperAdmin
+        ? "Super Admin quản trị viên Embedded-AIoT Lab PTIT"
+        : assignedRole === "lab_member"
+        ? "Kỹ sư nghiên cứu & phát triển phần cứng / Firmware Embedded-AIoT Lab PTIT"
+        : "Thành viên Embedded-AIoT Lab PTIT",
       createdAt: new Date().toISOString().split("T")[0],
     };
 

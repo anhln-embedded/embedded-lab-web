@@ -10,6 +10,7 @@ import {
   Trash2,
   LogIn,
   Shield,
+  FlaskConical,
   Clock,
   Sparkles,
   AlertCircle,
@@ -361,10 +362,20 @@ export function TutorialComments({ topicSlug, postSlug }: TutorialCommentsProps)
                         {comment.userName}
                       </span>
 
-                      {comment.userRole === "admin" ? (
+                      {comment.userRole === "superadmin" ? (
+                        <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-purple-500/15 text-purple-400 border border-purple-500/30 flex items-center gap-1">
+                          <Shield className="w-2.5 h-2.5" />
+                          Super Admin
+                        </span>
+                      ) : comment.userRole === "admin" ? (
                         <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-rose-500/15 text-rose-400 border border-rose-500/30 flex items-center gap-1">
                           <Shield className="w-2.5 h-2.5" />
                           Admin
+                        </span>
+                      ) : comment.userRole === "lab_member" ? (
+                        <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 flex items-center gap-1">
+                          <FlaskConical className="w-2.5 h-2.5" />
+                          Lab Member
                         </span>
                       ) : comment.userRole === "mentor" ? (
                         <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-accent/15 text-accent border border-accent/30">
