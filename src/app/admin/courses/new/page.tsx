@@ -18,9 +18,11 @@ import {
   BookOpen,
   Code,
   Video,
-  CheckCircle2
+  CheckCircle2,
+  Edit3,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { LessonMarkdownEditorModal } from "@/components/courses/LessonMarkdownEditorModal";
 
 export default function NewCoursePage() {
   const router = useRouter();
@@ -39,6 +41,14 @@ export default function NewCoursePage() {
   const [githubRepo, setGithubRepo] = useState("");
   const [instructor, setInstructor] = useState(user ? user.name : "Embedded-AIoT Lab PTIT");
 
+  // State mở modal soạn thảo Markdown cho bài học
+  const [editingLessonState, setEditingLessonState] = useState<{
+    modIdx: number;
+    lessonIdx: number;
+    lesson: LessonData;
+    moduleTitle: string;
+  } | null>(null);
+
   // Curriculum State
   const [modules, setModules] = useState<CourseModule[]>([
     {
@@ -49,8 +59,10 @@ export default function NewCoursePage() {
           slug: "bai-1-gioi-thieu",
           duration: "15 phút",
           free: true,
+          hasVideo: true,
           summary: "Tổng quan các khái niệm, yêu cầu phần cứng và tài liệu tham khảo.",
           videoUrl: "https://www.youtube.com/",
+          contentMarkdown: `## 🎯 Mục Tiêu Bài Học\n- Nắm được tổng quan kiến trúc hệ thống nhúng và AIoT.\n- Chuẩn bị công cụ nạp và môi trường lập trình.\n\n## ⚡ Nội Dung Trọng Tâm\n1. Sơ đồ khối phần cứng.\n2. Cài đặt công cụ và kiểm tra cổng kết nối COM/USB.`,
         },
       ],
     },
@@ -110,6 +122,15 @@ export default function NewCoursePage() {
     setModules(updated);
   };
 
+  const handleSaveLessonFromModal = (updatedLesson: LessonData) => {
+    if (!editingLessonState) return;
+    const { modIdx, lessonIdx } = editingLessonState;
+    const updated = [...modules];
+    updated[modIdx].lessons[lessonIdx] = updatedLesson;
+    setModules(updated);
+    setEditingLessonState(null);
+  };
+
   const handleAddLesson = (modIdx: number) => {
     const updated = [...modules];
     const lessonNum = updated[modIdx].lessons.length + 1;
@@ -118,7 +139,10 @@ export default function NewCoursePage() {
       slug: `bai-${modIdx + 1}-${lessonNum}`,
       duration: "20 phút",
       free: false,
+      hasVideo: true,
+      videoUrl: "",
       summary: "Tóm tắt nội dung bài học.",
+      contentMarkdown: "",
     });
     setModules(updated);
   };
@@ -472,111 +496,199 @@ export default function NewCoursePage() {
                       </button>
                     </div>
 
-                    {mod.lessons.map((lesson, lessonIdx) => (
-                      <div
-                        key={lessonIdx}
-                        className="p-3.5 rounded-xl bg-bg-panel border border-border/80 space-y-2 text-xs"
-                      >
-                        <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
-                          <div className="sm:col-span-6">
-                            <input
-                              type="text"
-                              value={lesson.title}
-                              onChange={(e) =>
-                                handleUpdateLesson(modIdx, lessonIdx, "title", e.target.value)
-                              }
-                              placeholder="Tiêu đề bài giảng"
-                              className="w-full px-2.5 py-1.5 bg-bg-elevated border border-border rounded-lg text-xs font-medium text-text-primary focus:outline-none focus:border-cyan-500"
-                            />
+                    {mod.lessons.map((lesson, lessonIdx) => {
+                      const hasVideoVal =
+                        lesson.hasVideo !== undefined
+                          ? lesson.hasVideo
+                          : Boolean(lesson.videoUrl && lesson.videoUrl.trim().length > 0);
+                      const contentLen = (lesson.contentMarkdown || lesson.contentHtml || "").length;
+
+                      return (
+                        <div
+                          key={lessonIdx}
+                          className="p-4 rounded-2xl bg-bg-panel border border-border/90 space-y-3 text-xs shadow-xs"
+                        >
+                          {/* Dòng 1: Tiêu đề + Thời lượng + Học thử + Nút xóa */}
+                          <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
+                            <div className="sm:col-span-6">
+                              <input
+                                type="text"
+                                value={lesson.title}
+                                onChange={(e) =>
+                                  handleUpdateLesson(modIdx, lessonIdx, "title", e.target.value)
+                                }
+                                placeholder="Tiêu đề bài giảng"
+                                className="w-full px-3 py-1.5 bg-bg-elevated border border-border rounded-xl text-xs font-semibold text-text-primary focus:outline-none focus:border-accent"
+                              />
+                            </div>
+
+                            <div className="sm:col-span-3">
+                              <input
+                                type="text"
+                                value={lesson.duration}
+                                onChange={(e) =>
+                                  handleUpdateLesson(modIdx, lessonIdx, "duration", e.target.value)
+                                }
+                                placeholder="Thời lượng (vd: 15 phút)"
+                                className="w-full px-3 py-1.5 bg-bg-elevated border border-border rounded-xl text-xs text-text-muted focus:outline-none focus:border-accent"
+                              />
+                            </div>
+
+                            <div className="sm:col-span-2 flex items-center gap-1.5">
+                              <input
+                                type="checkbox"
+                                id={`free-${modIdx}-${lessonIdx}`}
+                                checked={lesson.free}
+                                onChange={(e) =>
+                                  handleUpdateLesson(modIdx, lessonIdx, "free", e.target.checked)
+                                }
+                                className="rounded border-border text-accent focus:ring-accent"
+                              />
+                              <label
+                                htmlFor={`free-${modIdx}-${lessonIdx}`}
+                                className="text-[11px] text-text-muted cursor-pointer font-medium"
+                              >
+                                Học thử free
+                              </label>
+                            </div>
+
+                            <div className="sm:col-span-1 text-right">
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveLesson(modIdx, lessonIdx)}
+                                className="p-1.5 rounded-lg text-red-400 hover:bg-red-500/10 cursor-pointer"
+                                title="Xóa bài giảng này"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </div>
 
-                          <div className="sm:col-span-3">
-                            <input
-                              type="text"
-                              value={lesson.duration}
-                              onChange={(e) =>
-                                handleUpdateLesson(modIdx, lessonIdx, "duration", e.target.value)
-                              }
-                              placeholder="Thời lượng (vd: 15 phút)"
-                              className="w-full px-2.5 py-1.5 bg-bg-elevated border border-border rounded-lg text-xs text-text-muted focus:outline-none focus:border-cyan-500"
-                            />
-                          </div>
+                          {/* Dòng 2: NÚT TÍCH CHỌN CÓ VIDEO HAY KHÔNG + NÚT MỞ MARKDOWN EDITOR */}
+                          <div className="p-3 rounded-xl bg-bg-elevated/50 border border-border/80 flex flex-col md:flex-row md:items-center justify-between gap-2.5">
+                            {/* Nút tích chọn video */}
+                            <div className="flex items-center gap-3">
+                              <label className="flex items-center gap-2 cursor-pointer select-none">
+                                <input
+                                  type="checkbox"
+                                  checked={hasVideoVal}
+                                  onChange={(e) => {
+                                    const checked = e.target.checked;
+                                    handleUpdateLesson(modIdx, lessonIdx, "hasVideo", checked);
+                                    if (!checked) {
+                                      handleUpdateLesson(modIdx, lessonIdx, "videoUrl", "");
+                                    }
+                                  }}
+                                  className="w-4 h-4 rounded text-accent focus:ring-accent border-border"
+                                />
+                                <span className="text-xs font-bold text-text-primary flex items-center gap-1.5">
+                                  <Video className={`w-3.5 h-3.5 ${hasVideoVal ? "text-accent" : "text-text-muted"}`} />
+                                  <span>Kèm Video bài giảng</span>
+                                </span>
+                              </label>
 
-                          <div className="sm:col-span-2 flex items-center gap-1.5">
-                            <input
-                              type="checkbox"
-                              id={`free-${modIdx}-${lessonIdx}`}
-                              checked={lesson.free}
-                              onChange={(e) =>
-                                handleUpdateLesson(modIdx, lessonIdx, "free", e.target.checked)
-                              }
-                              className="rounded border-border"
-                            />
-                            <label
-                              htmlFor={`free-${modIdx}-${lessonIdx}`}
-                              className="text-[11px] text-text-muted cursor-pointer"
-                            >
-                              Học thử miễn phí
-                            </label>
-                          </div>
+                              <span
+                                className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                  hasVideoVal
+                                    ? "bg-blue-500/15 text-blue-400 border border-blue-500/30"
+                                    : "bg-purple-500/15 text-purple-400 border border-purple-500/30"
+                                }`}
+                              >
+                                {hasVideoVal ? "🎬 Có Video" : "📄 Bài đọc / Thực hành"}
+                              </span>
+                            </div>
 
-                          <div className="sm:col-span-1 text-right">
+                            {/* Nút Mở Markdown Editor */}
                             <button
                               type="button"
-                              onClick={() => handleRemoveLesson(modIdx, lessonIdx)}
-                              className="p-1 rounded text-red-400 hover:bg-red-500/10"
+                              onClick={() =>
+                                setEditingLessonState({
+                                  modIdx,
+                                  lessonIdx,
+                                  lesson,
+                                  moduleTitle: mod.module,
+                                })
+                              }
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500 text-amber-400 hover:text-slate-950 border border-amber-500/40 text-xs font-bold transition-all shadow-xs cursor-pointer flex-shrink-0"
                             >
-                              <Trash2 className="w-3.5 h-3.5" />
+                              <Edit3 className="w-3.5 h-3.5" />
+                              <span>✍️ Soạn Thảo Nội Dung (Markdown Editor)</span>
+                            </button>
+                          </div>
+
+                          {/* Dòng 3: Ô nhập link video (Chỉ hiện khi tích chọn hasVideo) */}
+                          {hasVideoVal && (
+                            <div className="space-y-1 animate-fadeIn">
+                              <label className="text-[11px] font-bold text-text-muted flex items-center gap-1">
+                                <Video className="w-3 h-3 text-accent" />
+                                Link Video YouTube bài giảng:
+                              </label>
+                              <input
+                                type="text"
+                                value={lesson.videoUrl || ""}
+                                onChange={(e) =>
+                                  handleUpdateLesson(modIdx, lessonIdx, "videoUrl", e.target.value)
+                                }
+                                placeholder="VD: https://www.youtube.com/watch?v=..."
+                                className="w-full px-3 py-1.5 bg-bg-elevated border border-border rounded-xl text-xs text-text-secondary focus:outline-none focus:border-accent font-mono"
+                              />
+                            </div>
+                          )}
+
+                          {/* Tóm tắt & Code Snippet nhanh */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <input
+                              type="text"
+                              value={lesson.summary || ""}
+                              onChange={(e) =>
+                                handleUpdateLesson(modIdx, lessonIdx, "summary", e.target.value)
+                              }
+                              placeholder="Tóm tắt trọng tâm bài học..."
+                              className="w-full px-3 py-1.5 bg-bg-elevated border border-border rounded-xl text-xs text-text-secondary focus:outline-none focus:border-accent"
+                            />
+
+                            <input
+                              type="text"
+                              value={lesson.codeSnippet || ""}
+                              onChange={(e) =>
+                                handleUpdateLesson(modIdx, lessonIdx, "codeSnippet", e.target.value)
+                              }
+                              placeholder="Code Snippet thực hành mẫu (nếu có)..."
+                              className="w-full px-3 py-1.5 bg-bg-elevated border border-border rounded-xl text-xs font-mono text-emerald-400 focus:outline-none focus:border-accent"
+                            />
+                          </div>
+
+                          {/* Trạng thái nội dung giáo trình Markdown */}
+                          <div className="flex items-center justify-between pt-1 border-t border-border/40 text-[11px] text-text-muted">
+                            {contentLen > 0 ? (
+                              <span className="text-emerald-400 font-semibold flex items-center gap-1">
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                Đã soạn giáo trình chi tiết bằng Markdown ({contentLen} ký tự)
+                              </span>
+                            ) : (
+                              <span className="text-text-muted">
+                                Chưa có nội dung Markdown. Bấm nút <strong>"Soạn Thảo Nội Dung"</strong> ở trên để viết bài giảng.
+                              </span>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setEditingLessonState({
+                                  modIdx,
+                                  lessonIdx,
+                                  lesson,
+                                  moduleTitle: mod.module,
+                                })
+                              }
+                              className="text-accent hover:underline font-semibold cursor-pointer"
+                            >
+                              {contentLen > 0 ? "Mở chỉnh sửa & xem trước →" : "+ Viết nội dung ngay →"}
                             </button>
                           </div>
                         </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                          <input
-                            type="text"
-                            value={lesson.summary || ""}
-                            onChange={(e) =>
-                              handleUpdateLesson(modIdx, lessonIdx, "summary", e.target.value)
-                            }
-                            placeholder="Tóm tắt bài học ngắn gọn..."
-                            className="w-full px-2.5 py-1.5 bg-bg-elevated border border-border rounded-lg text-xs text-text-secondary focus:outline-none focus:border-cyan-500"
-                          />
-
-                          <input
-                            type="text"
-                            value={lesson.videoUrl || ""}
-                            onChange={(e) =>
-                              handleUpdateLesson(modIdx, lessonIdx, "videoUrl", e.target.value)
-                            }
-                            placeholder="Video URL (YouTube URL nếu có)..."
-                            className="w-full px-2.5 py-1.5 bg-bg-elevated border border-border rounded-lg text-xs text-text-secondary focus:outline-none focus:border-cyan-500 font-mono"
-                          />
-                        </div>
-
-                        {/* Code Snippet & Content HTML */}
-                        <div className="space-y-2 pt-1">
-                          <textarea
-                            rows={2}
-                            value={lesson.codeSnippet || ""}
-                            onChange={(e) =>
-                              handleUpdateLesson(modIdx, lessonIdx, "codeSnippet", e.target.value)
-                            }
-                            placeholder="Mã nguồn mẫu C/C++ thực hành (Code Snippet nếu có)..."
-                            className="w-full px-2.5 py-1.5 bg-bg-elevated border border-border rounded-lg text-xs font-mono text-emerald-400 focus:outline-none focus:border-cyan-500"
-                          />
-
-                          <textarea
-                            rows={3}
-                            value={lesson.contentHtml || ""}
-                            onChange={(e) =>
-                              handleUpdateLesson(modIdx, lessonIdx, "contentHtml", e.target.value)
-                            }
-                            placeholder="Nội dung giáo trình bài học chi tiết (Hỗ trợ HTML <h3>, <p>, <ul>, <code> hoặc văn bản)..."
-                            className="w-full px-2.5 py-1.5 bg-bg-elevated border border-border rounded-lg text-xs text-text-primary focus:outline-none focus:border-cyan-500 font-sans"
-                          />
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               ))}
@@ -600,6 +712,17 @@ export default function NewCoursePage() {
           </div>
         </form>
       </div>
+
+      {/* Markdown Editor Modal cho bài học */}
+      {editingLessonState && (
+        <LessonMarkdownEditorModal
+          isOpen={Boolean(editingLessonState)}
+          onClose={() => setEditingLessonState(null)}
+          moduleTitle={editingLessonState.moduleTitle}
+          lesson={editingLessonState.lesson}
+          onSave={handleSaveLessonFromModal}
+        />
+      )}
     </div>
   );
 }

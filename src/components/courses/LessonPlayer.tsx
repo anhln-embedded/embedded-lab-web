@@ -92,15 +92,8 @@ export function LessonPlayer({
   const [isFullscreen, setIsFullscreen] = React.useState(false);
   const videoContainerRef = React.useRef<HTMLDivElement>(null);
 
-  // Sync props to state if props update
-  React.useEffect(() => {
-    setCourseState(course);
-  }, [course]);
-
-  React.useEffect(() => {
-    setCurrentLessonState(currentLesson);
-    setIsPlaying(false);
-  }, [currentLesson]);
+  const hasVideo = currentLessonState.hasVideo !== false && Boolean(currentLessonState.videoUrl && currentLessonState.videoUrl.trim().length > 0);
+  const embedUrl = getEmbedUrl(currentLessonState.videoUrl);
 
   // Fullscreen change listener & Keyboard Shortcuts (F = Fullscreen)
   React.useEffect(() => {
@@ -109,7 +102,6 @@ export function LessonPlayer({
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger if user is typing in an input
       if (["INPUT", "TEXTAREA", "SELECT"].includes((e.target as HTMLElement)?.tagName)) {
         return;
       }
@@ -171,11 +163,6 @@ export function LessonPlayer({
     }
   }, [courseState.slug]);
 
-  // Reset play state when lesson changes
-  React.useEffect(() => {
-    setIsPlaying(false);
-  }, [currentLesson.slug]);
-
   const toggleComplete = (lessonSlug: string) => {
     setCompletedLessons((prev) => {
       const next = new Set(prev);
@@ -202,8 +189,17 @@ export function LessonPlayer({
   const isCurrentCompleted = completedLessons.has(currentLessonState.slug);
   const progressPercent = Math.round((completedLessons.size / allLessons.length) * 100);
 
-  // Fallback embed video (YouTube tutorial for Embedded C / RTOS if lesson doesn't have a specific video URL)
-  const embedUrl = getEmbedUrl(currentLessonState.videoUrl) || "https://www.youtube-nocookie.com/embed/3V9eqskKs00?autoplay=1&rel=0&fs=1&enablejsapi=1";
+  // Sync props to state if props update
+  React.useEffect(() => {
+    setCourseState(course);
+  }, [course]);
+
+  React.useEffect(() => {
+    setCurrentLessonState(currentLesson);
+    setIsPlaying(false);
+    const lessonHasVideo = currentLesson.hasVideo !== false && Boolean(currentLesson.videoUrl && currentLesson.videoUrl.trim().length > 0);
+    setActiveTab(lessonHasVideo ? "video" : "text");
+  }, [currentLesson]);
 
   return (
     <div className="min-h-screen pb-20">
@@ -252,61 +248,112 @@ export function LessonPlayer({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Main Lesson Player Section */}
           <div className="lg:col-span-8 space-y-6 min-w-0">
-            {/* Interactive Video Player Box */}
-            <div
-              ref={videoContainerRef}
-              className="relative aspect-video rounded-2xl md:rounded-3xl bg-black border border-border/80 overflow-hidden shadow-2xl group"
-            >
-              {isPlaying ? (
-                <div className="relative w-full h-full">
-                  <iframe
-                    src={embedUrl}
-                    title={currentLessonState.title}
-                    className="w-full h-full border-0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-                    allowFullScreen
-                  />
+            {/* Interactive Video Player or Reading Hero Banner */}
+            {hasVideo && embedUrl ? (
+              <div
+                ref={videoContainerRef}
+                className="relative aspect-video rounded-2xl md:rounded-3xl bg-black border border-border/80 overflow-hidden shadow-2xl group"
+              >
+                {isPlaying ? (
+                  <div className="relative w-full h-full">
+                    <iframe
+                      src={embedUrl}
+                      title={currentLessonState.title}
+                      className="w-full h-full border-0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+                      allowFullScreen
+                    />
 
-                  {/* Floating Fullscreen Toggle Button */}
-                  <button
-                    onClick={toggleFullscreen}
-                    className="absolute top-3 right-3 p-2.5 rounded-xl bg-black/70 hover:bg-black/95 text-white backdrop-blur-md border border-white/20 opacity-0 group-hover:opacity-100 transition-opacity z-20 shadow-lg flex items-center gap-1.5 text-xs font-semibold"
-                    title={isFullscreen ? "Thu nhỏ (Esc)" : "Toàn màn hình (F)"}
+                    {/* Floating Fullscreen Toggle Button */}
+                    <button
+                      onClick={toggleFullscreen}
+                      className="absolute top-3 right-3 p-2.5 rounded-xl bg-black/70 hover:bg-black/95 text-white backdrop-blur-md border border-white/20 opacity-0 group-hover:opacity-100 transition-opacity z-20 shadow-lg flex items-center gap-1.5 text-xs font-semibold"
+                      title={isFullscreen ? "Thu nhỏ (Esc)" : "Toàn màn hình (F)"}
+                    >
+                      {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                      <span>{isFullscreen ? "Thu nhỏ" : "Toàn màn hình"}</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => setIsPlaying(true)}
+                    className="relative w-full h-full bg-gradient-to-br from-bg-panel via-bg-elevated to-bg-code flex flex-col items-center justify-center p-6 text-center cursor-pointer select-none transition-all duration-300 hover:brightness-105"
                   >
-                    {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-                    <span>{isFullscreen ? "Thu nhỏ" : "Toàn màn hình"}</span>
-                  </button>
-                </div>
-              ) : (
-                <div
-                  onClick={() => setIsPlaying(true)}
-                  className="relative w-full h-full bg-gradient-to-br from-bg-panel via-bg-elevated to-bg-code flex flex-col items-center justify-center p-6 text-center cursor-pointer select-none transition-all duration-300 hover:brightness-105"
-                >
-                  {/* Background Grid Accent */}
-                  <div className="absolute inset-0 bg-[radial-gradient(#06b6d4_1px,transparent_1px)] [background-size:20px_20px] opacity-15" />
+                    {/* Background Grid Accent */}
+                    <div className="absolute inset-0 bg-[radial-gradient(#06b6d4_1px,transparent_1px)] [background-size:20px_20px] opacity-15" />
 
-                  {/* Play Button Pulsing */}
-                  <div className="relative z-10 w-20 h-20 rounded-full bg-accent/20 border-2 border-accent/60 flex items-center justify-center text-accent group-hover:scale-115 group-hover:bg-accent group-hover:text-white transition-all duration-300 shadow-2xl shadow-accent/30">
-                    <Play className="h-9 w-9 fill-current ml-1" />
+                    {/* Play Button Pulsing */}
+                    <div className="relative z-10 w-20 h-20 rounded-full bg-accent/20 border-2 border-accent/60 flex items-center justify-center text-accent group-hover:scale-115 group-hover:bg-accent group-hover:text-white transition-all duration-300 shadow-2xl shadow-accent/30">
+                      <Play className="h-9 w-9 fill-current ml-1" />
+                    </div>
+
+                    <div className="relative z-10 mt-4 space-y-1.5 max-w-lg">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-accent/15 text-accent border border-accent/30 inline-block">
+                        {currentLessonState.moduleTitle}
+                      </span>
+                      <h3 className="text-base sm:text-xl font-extrabold text-text-primary group-hover:text-accent transition-colors line-clamp-2">
+                        {currentLessonState.title}
+                      </h3>
+                      <p className="text-xs text-text-muted flex items-center justify-center gap-2 pt-1">
+                        <Clock className="w-3.5 h-3.5 text-accent" />
+                        <span>Thời lượng: {currentLessonState.duration}</span>
+                        <span>•</span>
+                        <span className="text-emerald-400 font-semibold">▶ Bấm để phát video bài giảng</span>
+                      </p>
+                    </div>
                   </div>
+                )}
+              </div>
+            ) : (
+              <div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-bg-panel via-bg-elevated to-bg-code border border-border/80 p-6 sm:p-8 shadow-xl">
+                <div className="absolute inset-0 bg-[radial-gradient(#06b6d4_1px,transparent_1px)] [background-size:20px_20px] opacity-10 pointer-events-none" />
+                <div className="absolute top-0 right-0 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
-                  <div className="relative z-10 mt-4 space-y-1.5 max-w-lg">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-accent/15 text-accent border border-accent/30 inline-block">
-                      {currentLessonState.moduleTitle}
+                <div className="relative z-10 space-y-4">
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <span className="px-3 py-1 rounded-full text-[11px] font-mono font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 inline-flex items-center gap-1.5 shadow-sm">
+                      <BookOpen className="w-3.5 h-3.5" />
+                      Bài Đọc Lý Thuyết & Thực Hành
                     </span>
-                    <h3 className="text-base sm:text-xl font-extrabold text-text-primary group-hover:text-accent transition-colors line-clamp-2">
-                      {currentLessonState.title}
-                    </h3>
-                    <p className="text-xs text-text-muted flex items-center justify-center gap-2 pt-1">
-                      <Clock className="w-3.5 h-3.5 text-accent" />
-                      <span>Thời lượng: {currentLessonState.duration}</span>
-                      <span>•</span>
-                      <span className="text-emerald-400 font-semibold">▶ Bấm để phát video bài giảng</span>
-                    </p>
+                    <span className="px-2.5 py-1 rounded-full text-[11px] font-mono text-accent bg-accent/10 border border-accent/20 inline-flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5" />
+                      Thời lượng đọc: {currentLessonState.duration || "15 phút"}
+                    </span>
+                  </div>
+
+                  <h2 className="text-xl sm:text-2xl font-extrabold text-text-primary">
+                    {currentLessonState.title}
+                  </h2>
+
+                  <p className="text-xs sm:text-sm text-text-secondary leading-relaxed max-w-2xl">
+                    {currentLessonState.summary || "Bài học này được biên soạn dưới dạng tài liệu giáo trình kỹ thuật chuyên sâu, sơ đồ mạch và mã nguồn mẫu bên dưới."}
+                  </p>
+
+                  <div className="pt-2 flex items-center gap-3 flex-wrap">
+                    <button
+                      onClick={() => {
+                        setActiveTab("text");
+                        const el = document.getElementById("lesson-content-area");
+                        if (el) el.scrollIntoView({ behavior: "smooth" });
+                      }}
+                      className="px-4 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold transition-all shadow-md inline-flex items-center gap-2"
+                    >
+                      <FileText className="w-4 h-4" />
+                      Đọc Tài Liệu Giáo Trình Ngay
+                    </button>
+                    {currentLessonState.codeSnippet && (
+                      <button
+                        onClick={() => setActiveTab("video")}
+                        className="px-3.5 py-2 rounded-xl bg-bg-panel hover:bg-bg-code border border-border text-text-secondary hover:text-accent text-xs font-semibold transition-all inline-flex items-center gap-2"
+                      >
+                        <Terminal className="w-3.5 h-3.5" />
+                        Xem Mã C/C++ Mẫu
+                      </button>
+                    )}
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Lesson Title, Completion Button & View Modes */}
             <div className="p-6 rounded-2xl bg-bg-panel border border-border/80 shadow-md space-y-4">
@@ -347,18 +394,20 @@ export function LessonPlayer({
               </div>
 
               {/* View Switcher Tabs */}
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setActiveTab("video")}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                    activeTab === "video"
-                      ? "bg-accent text-white shadow-sm"
-                      : "bg-bg-elevated text-text-secondary hover:text-text-primary"
-                  }`}
-                >
-                  <Video className="w-3.5 h-3.5" />
-                  <span>Video & Thực Hành</span>
-                </button>
+              <div className="flex items-center gap-2 flex-wrap">
+                {hasVideo && (
+                  <button
+                    onClick={() => setActiveTab("video")}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                      activeTab === "video"
+                        ? "bg-accent text-white shadow-sm"
+                        : "bg-bg-elevated text-text-secondary hover:text-text-primary"
+                    }`}
+                  >
+                    <Video className="w-3.5 h-3.5" />
+                    <span>Video & Thực Hành</span>
+                  </button>
+                )}
                 <button
                   onClick={() => setActiveTab("text")}
                   className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
@@ -368,8 +417,21 @@ export function LessonPlayer({
                   }`}
                 >
                   <FileText className="w-3.5 h-3.5" />
-                  <span>Lý Thuyết & Giáo Trình</span>
+                  <span>{hasVideo ? "Lý Thuyết & Giáo Trình" : "Giáo Trình Lý Thuyết & Thực Hành"}</span>
                 </button>
+                {!hasVideo && currentLessonState.codeSnippet && (
+                  <button
+                    onClick={() => setActiveTab("video")}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                      activeTab === "video"
+                        ? "bg-accent text-white shadow-sm"
+                        : "bg-bg-elevated text-text-secondary hover:text-text-primary"
+                    }`}
+                  >
+                    <Terminal className="w-3.5 h-3.5" />
+                    <span>Mã C/C++ Mẫu</span>
+                  </button>
+                )}
               </div>
 
               {/* Lesson Summary */}
@@ -406,7 +468,7 @@ export function LessonPlayer({
 
             {/* Tab: Theory HTML Content */}
             {activeTab === "text" && (
-              <div className="p-6 md:p-8 rounded-2xl bg-bg-panel border border-border/80 shadow-md space-y-6">
+              <div id="lesson-content-area" className="p-6 md:p-8 rounded-2xl bg-bg-panel border border-border/80 shadow-md space-y-6 scroll-mt-24">
                 <div className="flex items-center justify-between border-b border-border/60 pb-3">
                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-accent">
                     <BookOpen className="w-4 h-4" />
@@ -506,6 +568,7 @@ export function LessonPlayer({
                       {mod.lessons.map((lesson) => {
                         const isCurrent = lesson.slug === currentLessonState.slug;
                         const isCompleted = completedLessons.has(lesson.slug);
+                        const lessonHasVideo = lesson.hasVideo !== false && Boolean(lesson.videoUrl && lesson.videoUrl.trim().length > 0);
                         return (
                           <Link
                             key={lesson.slug}
@@ -521,6 +584,11 @@ export function LessonPlayer({
                                 <CheckCircle2 className="h-4 w-4 text-emerald-400 flex-shrink-0" />
                               ) : (
                                 <Circle className="h-4 w-4 opacity-40 flex-shrink-0" />
+                              )}
+                              {lessonHasVideo ? (
+                                <Video className={`h-3.5 w-3.5 flex-shrink-0 ${isCurrent ? "text-white" : "text-cyan-400/80"}`} />
+                              ) : (
+                                <FileText className={`h-3.5 w-3.5 flex-shrink-0 ${isCurrent ? "text-white" : "text-emerald-400/80"}`} />
                               )}
                               <span className="truncate">{lesson.title}</span>
                             </div>

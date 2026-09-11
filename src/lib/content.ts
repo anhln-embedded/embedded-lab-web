@@ -39,10 +39,12 @@ export interface LessonData {
   slug: string;
   duration: string;
   free: boolean;
+  hasVideo?: boolean;
+  videoUrl?: string;
   summary?: string;
   codeSnippet?: string;
-  videoUrl?: string;
   contentHtml?: string;
+  contentMarkdown?: string;
 }
 
 export interface CourseModule {
