@@ -93,8 +93,8 @@ export default function EditPostPage() {
             coverImage: p.coverImage || "/images/logo.png",
             series: p.series || "",
             readingTime: p.readingTime || 5,
-            authorName: p.authorName || user?.name || "Admin Lab",
-            authorTitle: p.authorTitle || (user?.role === "superadmin" ? "Super Admin Lab" : "Kỹ sư Lab PTIT"),
+            authorName: p.authorName || user?.name || "Lưu Ngọc Anh",
+            authorTitle: p.authorTitle || "",
           });
         }
       } catch (err) {
@@ -145,8 +145,8 @@ export default function EditPostPage() {
         tags: settings.tags.length > 0 ? settings.tags.join(",") : "embedded",
         readingTime: calculatedReadingTime,
         series: settings.series.trim() || undefined,
-        authorName: settings.authorName?.trim() || user?.name || "Embedded-AIoT Lab PTIT",
-        authorTitle: settings.authorTitle?.trim() || user?.bio || (user?.role === "superadmin" ? "Super Admin Lab" : "Kỹ sư Lab PTIT"),
+        authorName: settings.authorName?.trim() || user?.name || "Lưu Ngọc Anh",
+        authorTitle: settings.authorTitle?.trim() || "",
         authorAvatar: user?.avatar || "/images/logo.png",
       };
 
@@ -435,8 +435,8 @@ export default function EditPostPage() {
         postType={settings.postType}
         tags={settings.tags}
         readingTime={calculatedReadingTime}
-        authorName={settings.authorName || user?.name || "Admin Lab"}
-        authorTitle={settings.authorTitle || (user?.role === "superadmin" ? "Super Admin Lab" : "Kỹ sư Lab PTIT")}
+        authorName={settings.authorName || user?.name || "Lưu Ngọc Anh"}
+        authorTitle={settings.authorTitle || ""}
         onPublish={handleUpdate}
         isSubmitting={isSubmitting}
       />

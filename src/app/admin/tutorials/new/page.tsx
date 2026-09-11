@@ -59,19 +59,13 @@ export default function NewTutorialTopicPage() {
   const [badge, setBadge] = useState("Hot Series");
   const [level, setLevel] = useState("Intermediate");
   const [description, setDescription] = useState("");
-  const [author, setAuthor] = useState(user?.name || "Kỹ sư Lab PTIT");
-  const [authorTitle, setAuthorTitle] = useState(user?.role === "superadmin" ? "Super Admin Lab" : "Mentor Lab");
+  const [author, setAuthor] = useState(user?.name || "");
 
   useEffect(() => {
     if (user?.name) {
       setAuthor(user.name);
     } else if (user?.email) {
       setAuthor(user.email.split("@")[0]);
-    }
-    if (user?.role === "superadmin") {
-      setAuthorTitle("Super Admin Lab");
-    } else if (user?.bio) {
-      setAuthorTitle(user.bio);
     }
   }, [user]);
 
@@ -133,7 +127,7 @@ void app_main(void) {
           ]).map((p: any) => ({
             ...p,
             authorName: p.authorName || author,
-            authorTitle: p.authorTitle || authorTitle,
+            authorTitle: "",
             authorAvatar: p.authorAvatar || user?.avatar || "/images/logo.png",
           }));
 
@@ -150,7 +144,7 @@ void app_main(void) {
           level,
           description,
           author,
-          authorTitle,
+          authorTitle: "",
           authorAvatar: user?.avatar || "/images/logo.png",
           posts: postsPayload,
         }),
@@ -281,7 +275,7 @@ void app_main(void) {
               </select>
             </div>
 
-            <div>
+            <div className="sm:col-span-2">
               <div className="flex items-center justify-between mb-1.5">
                 <label className="block text-xs font-bold text-text-secondary">
                   Tác giả chuyên đề *
@@ -303,19 +297,6 @@ void app_main(void) {
                 placeholder="Tên tác giả chuyên đề..."
                 required
                 className="w-full px-3.5 py-2.5 rounded-xl bg-bg-elevated border border-border text-xs text-text-primary focus:outline-none focus:border-accent font-semibold"
-              />
-            </div>
-
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-text-secondary mb-1.5">
-                Chức danh / Vai trò tác giả
-              </label>
-              <input
-                type="text"
-                value={authorTitle}
-                onChange={(e) => setAuthorTitle(e.target.value)}
-                placeholder="VD: Quản trị viên Lab / Giảng viên / Mentor..."
-                className="w-full px-3.5 py-2.5 rounded-xl bg-bg-elevated border border-border text-xs text-text-primary focus:outline-none focus:border-accent"
               />
             </div>
 

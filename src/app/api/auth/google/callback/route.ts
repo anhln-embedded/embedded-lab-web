@@ -115,7 +115,7 @@ export async function GET(request: Request) {
         email: dbUser.email,
         avatar: dbUser.avatar || googleUser.picture || "🎓",
         role: dbUser.role,
-        bio: dbUser.title || (isSuperAdmin ? "Super Admin Lab PTIT" : "Thành viên Lab PTIT"),
+        bio: dbUser.title || "",
         provider: "google",
       })
     ).toString("base64url");

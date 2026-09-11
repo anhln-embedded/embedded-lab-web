@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { User, useAuth } from "@/context/AuthContext";
-import { X, User as UserIcon, Briefcase, CheckCircle2, ShieldCheck, Sparkles, Image as ImageIcon } from "lucide-react";
+import { X, User as UserIcon, CheckCircle2, ShieldCheck, Sparkles, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 
@@ -16,7 +16,6 @@ export function EditProfileModal({ isOpen, onClose, onUpdated }: EditProfileModa
   const { user, loginWithOAuth } = useAuth();
 
   const [name, setName] = useState("");
-  const [title, setTitle] = useState("");
   const [avatar, setAvatar] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -25,7 +24,6 @@ export function EditProfileModal({ isOpen, onClose, onUpdated }: EditProfileModa
   useEffect(() => {
     if (user) {
       setName(user.name || "");
-      setTitle(user.bio || "");
       setAvatar(user.avatar || "");
       setSuccessMsg(null);
       setErrorMsg(null);
@@ -52,7 +50,7 @@ export function EditProfileModal({ isOpen, onClose, onUpdated }: EditProfileModa
         body: JSON.stringify({
           id: user.id,
           name: name.trim(),
-          title: title.trim(),
+          title: "",
           avatar: avatar.trim(),
         }),
       });
@@ -66,7 +64,7 @@ export function EditProfileModal({ isOpen, onClose, onUpdated }: EditProfileModa
       const updatedUser: User = {
         ...user,
         name: name.trim(),
-        bio: title.trim() || user.bio,
+        bio: "",
         avatar: avatar.trim() || user.avatar,
       };
 
@@ -151,20 +149,6 @@ export function EditProfileModal({ isOpen, onClose, onUpdated }: EditProfileModa
             <span className="text-[10px] text-text-muted mt-1 block">
               💡 Đây là tên sẽ được tự động điền làm tác giả khi bạn đăng bài viết, chuyên đề hay khóa học mới.
             </span>
-          </div>
-
-          <div>
-            <label className="block font-bold text-text-secondary mb-1.5 flex items-center gap-1">
-              <Briefcase className="w-3.5 h-3.5 text-accent" />
-              <span>Chức danh / Vai trò hiển thị</span>
-            </label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="VD: Mentor Embedded-AIoT Lab PTIT / Quản trị viên..."
-              className="w-full px-3.5 py-2.5 rounded-xl bg-bg-elevated border border-border text-text-primary text-xs focus:outline-none focus:border-accent"
-            />
           </div>
 
           {/* Avatar Selector */}

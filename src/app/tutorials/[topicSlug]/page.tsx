@@ -130,9 +130,6 @@ export default function TopicDetailPage({ params }: PageProps) {
               textClassName="text-[9px]"
             />
             <span className="font-bold text-text-primary">{topic.author}</span>
-            {topic.authorTitle && (
-              <span className="text-[11px] text-text-muted">({topic.authorTitle})</span>
-            )}
           </div>
         </div>
 

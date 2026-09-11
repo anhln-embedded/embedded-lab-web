@@ -804,12 +804,9 @@ export default function TutorialPostDetailPage({ params }: PageProps) {
                   <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-accent/15 text-accent border border-accent/30">
                     Tác giả bài viết
                   </span>
-                  <span className="text-xs text-text-muted font-medium">
-                    {currentPost.authorTitle || topic.authorTitle || "Mentor Lab Embedded-AIoT"}
-                  </span>
                 </div>
                 <h4 className="text-lg sm:text-xl font-black text-text-primary">
-                  {currentPost.authorName || topic.author || "Kỹ sư Lab PTIT"}
+                  {currentPost.authorName || topic.author || "Lưu Ngọc Anh"}
                 </h4>
                 <p className="text-xs sm:text-sm text-text-muted leading-relaxed max-w-2xl">
                   Chịu trách nhiệm biên soạn và bảo trợ chuyên môn cho bài viết này. Mọi thắc mắc kỹ thuật hoặc góp ý hoàn thiện nội dung, bạn có thể để lại bình luận ngay bên dưới.

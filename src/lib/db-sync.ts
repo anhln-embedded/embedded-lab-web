@@ -41,6 +41,14 @@ export async function ensureTutorialSchema() {
       );
     } catch {}
 
+    // Dọn dẹp các title/authorTitle mặc định (Super Admin Lab, Mentor Lab, Kỹ sư...)
+    try {
+      await prisma.$executeRawUnsafe(`UPDATE "User" SET "title" = '' WHERE "title" LIKE '%Super Admin%' OR "title" LIKE '%Kỹ sư%' OR "title" LIKE '%Mentor Lab%'`);
+      await prisma.$executeRawUnsafe(`UPDATE "TutorialTopic" SET "authorTitle" = '' WHERE "authorTitle" LIKE '%Super Admin%' OR "authorTitle" LIKE '%Mentor Lab%' OR "authorTitle" LIKE '%Kỹ sư%'`);
+      await prisma.$executeRawUnsafe(`UPDATE "TutorialArticle" SET "authorTitle" = '' WHERE "authorTitle" LIKE '%Super Admin%' OR "authorTitle" LIKE '%Mentor Lab%' OR "authorTitle" LIKE '%Kỹ sư%'`);
+      await prisma.$executeRawUnsafe(`UPDATE "Post" SET "authorTitle" = '' WHERE "authorTitle" LIKE '%Super Admin%' OR "authorTitle" LIKE '%Kỹ sư%' OR "authorTitle" LIKE '%Mentor Lab%'`);
+    } catch {}
+
     // 2. Tạo bảng TutorialComment nếu chưa tồn tại
     try {
       await prisma.$executeRawUnsafe(`

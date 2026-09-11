@@ -107,7 +107,7 @@ export function FanpagePostCard({ post, onPostUpdated }: FanpagePostCardProps) {
                 Embedded AIoT Laboratory
               </h3>
               <span className="text-xs text-text-muted">·</span>
-              <span className="text-xs text-text-muted font-medium">{post.authorTitle || post.author}</span>
+              <span className="text-xs text-text-muted font-medium">{post.author}</span>
             </div>
 
             <div className="flex items-center gap-2 text-xs text-text-muted mt-0.5">

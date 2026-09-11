@@ -65,8 +65,8 @@ export default function EditTutorialTopicPage({ params }: PageProps) {
   const [badge, setBadge] = useState("Hot Series");
   const [level, setLevel] = useState("Intermediate");
   const [description, setDescription] = useState("");
-  const [author, setAuthor] = useState("Kỹ sư Lab PTIT");
-  const [authorTitle, setAuthorTitle] = useState("Mentor Lab");
+  const [author, setAuthor] = useState("Lưu Ngọc Anh");
+  const [authorTitle, setAuthorTitle] = useState("");
   const [authorAvatar, setAuthorAvatar] = useState("/images/logo.png");
   const [coverImage, setCoverImage] = useState("/images/logo.png");
 
@@ -123,7 +123,7 @@ export default function EditTutorialTopicPage({ params }: PageProps) {
           setLevel(t.level);
           setDescription(t.description);
           setAuthor(t.author);
-          setAuthorTitle(t.authorTitle || "Mentor Lab");
+          setAuthorTitle(t.authorTitle || "");
           setAuthorAvatar(t.authorAvatar || "/images/logo.png");
           setCoverImage(t.coverImage || "/images/logo.png");
           setPosts(
@@ -202,7 +202,7 @@ export default function EditTutorialTopicPage({ params }: PageProps) {
           level,
           description,
           author,
-          authorTitle,
+          authorTitle: "",
           coverImage,
           posts: updated,
         }),
@@ -268,7 +268,7 @@ export default function EditTutorialTopicPage({ params }: PageProps) {
           level,
           description,
           author,
-          authorTitle,
+          authorTitle: "",
           authorAvatar,
           coverImage,
           posts,
@@ -847,7 +847,6 @@ export default function EditTutorialTopicPage({ params }: PageProps) {
                         type="button"
                         onClick={() => {
                           setAuthor(user.name);
-                          if (user.bio) setAuthorTitle(user.bio);
                         }}
                         className="text-[10px] text-accent hover:underline font-bold"
                       >
@@ -864,31 +863,18 @@ export default function EditTutorialTopicPage({ params }: PageProps) {
                 </div>
                 <div>
                   <label className="block font-bold text-text-secondary text-xs mb-1">
-                    Chức danh tác giả
+                    Cấp độ chuyên môn (Level)
                   </label>
-                  <input
-                    type="text"
-                    value={authorTitle}
-                    onChange={(e) => setAuthorTitle(e.target.value)}
-                    placeholder="VD: Giảng viên / Mentor..."
+                  <select
+                    value={level}
+                    onChange={(e) => setLevel(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl bg-bg-elevated border border-border text-text-primary text-xs"
-                  />
+                  >
+                    <option value="Beginner">Beginner (Cơ bản)</option>
+                    <option value="Intermediate">Intermediate (Trung cấp)</option>
+                    <option value="Advanced">Advanced (Chuyên sâu)</option>
+                  </select>
                 </div>
-              </div>
-
-              <div>
-                <label className="block font-bold text-text-secondary text-xs mb-1">
-                  Cấp độ chuyên môn (Level)
-                </label>
-                <select
-                  value={level}
-                  onChange={(e) => setLevel(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-bg-elevated border border-border text-text-primary text-xs"
-                >
-                  <option value="Beginner">Beginner (Cơ bản)</option>
-                  <option value="Intermediate">Intermediate (Trung cấp)</option>
-                  <option value="Advanced">Advanced (Chuyên sâu)</option>
-                </select>
               </div>
             </div>
 

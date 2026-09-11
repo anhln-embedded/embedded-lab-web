@@ -61,13 +61,7 @@ export async function GET(request: Request) {
         avatar:
           u.avatar ||
           (role === "superadmin" ? "🛡️" : role === "admin" ? "✍️" : role === "lab_member" ? "🔬" : "🎓"),
-        bio:
-          u.title ||
-          (role === "superadmin"
-            ? "Super Admin Lab PTIT"
-            : role === "lab_member"
-            ? "Thành viên Nghiên cứu Lab PTIT"
-            : "Thành viên Lab PTIT"),
+        bio: u.title || "",
         createdAt: u.createdAt.toISOString().split("T")[0],
       };
     });
@@ -124,13 +118,7 @@ export async function POST(request: Request) {
             : assignedRole === "lab_member"
             ? "🔬"
             : "🎓"),
-        title:
-          title ||
-          (assignedRole === "superadmin"
-            ? "Super Admin Lab PTIT"
-            : assignedRole === "lab_member"
-            ? "Thành viên Nghiên cứu Lab PTIT"
-            : "Thành viên Lab PTIT"),
+        title: title || "",
       },
     });
 

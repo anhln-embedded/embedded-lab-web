@@ -163,7 +163,6 @@ export function BentoPostGrid({ posts, onPostUpdated }: BentoPostGridProps) {
               />
               <div>
                 <div className="text-xs sm:text-sm font-semibold text-text-primary">{heroPost.author}</div>
-                <div className="text-[11px] text-text-muted">{heroPost.authorTitle || "Embedded R&D Lab"}</div>
               </div>
             </div>
 

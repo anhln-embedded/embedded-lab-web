@@ -290,9 +290,6 @@ export function BlogPostContent({ post }: BlogPostContentProps) {
                   <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-accent/15 text-accent border border-accent/30">
                     Tác giả bản tin
                   </span>
-                  <span className="text-xs text-text-muted font-medium">
-                    {post.authorTitle || "Embedded R&D Lab PTIT"}
-                  </span>
                 </div>
                 <h4 className="text-base sm:text-lg font-bold text-text-primary truncate">
                   {post.author}
@@ -376,13 +373,7 @@ export function BlogPostContent({ post }: BlogPostContentProps) {
               <div className="space-y-1 flex-1">
                 <div className="flex items-center gap-2">
                   <h4 className="font-bold text-text-primary text-sm">{post.author}</h4>
-                  <span className="px-1.5 py-0.5 rounded text-[10px] bg-accent/20 text-accent font-mono font-semibold">
-                    Research Group
-                  </span>
                 </div>
-                <p className="text-xs text-text-secondary">
-                  {post.authorTitle || "Khoa Điện Tử 1 - Học viện Công nghệ Bưu chính Viễn thông"}
-                </p>
                 <p className="text-[11px] text-text-muted">
                   Chia sẻ kiến thức thực nghiệm, tài liệu lab và các công trình nghiên cứu vi mạch nhúng & AIoT.
                 </p>

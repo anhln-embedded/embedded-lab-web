@@ -41,7 +41,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       description: topic.description,
       totalArticles: topic.articles.length,
       author: topic.author,
-      authorTitle: topic.authorTitle || "Mentor Lab",
+      authorTitle: topic.authorTitle || "",
       authorAvatar: (topic as any).authorAvatar || "/images/logo.png",
       coverImage: topic.coverImage || "/images/logo.png",
       posts: topic.articles.map((a) => ({
@@ -54,8 +54,8 @@ export async function GET(request: Request, { params }: RouteParams) {
         updatedAt: a.updatedAt.toISOString().split("T")[0],
         summary: a.summary || "",
         contentHtml: a.contentHtml || "",
-        authorName: a.authorName || topic.author || "Kỹ sư Lab PTIT",
-        authorTitle: a.authorTitle || topic.authorTitle || "Mentor Lab Embedded-AIoT",
+        authorName: a.authorName || topic.author || "Lưu Ngọc Anh",
+        authorTitle: a.authorTitle || topic.authorTitle || "",
         authorAvatar: a.authorAvatar || (topic as any).authorAvatar || "/images/logo.png",
         codeSnippet: a.codeSnippet
           ? {
