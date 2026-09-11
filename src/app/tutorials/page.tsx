@@ -5,6 +5,7 @@ import Link from "next/link";
 import { TUTORIAL_TOPICS, TutorialTopic, TutorialPost } from "@/lib/tutorials-data";
 import { TutorialTopicCard } from "@/components/tutorials/TutorialTopicCard";
 import { CategoryManagerModal, TutorialCategoryItem } from "@/components/tutorials/CategoryManagerModal";
+import { CategoryIcon } from "@/components/tutorials/CategoryIcon";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import {
@@ -34,11 +35,11 @@ import { Button } from "@/components/ui/Button";
 
 const INITIAL_CATEGORIES = [
   { slug: "linux", name: "Embedded Linux & Kernel", icon: "🐧", order: 1 },
-  { slug: "rtos", name: "Real-Time OS (RTOS)", icon: "⚡", order: 2 },
+  { slug: "rtos", name: "Real-Time OS (RTOS)", icon: "clock", order: 2 },
   { slug: "automotive", name: "Automotive & CAN/UDS", icon: "🚗", order: 3 },
-  { slug: "mcu", name: "Vi Điều Khiển & SoC", icon: "🎛️", order: 4 },
-  { slug: "programming", name: "Lập Trình C & Kỹ Năng", icon: "💻", order: 5 },
-  { slug: "hardware", name: "Phần Cứng PCB & FPGA", icon: "📐", order: 6 },
+  { slug: "mcu", name: "Vi Điều Khiển & SoC", icon: "cpu", order: 4 },
+  { slug: "programming", name: "Lập Trình C & Kỹ Năng", icon: "code", order: 5 },
+  { slug: "hardware", name: "Phần Cứng PCB & FPGA", icon: "circuit", order: 6 },
 ];
 
 export default function TutorialsPage() {
@@ -324,7 +325,11 @@ export default function TutorialsPage() {
               }`}
             >
               <div className="flex items-center gap-2.5 truncate">
-                <span className="text-base flex-shrink-0">📚</span>
+                <Layers
+                  className={`w-4 h-4 flex-shrink-0 transition-colors ${
+                    selectedCategory === "all" ? "text-white" : "text-accent"
+                  }`}
+                />
                 <span className="truncate">{dict.tutorials.allTopics}</span>
               </div>
               <span
@@ -351,11 +356,18 @@ export default function TutorialsPage() {
                   className={`w-full flex items-center justify-between p-2.5 rounded-2xl text-xs font-bold transition-all text-left cursor-pointer ${
                     isActive
                       ? "bg-accent text-white shadow-md shadow-accent/20"
-                      : "text-text-secondary hover:text-text-primary hover:bg-bg-elevated"
+                      : "text-text-secondary hover:text-text-primary hover:bg-bg-elevated group"
                   }`}
                 >
                   <div className="flex items-center gap-2.5 truncate">
-                    <span className="text-base flex-shrink-0">{cat.icon}</span>
+                    <CategoryIcon
+                      icon={cat.icon}
+                      slug={cat.slug}
+                      name={cat.name}
+                      className={`w-4 h-4 flex-shrink-0 transition-colors ${
+                        isActive ? "text-white" : "text-accent group-hover:scale-110"
+                      }`}
+                    />
                     <span className="truncate">{cat.name}</span>
                   </div>
                   <span
@@ -425,9 +437,9 @@ export default function TutorialsPage() {
                   >
                     <div>
                       <div className="flex items-center gap-2 mb-1.5">
-                        <span className="text-xs p-1 rounded-lg bg-bg-elevated border border-border">
-                          {topic.icon}
-                        </span>
+                        <div className="w-6 h-6 rounded-lg bg-bg-elevated border border-border flex items-center justify-center text-accent flex-shrink-0">
+                          <CategoryIcon icon={topic.icon} slug={topic.category} name={topic.categoryName} className="w-3.5 h-3.5" />
+                        </div>
                         <span className="text-[10px] font-bold text-accent uppercase tracking-wider truncate">
                           {topic.title}
                         </span>
@@ -488,9 +500,9 @@ export default function TutorialsPage() {
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/60">
                       <div className="flex items-center gap-3">
-                        <span className="text-2xl p-2 rounded-2xl bg-bg-elevated border border-border">
-                          {topic.icon}
-                        </span>
+                        <div className="w-12 h-12 rounded-2xl bg-bg-elevated border border-border flex items-center justify-center text-accent shadow-inner flex-shrink-0">
+                          <CategoryIcon icon={topic.icon} slug={topic.category} name={topic.categoryName} className="w-6 h-6 text-accent" />
+                        </div>
                         <div>
                           <div className="flex items-center gap-2">
                             <span className="text-[10px] font-bold text-accent uppercase tracking-wider">

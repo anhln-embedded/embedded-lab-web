@@ -3,11 +3,11 @@ import prisma from "@/lib/prisma";
 
 export const DEFAULT_CATEGORIES = [
   { slug: "linux", name: "Embedded Linux & Kernel", icon: "🐧", order: 1 },
-  { slug: "rtos", name: "Real-Time OS (RTOS)", icon: "⚡", order: 2 },
+  { slug: "rtos", name: "Real-Time OS (RTOS)", icon: "clock", order: 2 },
   { slug: "automotive", name: "Automotive & CAN/UDS", icon: "🚗", order: 3 },
-  { slug: "mcu", name: "Vi Điều Khiển & SoC", icon: "🎛️", order: 4 },
-  { slug: "programming", name: "Lập Trình C & Kỹ Năng", icon: "💻", order: 5 },
-  { slug: "hardware", name: "Phần Cứng PCB & FPGA", icon: "📐", order: 6 },
+  { slug: "mcu", name: "Vi Điều Khiển & SoC", icon: "cpu", order: 4 },
+  { slug: "programming", name: "Lập Trình C & Kỹ Năng", icon: "code", order: 5 },
+  { slug: "hardware", name: "Phần Cứng PCB & FPGA", icon: "circuit", order: 6 },
 ];
 
 export async function GET() {

@@ -12,6 +12,7 @@ import {
   GraduationCap
 } from "lucide-react";
 import { UserAvatar } from "@/components/ui/UserAvatar";
+import { CategoryIcon } from "./CategoryIcon";
 
 interface TutorialTopicCardProps {
   topic: TutorialTopic;
@@ -29,9 +30,9 @@ export function TutorialTopicCard({ topic }: TutorialTopicCardProps) {
         {/* Header Badges */}
         <div className="flex items-center justify-between gap-2 mb-4">
           <div className="flex items-center gap-2">
-            <span className="text-2xl p-2.5 rounded-2xl bg-bg-elevated border border-border shadow-inner flex items-center justify-center">
-              {topic.icon}
-            </span>
+            <div className="w-11 h-11 rounded-2xl bg-bg-elevated border border-border shadow-inner flex items-center justify-center text-accent flex-shrink-0">
+              <CategoryIcon icon={topic.icon} slug={topic.category} name={topic.categoryName} className="w-6 h-6 text-accent" />
+            </div>
             <div>
               <span className="text-[11px] font-bold text-accent uppercase tracking-wider block">
                 {topic.categoryName}

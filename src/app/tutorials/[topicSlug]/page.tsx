@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { UserAvatar } from "@/components/ui/UserAvatar";
+import { CategoryIcon } from "@/components/tutorials/CategoryIcon";
 import { useAuth } from "@/context/AuthContext";
 
 interface PageProps {
@@ -96,9 +97,9 @@ export default function TopicDetailPage({ params }: PageProps) {
         <div className="absolute top-0 right-0 w-80 h-80 bg-accent/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <span className="text-4xl sm:text-5xl p-4 rounded-3xl bg-bg-elevated border border-border shadow-inner">
-            {topic.icon}
-          </span>
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-bg-elevated border border-border shadow-inner flex items-center justify-center text-accent flex-shrink-0">
+            <CategoryIcon icon={topic.icon} slug={topic.category} name={topic.categoryName} className="w-8 h-8 sm:w-10 sm:h-10 text-accent" size={36} />
+          </div>
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-accent uppercase tracking-wider">

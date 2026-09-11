@@ -49,6 +49,30 @@ export async function ensureTutorialSchema() {
       await prisma.$executeRawUnsafe(`UPDATE "Post" SET "authorTitle" = '' WHERE "authorTitle" LIKE '%Super Admin%' OR "authorTitle" LIKE '%Kỹ sư%' OR "authorTitle" LIKE '%Mentor Lab%'`);
     } catch {}
 
+    // Chuẩn hóa icon chuyên ngành cho TutorialCategory (thay 🎛️ bằng cpu / circuit)
+    try {
+      await prisma.$executeRawUnsafe(`
+        UPDATE "TutorialCategory" 
+        SET "icon" = 'cpu' 
+        WHERE "slug" = 'mcu' AND ("icon" = '🎛️' OR "icon" = '🎛' OR "icon" = '' OR "icon" IS NULL)
+      `);
+      await prisma.$executeRawUnsafe(`
+        UPDATE "TutorialCategory" 
+        SET "icon" = 'circuit' 
+        WHERE ("slug" = 'vi-mach' OR "slug" = 'hardware') AND ("icon" = '🎛️' OR "icon" = '🎛' OR "icon" = '📐' OR "icon" = '' OR "icon" IS NULL)
+      `);
+      await prisma.$executeRawUnsafe(`
+        UPDATE "TutorialCategory" 
+        SET "icon" = 'code' 
+        WHERE ("slug" = 'programming' OR "slug" = 'ngon-ngu-lap-trinh') AND ("icon" = '💻' OR "icon" = '' OR "icon" IS NULL)
+      `);
+      await prisma.$executeRawUnsafe(`
+        UPDATE "TutorialCategory" 
+        SET "icon" = 'clock' 
+        WHERE "slug" = 'rtos' AND ("icon" = '⚡' OR "icon" = '' OR "icon" IS NULL)
+      `);
+    } catch {}
+
     // 2. Tạo bảng TutorialComment nếu chưa tồn tại
     try {
       await prisma.$executeRawUnsafe(`

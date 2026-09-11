@@ -16,6 +16,7 @@ import {
   GraduationCap,
   PanelLeftClose
 } from "lucide-react";
+import { CategoryIcon } from "./CategoryIcon";
 
 interface TutorialSidebarProps {
   topic: TutorialTopic;
@@ -70,9 +71,9 @@ export function TutorialSidebar({
 
       {/* Topic Header Card */}
       <div className="p-3.5 rounded-2xl bg-bg-elevated/70 border border-border/70 flex items-start gap-3 mb-4">
-        <span className="text-3xl p-2 rounded-xl bg-bg-panel border border-border shadow-inner flex-shrink-0">
-          {topic.icon}
-        </span>
+        <div className="w-11 h-11 rounded-xl bg-bg-panel border border-border shadow-inner flex items-center justify-center text-accent flex-shrink-0">
+          <CategoryIcon icon={topic.icon} slug={topic.category} name={topic.categoryName} className="w-6 h-6 text-accent" />
+        </div>
         <div className="min-w-0 flex-1">
           <span className="px-2 py-0.5 rounded-full bg-accent/15 text-accent border border-accent/30 text-[10px] font-mono font-bold uppercase tracking-wider inline-block mb-1">
             {topic.categoryName}

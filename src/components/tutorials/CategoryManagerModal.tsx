@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { slugify } from "@/lib/utils";
+import { CategoryIcon, CATEGORY_ICON_PRESETS } from "./CategoryIcon";
 
 export interface TutorialCategoryItem {
   id?: string;
@@ -29,8 +30,6 @@ interface CategoryManagerModalProps {
   categories: TutorialCategoryItem[];
   onUpdated: () => void;
 }
-
-const PRESET_ICONS = ["🐧", "⚡", "🚗", "🎛️", "💻", "📐", "🔬", "🤖", "📡", "🌐", "🛡️", "⚙️", "📚", "🧠", "💡"];
 
 export function CategoryManagerModal({
   isOpen,
@@ -222,58 +221,84 @@ export function CategoryManagerModal({
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
-                <div>
-                  <label className="block text-[10px] font-bold text-text-muted mb-1">
-                    Icon Emoji
-                  </label>
-                  <div className="flex items-center gap-1.5">
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
+                  <div>
+                    <label className="block text-[10px] font-bold text-text-muted mb-1">
+                      Icon Hiện Tại & Xem Trước
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <div className="w-10 h-10 rounded-xl bg-bg-panel border border-border flex items-center justify-center text-accent shadow-inner">
+                        <CategoryIcon icon={newIcon} slug={newSlug} name={newName} className="w-5 h-5 text-accent" />
+                      </div>
+                      <input
+                        type="text"
+                        value={newIcon}
+                        onChange={(e) => setNewIcon(e.target.value)}
+                        placeholder="cpu / 🐧"
+                        className="flex-1 px-2.5 py-2 rounded-xl bg-bg-panel border border-border text-xs font-mono font-bold text-text-primary focus:border-accent outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block text-[10px] font-bold text-text-muted mb-1">
+                      Tên nhóm danh mục *
+                    </label>
                     <input
                       type="text"
-                      value={newIcon}
-                      onChange={(e) => setNewIcon(e.target.value)}
-                      className="w-12 px-2 py-1.5 rounded-lg bg-bg-panel border border-border text-center text-sm font-bold"
+                      value={newName}
+                      onChange={(e) => {
+                        setNewName(e.target.value);
+                        setNewSlug(slugify(e.target.value));
+                      }}
+                      placeholder="VD: Edge AI & TinyML"
+                      required
+                      className="w-full px-3 py-2 rounded-xl bg-bg-panel border border-border text-xs text-text-primary focus:border-accent outline-none"
                     />
-                    <select
-                      onChange={(e) => setNewIcon(e.target.value)}
-                      className="px-2 py-1.5 rounded-lg bg-bg-panel border border-border text-xs"
-                    >
-                      {PRESET_ICONS.map((ic) => (
-                        <option key={ic} value={ic}>{ic}</option>
-                      ))}
-                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-text-muted mb-1">
+                      Slug ID *
+                    </label>
+                    <input
+                      type="text"
+                      value={newSlug}
+                      onChange={(e) => setNewSlug(e.target.value)}
+                      placeholder="edge-ai"
+                      required
+                      className="w-full px-3 py-2 rounded-xl bg-bg-panel border border-border text-xs font-mono text-text-primary focus:border-accent outline-none"
+                    />
                   </div>
                 </div>
 
-                <div className="sm:col-span-2">
-                  <label className="block text-[10px] font-bold text-text-muted mb-1">
-                    Tên nhóm danh mục *
-                  </label>
-                  <input
-                    type="text"
-                    value={newName}
-                    onChange={(e) => {
-                      setNewName(e.target.value);
-                      setNewSlug(slugify(e.target.value));
-                    }}
-                    placeholder="VD: Edge AI & TinyML"
-                    required
-                    className="w-full px-3 py-1.5 rounded-lg bg-bg-panel border border-border text-xs text-text-primary focus:border-accent outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-bold text-text-muted mb-1">
-                    Slug ID *
-                  </label>
-                  <input
-                    type="text"
-                    value={newSlug}
-                    onChange={(e) => setNewSlug(e.target.value)}
-                    placeholder="edge-ai"
-                    required
-                    className="w-full px-3 py-1.5 rounded-lg bg-bg-panel border border-border text-xs font-mono text-text-primary focus:border-accent outline-none"
-                  />
+                {/* Danh mục Icon Gợi Ý Nhanh Chuyên Ngành */}
+                <div className="p-2.5 rounded-xl bg-bg-panel border border-border/70 space-y-1.5">
+                  <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block">
+                    Gợi ý Icon chuyên ngành Nhúng & AIoT (Click để chọn nhanh):
+                  </span>
+                  <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto pr-1">
+                    {CATEGORY_ICON_PRESETS.map((p) => {
+                      const isSelected = newIcon === p.value;
+                      return (
+                        <button
+                          key={p.key}
+                          type="button"
+                          onClick={() => setNewIcon(p.value)}
+                          className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium border transition-all cursor-pointer ${
+                            isSelected
+                              ? "bg-accent text-white border-accent shadow-sm"
+                              : "bg-bg-elevated hover:bg-accent/15 border-border/80 text-text-secondary hover:text-accent"
+                          }`}
+                          title={p.label}
+                        >
+                          <CategoryIcon icon={p.value} className="w-3.5 h-3.5" size={14} />
+                          <span>{p.label.split("/")[0].trim()}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 
@@ -301,17 +326,23 @@ export function CategoryManagerModal({
                 return (
                   <div
                     key={cat.id || cat.slug}
-                    className="p-3.5 rounded-2xl bg-bg-elevated border border-accent/40 space-y-2.5 shadow-sm"
+                    className="p-3.5 rounded-2xl bg-bg-elevated border border-accent/40 space-y-3 shadow-sm"
                   >
                     <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
                       <div>
                         <label className="block text-[10px] font-bold text-text-muted mb-0.5">Icon</label>
-                        <input
-                          type="text"
-                          value={editIcon}
-                          onChange={(e) => setEditIcon(e.target.value)}
-                          className="w-full px-2 py-1.5 rounded-lg bg-bg-panel border border-border text-center text-sm font-bold"
-                        />
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-8 h-8 rounded-lg bg-bg-panel border border-border flex items-center justify-center text-accent flex-shrink-0">
+                            <CategoryIcon icon={editIcon} slug={editSlug} name={editName} className="w-4 h-4" />
+                          </div>
+                          <input
+                            type="text"
+                            value={editIcon}
+                            onChange={(e) => setEditIcon(e.target.value)}
+                            placeholder="cpu/🐧"
+                            className="w-full px-2 py-1.5 rounded-lg bg-bg-panel border border-border text-center text-xs font-mono font-bold"
+                          />
+                        </div>
                       </div>
                       <div className="sm:col-span-2">
                         <label className="block text-[10px] font-bold text-text-muted mb-0.5">Tên nhóm</label>
@@ -331,6 +362,24 @@ export function CategoryManagerModal({
                           className="w-full px-3 py-1.5 rounded-lg bg-bg-panel border border-border text-xs font-mono text-text-primary"
                         />
                       </div>
+                    </div>
+
+                    {/* Quick Pick Icon for Edit */}
+                    <div className="flex flex-wrap gap-1 max-h-20 overflow-y-auto p-1.5 rounded-lg bg-bg-panel border border-border/60">
+                      {CATEGORY_ICON_PRESETS.slice(0, 18).map((p) => (
+                        <button
+                          key={p.key}
+                          type="button"
+                          onClick={() => setEditIcon(p.value)}
+                          className={`p-1 rounded text-xs border flex items-center gap-1 ${
+                            editIcon === p.value ? "bg-accent text-white border-accent" : "bg-bg-elevated border-border text-text-muted hover:text-accent"
+                          }`}
+                          title={p.label}
+                        >
+                          <CategoryIcon icon={p.value} className="w-3 h-3" size={12} />
+                          <span className="text-[10px]">{p.key}</span>
+                        </button>
+                      ))}
                     </div>
 
                     <div className="flex items-center justify-end gap-2 pt-1 border-t border-border/50">
@@ -363,12 +412,12 @@ export function CategoryManagerModal({
                   className="flex items-center justify-between p-3 rounded-2xl bg-bg-elevated/40 hover:bg-bg-elevated border border-border/70 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-xl p-1.5 rounded-xl bg-bg-panel border border-border">
-                      {cat.icon}
-                    </span>
+                    <div className="w-9 h-9 rounded-xl bg-bg-panel border border-border flex items-center justify-center text-accent shadow-sm flex-shrink-0">
+                      <CategoryIcon icon={cat.icon} slug={cat.slug} name={cat.name} className="w-4.5 h-4.5" />
+                    </div>
                     <div>
                       <h4 className="text-xs font-bold text-text-primary">{cat.name}</h4>
-                      <span className="text-[10px] font-mono text-text-muted">slug: {cat.slug}</span>
+                      <span className="text-[10px] font-mono text-text-muted">slug: {cat.slug} • icon: {cat.icon}</span>
                     </div>
                   </div>
 

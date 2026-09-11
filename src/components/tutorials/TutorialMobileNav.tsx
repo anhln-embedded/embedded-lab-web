@@ -15,6 +15,7 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { CategoryIcon } from "./CategoryIcon";
 
 interface TutorialMobileNavProps {
   topic: TutorialTopic;
@@ -39,9 +40,9 @@ export function TutorialMobileNav({
       <div className="p-3.5 rounded-2xl bg-bg-panel border border-border shadow-md space-y-2.5">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-xl p-1 rounded-lg bg-bg-elevated border border-border flex-shrink-0">
-              {topic.icon}
-            </span>
+            <div className="w-8 h-8 rounded-lg bg-bg-elevated border border-border flex items-center justify-center text-accent flex-shrink-0">
+              <CategoryIcon icon={topic.icon} slug={topic.category} name={topic.categoryName} className="w-4 h-4 text-accent" />
+            </div>
             <div className="min-w-0">
               <span className="text-[10px] font-bold text-accent uppercase tracking-wider block">
                 {topic.categoryName}
