@@ -7,12 +7,12 @@ import {
   getDiscussionThreads,
   incrementThreadViews,
   deleteDiscussionThread,
+  resetDiscussionData,
 } from "@/lib/discussion-store";
 import { useAuth } from "@/context/AuthContext";
 import { DiscussionThreadCard } from "@/components/discuss/DiscussionThreadCard";
 import { DiscussionCreateModal } from "@/components/discuss/DiscussionCreateModal";
 import { DiscussionDetailView } from "@/components/discuss/DiscussionDetailView";
-import { DiscussionSimulatorPreview } from "@/components/discuss/DiscussionSimulatorPreview";
 import { Button } from "@/components/ui/Button";
 import {
   MessageSquare,
@@ -330,22 +330,60 @@ function DiscussContent() {
 
           {/* Threads List Stream */}
           {filteredThreads.length === 0 ? (
-            <div className="p-12 text-center bg-bg-panel border border-border/80 rounded-3xl space-y-3">
+            <div className="p-12 text-center bg-bg-panel border border-border/80 rounded-3xl space-y-4">
               <MessageSquare className="w-10 h-10 text-text-muted mx-auto" />
-              <h3 className="text-base font-bold text-text-primary">Không tìm thấy chủ đề nào</h3>
-              <p className="text-xs text-text-muted max-w-sm mx-auto">
-                Chưa có bài viết nào phù hợp với bộ lọc hoặc từ khóa tìm kiếm của bạn.
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setSearchQuery("");
-                  setSortTab("hot");
-                }}
-              >
-                Đặt lại bộ lọc
-              </Button>
+              <div className="space-y-1">
+                <h3 className="text-base font-bold text-text-primary">Không tìm thấy chủ đề nào</h3>
+                <p className="text-xs text-text-muted max-w-sm mx-auto">
+                  {threads.length === 0
+                    ? "Danh sách thảo luận hiện đang trống."
+                    : "Chưa có bài viết nào phù hợp với bộ lọc hoặc từ khóa tìm kiếm của bạn."}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSortTab("hot");
+                  }}
+                >
+                  Đặt lại bộ lọc
+                </Button>
+
+                {threads.length === 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const restored = resetDiscussionData();
+                      setThreads(restored);
+                      setSearchQuery("");
+                      setSortTab("hot");
+                    }}
+                    className="border-accent/40 text-accent hover:bg-accent/10"
+                  >
+                    ⚡ Khôi phục bài viết mẫu
+                  </Button>
+                )}
+
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => {
+                    if (!user) {
+                      setShowLoginPrompt(true);
+                    } else {
+                      setIsCreateModalOpen(true);
+                    }
+                  }}
+                >
+                  <PlusCircle className="w-4 h-4 mr-1.5" />
+                  Đăng Chủ Đề Đầu Tiên
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="space-y-4">
@@ -364,10 +402,7 @@ function DiscussContent() {
         </div>
       )}
 
-      {/* 3. BÊN DƯỚI SẼ LÀ MÔ PHỎNG (Theo đúng yêu cầu người dùng) */}
-      <DiscussionSimulatorPreview />
-
-      {/* 4. Modal Tạo Chủ Đề Mới */}
+      {/* Modal Tạo Chủ Đề Mới */}
       <DiscussionCreateModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}

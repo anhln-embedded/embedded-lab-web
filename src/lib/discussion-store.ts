@@ -748,3 +748,10 @@ export function deleteDiscussionComment(commentId: string): boolean {
 
   return true;
 }
+
+export function resetDiscussionData(): DiscussionThread[] {
+  if (typeof window === "undefined") return DEFAULT_THREADS;
+  safeStorage.setItem(STORAGE_THREADS_KEY, JSON.stringify(DEFAULT_THREADS));
+  safeStorage.setItem(STORAGE_COMMENTS_KEY, JSON.stringify(DEFAULT_COMMENTS));
+  return DEFAULT_THREADS;
+}
