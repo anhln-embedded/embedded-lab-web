@@ -6,12 +6,12 @@ import { Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface LanguageSwitcherProps {
-  variant?: "pill" | "icon" | "mobile";
+  variant?: "pill" | "icon" | "mobile" | "compact";
   className?: string;
 }
 
 export function LanguageSwitcher({ variant = "pill", className }: LanguageSwitcherProps) {
-  const { locale, setLocale } = useLanguage();
+  const { locale, setLocale, toggleLocale } = useLanguage();
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
@@ -20,7 +20,25 @@ export function LanguageSwitcher({ variant = "pill", className }: LanguageSwitch
 
   if (!mounted) {
     return (
-      <div className={cn("h-8 w-20 rounded-full bg-bg-elevated/50 animate-pulse", className)} />
+      <div className={cn("h-8 w-16 rounded-full bg-bg-elevated/50 animate-pulse", className)} />
+    );
+  }
+
+  // Compact 1-Tap Toggle for Mobile Header
+  if (variant === "compact") {
+    return (
+      <button
+        type="button"
+        onClick={toggleLocale}
+        className={cn(
+          "flex items-center gap-1 px-2 py-1 rounded-full border border-border/90 bg-white/80 dark:bg-bg-elevated/90 text-[11px] font-bold text-text-primary hover:border-accent shadow-2xs transition-all cursor-pointer flex-shrink-0 select-none whitespace-nowrap",
+          className
+        )}
+        title={locale === "vi" ? "Switch to English" : "Chuyển sang Tiếng Việt"}
+        aria-label={locale === "vi" ? "Switch to English" : "Chuyển sang Tiếng Việt"}
+      >
+        <span>{locale === "vi" ? "🇻🇳 VI" : "🇬🇧 EN"}</span>
+      </button>
     );
   }
 

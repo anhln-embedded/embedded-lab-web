@@ -172,14 +172,14 @@ export function Header() {
   return (
     <header className="relative lg:sticky lg:top-0 z-50 bg-bg-panel/95 lg:backdrop-blur-md border-b border-border/80 transition-colors">
       <div className="container">
-        <div className="flex items-center justify-between h-16 md:h-18 gap-4">
+        <div className="flex items-center justify-between h-16 md:h-18 gap-2 sm:gap-4">
           {/* Left: Logo & PTIT Branding */}
           <Link
             href="/"
-            className="flex items-center gap-3 group focus:outline-none flex-shrink-0"
+            className="flex items-center gap-2 sm:gap-3 group focus:outline-none flex-shrink min-w-0"
             aria-label="EMBEDDED-AIOT Electronics of PTIT Home"
           >
-            <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-white dark:bg-bg-elevated p-1 border border-border group-hover:border-accent transition-all duration-300 flex items-center justify-center shadow-sm">
+            <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-lg overflow-hidden bg-white dark:bg-bg-elevated p-1 border border-border group-hover:border-accent transition-all duration-300 flex items-center justify-center shadow-sm flex-shrink-0">
               <Image
                 src="/images/logo.png"
                 alt="EMBEDDED-AIOT PTIT Logo"
@@ -189,11 +189,11 @@ export function Header() {
                 priority
               />
             </div>
-            <div className="flex flex-col">
-              <span className="font-bold text-base md:text-lg tracking-tight text-text-primary group-hover:text-accent transition-colors">
+            <div className="flex flex-col min-w-0">
+              <span className="font-bold text-sm sm:text-base md:text-lg tracking-tight text-text-primary group-hover:text-accent transition-colors truncate">
                 EMBEDDED<span className="text-accent">-AIOT</span>
               </span>
-              <span className="text-[11px] font-medium text-text-muted tracking-wider uppercase">
+              <span className="text-[10px] sm:text-[11px] font-medium text-text-muted tracking-wider uppercase truncate hidden sm:block">
                 Electronics of PTIT
               </span>
             </div>
@@ -350,28 +350,31 @@ export function Header() {
           </nav>
 
           {/* Right: Actions & Tools */}
-          <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 flex-shrink-0">
             {/* Search Trigger Button - Icon Kính Lúp Gọn Gàng */}
             {pathname !== "/" && (
               <button
                 onClick={() => {
                   window.dispatchEvent(new CustomEvent("open-search-modal"));
                 }}
-                className="w-9 h-9 rounded-full flex items-center justify-center border border-border bg-white dark:bg-bg-elevated/80 text-text-muted hover:text-accent hover:border-accent/50 transition-all shadow-sm cursor-pointer"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center border border-border bg-white dark:bg-bg-elevated/80 text-text-muted hover:text-accent hover:border-accent/50 transition-all shadow-sm cursor-pointer flex-shrink-0"
                 aria-label={dict.header.searchButton}
                 title={dict.header.searchButton}
               >
-                <Search className="h-4 w-4 text-accent" />
+                <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-accent" />
               </button>
             )}
 
-            {/* Language Switcher - Segmented Pill */}
-            <LanguageSwitcher variant="pill" />
+            {/* Desktop / Tablet: Segmented Pill Switcher */}
+            <LanguageSwitcher variant="pill" className="hidden sm:inline-flex" />
+
+            {/* Mobile: 1-Tap Compact Language Switcher */}
+            <LanguageSwitcher variant="compact" className="sm:hidden" />
 
             {/* Theme Toggle */}
             <button
               onClick={() => setDarkMode(!darkMode)}
-              className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors border border-transparent hover:border-border cursor-pointer"
+              className="p-1.5 sm:p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors border border-transparent hover:border-border cursor-pointer flex-shrink-0"
               aria-label={darkMode ? dict.header.themeLight : dict.header.themeDark}
               title={darkMode ? dict.header.themeLight : dict.header.themeDark}
             >
@@ -550,7 +553,7 @@ export function Header() {
 
             {/* Mobile Menu Button */}
             <button
-              className="lg:hidden p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated border border-border/60 cursor-pointer"
+              className="lg:hidden p-1.5 sm:p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated border border-border/60 cursor-pointer flex-shrink-0 z-10"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-expanded={mobileMenuOpen}
               aria-label={mobileMenuOpen ? dict.header.closeMenu : dict.header.openMenu}
