@@ -33,7 +33,9 @@ import {
   Maximize2,
   Minimize2,
   Edit3,
+  ExternalLink,
 } from "lucide-react";
+import { parseVideoSource } from "@/lib/video-parser";
 
 interface LessonPlayerProps {
   course: CourseData;
@@ -47,20 +49,6 @@ interface LessonPlayerProps {
   currentIndex: number;
   prevLesson: (LessonData & { moduleTitle: string }) | null;
   nextLesson: (LessonData & { moduleTitle: string }) | null;
-}
-
-function getEmbedUrl(url?: string | null): string | null {
-  if (!url) return null;
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-  const match = url.match(regExp);
-  if (match && match[2].length === 11) {
-    return `https://www.youtube-nocookie.com/embed/${match[2]}?autoplay=1&rel=0&fs=1&enablejsapi=1&modestbranding=1`;
-  }
-  if (url.includes("embed/")) {
-    const separator = url.includes("?") ? "&" : "?";
-    return `${url}${separator}autoplay=1&fs=1&enablejsapi=1`;
-  }
-  return null;
 }
 
 export function LessonPlayer({
@@ -92,8 +80,8 @@ export function LessonPlayer({
   const [isFullscreen, setIsFullscreen] = React.useState(false);
   const videoContainerRef = React.useRef<HTMLDivElement>(null);
 
-  const hasVideo = currentLessonState.hasVideo !== false && Boolean(currentLessonState.videoUrl && currentLessonState.videoUrl.trim().length > 0);
-  const embedUrl = getEmbedUrl(currentLessonState.videoUrl);
+  const videoSource = parseVideoSource(currentLessonState.videoUrl);
+  const hasVideo = currentLessonState.hasVideo !== false && Boolean(videoSource);
 
   // Fullscreen change listener & Keyboard Shortcuts (F = Fullscreen)
   React.useEffect(() => {
@@ -197,7 +185,7 @@ export function LessonPlayer({
   React.useEffect(() => {
     setCurrentLessonState(currentLesson);
     setIsPlaying(false);
-    const lessonHasVideo = currentLesson.hasVideo !== false && Boolean(currentLesson.videoUrl && currentLesson.videoUrl.trim().length > 0);
+    const lessonHasVideo = currentLesson.hasVideo !== false && Boolean(parseVideoSource(currentLesson.videoUrl));
     setActiveTab(lessonHasVideo ? "video" : "text");
   }, [currentLesson]);
 
@@ -249,30 +237,75 @@ export function LessonPlayer({
           {/* Main Lesson Player Section */}
           <div className="lg:col-span-8 space-y-6 min-w-0">
             {/* Interactive Video Player or Reading Hero Banner */}
-            {hasVideo && embedUrl ? (
+            {hasVideo && videoSource ? (
               <div
                 ref={videoContainerRef}
                 className="relative aspect-video rounded-2xl md:rounded-3xl bg-black border border-border/80 overflow-hidden shadow-2xl group"
               >
                 {isPlaying ? (
-                  <div className="relative w-full h-full">
-                    <iframe
-                      src={embedUrl}
-                      title={currentLessonState.title}
-                      className="w-full h-full border-0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-                      allowFullScreen
-                    />
+                  <div className="relative w-full h-full bg-black">
+                    {videoSource.isDirectFile ? (
+                      <video
+                        src={videoSource.embedUrl}
+                        controls
+                        autoPlay
+                        playsInline
+                        className="w-full h-full object-contain bg-black"
+                      >
+                        Trình duyệt của bạn không hỗ trợ định dạng video này.
+                      </video>
+                    ) : (
+                      <iframe
+                        src={videoSource.embedUrl}
+                        title={currentLessonState.title}
+                        className="w-full h-full border-0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+                        allowFullScreen
+                      />
+                    )}
 
-                    {/* Floating Fullscreen Toggle Button */}
-                    <button
-                      onClick={toggleFullscreen}
-                      className="absolute top-3 right-3 p-2.5 rounded-xl bg-black/70 hover:bg-black/95 text-white backdrop-blur-md border border-white/20 opacity-0 group-hover:opacity-100 transition-opacity z-20 shadow-lg flex items-center gap-1.5 text-xs font-semibold"
-                      title={isFullscreen ? "Thu nhỏ (Esc)" : "Toàn màn hình (F)"}
-                    >
-                      {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-                      <span>{isFullscreen ? "Thu nhỏ" : "Toàn màn hình"}</span>
-                    </button>
+                    {/* Floating Controls Toolbar */}
+                    <div className="absolute top-3 right-3 flex items-center gap-2 z-20">
+                      <a
+                        href={videoSource.rawUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-2.5 py-1.5 rounded-xl bg-black/75 hover:bg-black/95 text-white backdrop-blur-md border border-white/20 text-xs font-semibold inline-flex items-center gap-1.5 shadow-lg transition-all hover:scale-102"
+                        title="Mở video trên trang nguồn gốc (Tab mới)"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5 text-cyan-400" />
+                        <span className="hidden sm:inline">Nguồn video</span>
+                      </a>
+
+                      <button
+                        onClick={toggleFullscreen}
+                        className="p-2 rounded-xl bg-black/75 hover:bg-black/95 text-white backdrop-blur-md border border-white/20 text-xs font-semibold inline-flex items-center gap-1.5 shadow-lg transition-all hover:scale-102"
+                        title={isFullscreen ? "Thu nhỏ (Esc)" : "Toàn màn hình (F)"}
+                      >
+                        {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                      </button>
+                    </div>
+
+                    {/* OneDrive Video Helper Banner */}
+                    {videoSource.type === "onedrive" && (
+                      <div className="absolute bottom-2.5 left-2.5 right-2.5 bg-slate-950/90 backdrop-blur-md border border-cyan-500/40 rounded-xl px-3 py-1.5 flex items-center justify-between gap-3 text-[11px] text-slate-200 z-20 shadow-xl">
+                        <div className="flex items-center gap-2 truncate">
+                          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse flex-shrink-0" />
+                          <span className="truncate">
+                            ☁️ <strong>Microsoft OneDrive</strong>: Nếu OneDrive hạn chế phát nhúng, bạn có thể xem trực tiếp:
+                          </span>
+                        </div>
+                        <a
+                          href={videoSource.rawUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold flex-shrink-0 flex items-center gap-1 text-[11px] transition-all"
+                        >
+                          <span>Mở trên OneDrive</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div
@@ -288,9 +321,14 @@ export function LessonPlayer({
                     </div>
 
                     <div className="relative z-10 mt-4 space-y-1.5 max-w-lg">
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-accent/15 text-accent border border-accent/30 inline-block">
-                        {currentLessonState.moduleTitle}
-                      </span>
+                      <div className="flex items-center justify-center gap-2 flex-wrap">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-accent/15 text-accent border border-accent/30 inline-block">
+                          {currentLessonState.moduleTitle}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 inline-block">
+                          {videoSource.providerName}
+                        </span>
+                      </div>
                       <h3 className="text-base sm:text-xl font-extrabold text-text-primary group-hover:text-accent transition-colors line-clamp-2">
                         {currentLessonState.title}
                       </h3>
@@ -298,7 +336,7 @@ export function LessonPlayer({
                         <Clock className="w-3.5 h-3.5 text-accent" />
                         <span>Thời lượng: {currentLessonState.duration}</span>
                         <span>•</span>
-                        <span className="text-emerald-400 font-semibold">▶ Bấm để phát video bài giảng</span>
+                        <span className="text-emerald-400 font-semibold">▶ Bấm để phát video ({videoSource.providerName})</span>
                       </p>
                     </div>
                   </div>
@@ -568,7 +606,7 @@ export function LessonPlayer({
                       {mod.lessons.map((lesson) => {
                         const isCurrent = lesson.slug === currentLessonState.slug;
                         const isCompleted = completedLessons.has(lesson.slug);
-                        const lessonHasVideo = lesson.hasVideo !== false && Boolean(lesson.videoUrl && lesson.videoUrl.trim().length > 0);
+                        const lessonHasVideo = lesson.hasVideo !== false && Boolean(parseVideoSource(lesson.videoUrl));
                         return (
                           <Link
                             key={lesson.slug}

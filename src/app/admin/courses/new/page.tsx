@@ -59,9 +59,9 @@ export default function NewCoursePage() {
           slug: "bai-1-gioi-thieu",
           duration: "15 phút",
           free: true,
-          hasVideo: true,
+          hasVideo: false,
           summary: "Tổng quan các khái niệm, yêu cầu phần cứng và tài liệu tham khảo.",
-          videoUrl: "https://www.youtube.com/",
+          videoUrl: "",
           contentMarkdown: `## 🎯 Mục Tiêu Bài Học\n- Nắm được tổng quan kiến trúc hệ thống nhúng và AIoT.\n- Chuẩn bị công cụ nạp và môi trường lập trình.\n\n## ⚡ Nội Dung Trọng Tâm\n1. Sơ đồ khối phần cứng.\n2. Cài đặt công cụ và kiểm tra cổng kết nối COM/USB.`,
         },
       ],
@@ -621,7 +621,7 @@ export default function NewCoursePage() {
                             <div className="space-y-1 animate-fadeIn">
                               <label className="text-[11px] font-bold text-text-muted flex items-center gap-1">
                                 <Video className="w-3 h-3 text-accent" />
-                                Link Video YouTube bài giảng:
+                                Link Video bài giảng (OneDrive, YouTube, Google Drive, MP4...):
                               </label>
                               <input
                                 type="text"
@@ -629,7 +629,7 @@ export default function NewCoursePage() {
                                 onChange={(e) =>
                                   handleUpdateLesson(modIdx, lessonIdx, "videoUrl", e.target.value)
                                 }
-                                placeholder="VD: https://www.youtube.com/watch?v=..."
+                                placeholder="Dán link OneDrive, YouTube, Google Drive, Vimeo hoặc link file .mp4..."
                                 className="w-full px-3 py-1.5 bg-bg-elevated border border-border rounded-xl text-xs text-text-secondary focus:outline-none focus:border-accent font-mono"
                               />
                             </div>

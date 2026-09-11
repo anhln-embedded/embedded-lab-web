@@ -321,7 +321,7 @@ void vSensorTask(void *pvParameters) {
                 </div>
                 <span className="text-[11px] text-text-muted block">
                   {hasVideo
-                    ? "Hệ thống sẽ nhúng video YouTube trên trang xem bài học."
+                    ? "Hệ thống sẽ nhúng video bài giảng (hỗ trợ OneDrive, YouTube, Drive, file MP4...)."
                     : "Bài học dạng văn bản / tài liệu lý thuyết & thực hành mã nguồn (Không video)."}
                 </span>
               </div>
@@ -331,13 +331,13 @@ void vSensorTask(void *pvParameters) {
               <div className="pl-7 pt-1 border-t border-border/40 space-y-1.5 animate-fadeIn">
                 <label className="block text-[11px] font-bold text-text-secondary flex items-center gap-1">
                   <Video className="w-3 h-3 text-accent" />
-                  Link Video YouTube (URL):
+                  Link Video bài giảng (OneDrive, YouTube, Drive, MP4...):
                 </label>
                 <input
                   type="text"
                   value={videoUrl}
                   onChange={(e) => setVideoUrl(e.target.value)}
-                  placeholder="VD: https://www.youtube.com/watch?v=..."
+                  placeholder="Dán link OneDrive, YouTube, Google Drive, Vimeo hoặc file MP4..."
                   className="w-full px-3 py-1.5 rounded-xl bg-bg-panel border border-border text-xs font-mono text-text-primary focus:outline-none focus:border-accent"
                 />
               </div>

@@ -656,7 +656,7 @@ export default function EditCoursePage({ params }: PageProps) {
                           <div className="space-y-1 animate-fadeIn">
                             <label className="text-[11px] font-bold text-text-muted flex items-center gap-1">
                               <Video className="w-3 h-3 text-accent" />
-                              Link Video YouTube bài giảng:
+                              Link Video bài giảng (OneDrive, YouTube, Google Drive, MP4...):
                             </label>
                             <input
                               type="text"
@@ -664,7 +664,7 @@ export default function EditCoursePage({ params }: PageProps) {
                               onChange={(e) =>
                                 handleUpdateLesson(modIdx, lessonIdx, "videoUrl", e.target.value)
                               }
-                              placeholder="https://www.youtube.com/watch?v=..."
+                              placeholder="Dán link OneDrive, YouTube, Google Drive, Vimeo hoặc link file .mp4..."
                               className="w-full px-3 py-1.5 rounded-xl bg-bg-elevated/70 dark:bg-bg-elevated border border-border text-xs font-mono"
                             />
                           </div>

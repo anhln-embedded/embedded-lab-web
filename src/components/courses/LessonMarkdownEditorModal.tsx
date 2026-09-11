@@ -402,7 +402,7 @@ Triển khai mô hình học sâu rút gọn trực tiếp trên vi điều khi�
                     </div>
                     <p className="text-[11px] text-text-muted leading-relaxed">
                       {hasVideo
-                        ? "✅ Trình phát video YouTube sẽ được nhúng trên trang bài học. Người học có thể vừa xem video vừa thực hành."
+                        ? "✅ Trình phát video sẽ được nhúng trên trang bài học (hỗ trợ OneDrive, YouTube, Google Drive, Vimeo, file MP4...). Người học có thể vừa xem video vừa thực hành."
                         : "❌ Bài học này chỉ là bài đọc lý thuyết, tài liệu hướng dẫn kỹ thuật hoặc mã nguồn thực hành (Không nhúng video)."}
                     </p>
                   </div>
@@ -413,17 +413,17 @@ Triển khai mô hình học sâu rút gọn trực tiếp trên vi điều khi�
                   <div className="pl-8 pt-2 border-t border-border/50 space-y-2 animate-fadeIn">
                     <label className="block text-xs font-bold text-text-secondary flex items-center gap-1.5">
                       <Video className="w-3.5 h-3.5 text-accent" />
-                      <span>Đường dẫn Video YouTube (YouTube Video URL):</span>
+                      <span>Đường dẫn Video bài giảng (OneDrive, YouTube, Google Drive, MP4...):</span>
                     </label>
                     <input
                       type="text"
                       value={videoUrl}
                       onChange={(e) => setVideoUrl(e.target.value)}
-                      placeholder="VD: https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                      placeholder="Dán link OneDrive, YouTube, Google Drive, Vimeo, Loom hoặc file video trực tiếp .mp4"
                       className="w-full px-3.5 py-2 rounded-xl bg-bg-panel border border-border text-xs font-mono text-text-primary focus:outline-none focus:border-accent"
                     />
                     <span className="text-[11px] text-text-muted block">
-                      💡 Hỗ trợ mọi link YouTube chuẩn (dạng: https://www.youtube.com/watch?v=... hoặc https://youtu.be/...)
+                      💡 <strong>Hỗ trợ mọi nền tảng:</strong> Microsoft OneDrive (link chia sẻ hoặc embed), YouTube, Google Drive, Vimeo, Loom hoặc file direct (.mp4, .webm).
                     </span>
                   </div>
                 )}
