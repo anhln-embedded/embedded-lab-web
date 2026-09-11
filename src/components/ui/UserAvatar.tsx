@@ -43,7 +43,6 @@ export function UserAvatar({
   const [imageError, setImageError] = useState(false);
 
   const isImg = Boolean(avatar && isImageUrl(avatar) && !imageError);
-  const fallbackEmoji = avatar && !isImageUrl(avatar) ? avatar : getDefaultRoleAvatar(role);
 
   if (isImg && avatar) {
     return (
@@ -63,6 +62,31 @@ export function UserAvatar({
     );
   }
 
+  // If avatar is an emoji string (like 🛡️, 🔬, ✍️, 👨‍💻)
+  if (avatar && !isImageUrl(avatar)) {
+    return (
+      <div className={`flex items-center justify-center flex-shrink-0 select-none ${className}`}>
+        <span className={textClassName || ""}>{avatar}</span>
+      </div>
+    );
+  }
+
+  // If name is available, display an initial badge
+  if (name && name.trim()) {
+    const trimmed = name.trim();
+    const words = trimmed.split(" ").filter(Boolean);
+    const initial = words.length > 0 ? words[words.length - 1].charAt(0).toUpperCase() : trimmed.charAt(0).toUpperCase();
+    return (
+      <div
+        className={`flex items-center justify-center flex-shrink-0 select-none bg-gradient-to-br from-accent/25 via-accent/15 to-accent/5 text-accent font-bold border border-accent/30 shadow-2xs ${className}`}
+        title={name}
+      >
+        <span className={textClassName || "text-xs"}>{initial}</span>
+      </div>
+    );
+  }
+
+  const fallbackEmoji = getDefaultRoleAvatar(role);
   return (
     <div className={`flex items-center justify-center flex-shrink-0 select-none ${className}`}>
       <span className={textClassName || ""}>{fallbackEmoji}</span>

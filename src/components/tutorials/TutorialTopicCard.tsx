@@ -12,6 +12,7 @@ import {
   User,
   GraduationCap
 } from "lucide-react";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 
 interface TutorialTopicCardProps {
   topic: TutorialTopic;
@@ -78,15 +79,23 @@ export function TutorialTopicCard({ topic }: TutorialTopicCardProps) {
       </div>
 
       {/* Footer / CTA */}
-      <div className="pt-3 border-t border-border/60 flex items-center justify-between">
-        <div className="flex items-center gap-2 text-[11px] text-text-muted">
-          <User className="w-3.5 h-3.5 text-text-muted" />
-          <span>{topic.author}</span>
+      <div className="pt-3 border-t border-border/60 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 text-[11px] text-text-muted min-w-0">
+          <UserAvatar
+            avatar={topic.authorAvatar}
+            name={topic.author}
+            className="w-5 h-5 rounded-full border border-border/80 shadow-2xs"
+            size={20}
+            textClassName="text-[9px]"
+          />
+          <span className="font-semibold text-text-secondary truncate max-w-[130px] sm:max-w-[160px]">
+            {topic.author}
+          </span>
         </div>
 
         <Link
           href={`/tutorials/${topic.slug}`}
-          className="inline-flex items-center gap-1 text-xs font-bold text-accent group-hover:translate-x-1 transition-transform"
+          className="inline-flex items-center gap-1 text-xs font-bold text-accent group-hover:translate-x-1 transition-transform flex-shrink-0"
         >
           <span>Khám phá chuỗi</span>
           <ArrowRight className="w-3.5 h-3.5" />

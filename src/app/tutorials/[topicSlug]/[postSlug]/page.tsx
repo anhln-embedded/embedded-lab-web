@@ -42,6 +42,7 @@ import {
   Layers
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 
 interface PageProps {
   params: Promise<{
@@ -484,17 +485,13 @@ export default function TutorialPostDetailPage({ params }: PageProps) {
 
                   {/* Thông tin người tạo bài viết */}
                   <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-bg-elevated border border-border/80 text-text-primary" title={`Tác giả: ${currentPost.authorName || topic.author || "Kỹ sư Lab PTIT"}`}>
-                    <div className="w-5 h-5 rounded-full overflow-hidden bg-accent/20 flex items-center justify-center text-[10px] font-bold text-accent flex-shrink-0">
-                      {currentPost.authorAvatar || topic.authorAvatar ? (
-                        <img
-                          src={currentPost.authorAvatar || topic.authorAvatar || "/images/logo.png"}
-                          alt={currentPost.authorName || topic.author || "Tác giả"}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <User className="w-3 h-3 text-accent" />
-                      )}
-                    </div>
+                    <UserAvatar
+                      avatar={currentPost.authorAvatar || topic.authorAvatar}
+                      name={currentPost.authorName || topic.author}
+                      className="w-5 h-5 rounded-full border border-border/80 shadow-2xs"
+                      size={20}
+                      textClassName="text-[9px]"
+                    />
                     <span className="text-xs font-bold text-text-primary">
                       {currentPost.authorName || topic.author || "Kỹ sư Lab PTIT"}
                     </span>
@@ -795,17 +792,13 @@ export default function TutorialPostDetailPage({ params }: PageProps) {
 
             {/* Author Profile Card (Người tạo bài viết) */}
             <div className="p-6 sm:p-8 rounded-3xl bg-bg-panel border border-border/80 shadow-xl flex flex-col sm:flex-row items-center sm:items-start gap-5 relative overflow-hidden">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden bg-accent/15 border-2 border-accent/30 flex items-center justify-center flex-shrink-0 shadow-md">
-                {currentPost.authorAvatar || topic.authorAvatar ? (
-                  <img
-                    src={currentPost.authorAvatar || topic.authorAvatar || "/images/logo.png"}
-                    alt={currentPost.authorName || topic.author || "Tác giả"}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <User className="w-8 h-8 text-accent" />
-                )}
-              </div>
+              <UserAvatar
+                avatar={currentPost.authorAvatar || topic.authorAvatar}
+                name={currentPost.authorName || topic.author}
+                className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border-2 border-accent/30 shadow-md flex-shrink-0"
+                size={80}
+                textClassName="text-3xl"
+              />
               <div className="flex-1 text-center sm:text-left space-y-2">
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
                   <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-accent/15 text-accent border border-accent/30">

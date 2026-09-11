@@ -20,6 +20,7 @@ import {
   Trophy,
   Share2
 } from "lucide-react";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 
 interface BentoPostGridProps {
   posts: BlogPostData[];
@@ -153,13 +154,13 @@ export function BentoPostGrid({ posts, onPostUpdated }: BentoPostGridProps) {
           {/* Bottom Bar: Author & Interactive Actions */}
           <div className="mt-8 pt-5 border-t border-border/60 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-accent-muted border border-accent/40 flex items-center justify-center font-bold text-accent text-sm">
-                {heroPost.authorAvatar ? (
-                  <img src={heroPost.authorAvatar} alt={heroPost.author} className="w-full h-full rounded-full object-cover" />
-                ) : (
-                  heroPost.author?.charAt(0) || "L"
-                )}
-              </div>
+              <UserAvatar
+                avatar={heroPost.authorAvatar}
+                name={heroPost.author}
+                className="w-9 h-9 rounded-full border border-accent/40 shadow-xs"
+                size={36}
+                textClassName="text-xs"
+              />
               <div>
                 <div className="text-xs sm:text-sm font-semibold text-text-primary">{heroPost.author}</div>
                 <div className="text-[11px] text-text-muted">{heroPost.authorTitle || "Embedded R&D Lab"}</div>
@@ -243,9 +244,13 @@ export function BentoPostGrid({ posts, onPostUpdated }: BentoPostGridProps) {
             {/* Card Footer */}
             <div className="pt-4 border-t border-border/60 flex items-center justify-between gap-2 text-xs">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-accent-muted border border-accent/30 flex items-center justify-center font-bold text-accent text-[10px]">
-                  {post.author?.charAt(0) || "L"}
-                </div>
+                <UserAvatar
+                  avatar={post.authorAvatar}
+                  name={post.author}
+                  className="w-6 h-6 rounded-full border border-border shadow-2xs"
+                  size={24}
+                  textClassName="text-[9px]"
+                />
                 <span className="text-text-secondary font-medium truncate max-w-[100px]">{post.author}</span>
               </div>
 

@@ -20,6 +20,7 @@ import {
   Trophy,
   Edit3
 } from "lucide-react";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 
 interface QuickStatusCreatorProps {
   onPostCreated?: () => void;
@@ -91,7 +92,8 @@ export function QuickStatusCreator({ onPostCreated }: QuickStatusCreatorProps) {
           pinned,
           tags: tags.length > 0 ? tags.join(",") : "ptit-lab",
           authorName: user ? user.name : "Embedded-AIoT Lab PTIT",
-          authorTitle: user?.role === "superadmin" ? "Super Admin" : "Ban Quản Trị Lab",
+          authorTitle: user?.bio || (user?.role === "superadmin" ? "Super Admin Lab" : user?.role === "admin" ? "Quản Trị Viên Lab" : "Thành Viên Nghiên Cứu Lab"),
+          authorAvatar: user?.avatar || "/images/logo.png",
           featured: pinned,
           draft: false,
           readingTime: Math.max(1, Math.ceil(content.split(" ").length / 150)),
@@ -156,9 +158,13 @@ export function QuickStatusCreator({ onPostCreated }: QuickStatusCreatorProps) {
       {/* Facebook Style Status Box */}
       <div className="p-4 md:p-5 rounded-2xl md:rounded-3xl bg-bg-panel border border-border shadow-lg space-y-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-accent/20 border border-accent/40 text-accent flex items-center justify-center font-bold text-sm flex-shrink-0">
-            {user ? user.name.charAt(0).toUpperCase() : "A"}
-          </div>
+          <UserAvatar
+            avatar={user?.avatar}
+            name={user?.name}
+            role={user?.role}
+            className="w-10 h-10 rounded-full border border-accent/40 shadow-xs flex-shrink-0"
+            size={40}
+          />
           <button
             onClick={() => openWithTemplate("daily")}
             className="flex-1 px-4 py-2.5 rounded-full bg-bg-elevated border border-border/80 text-left text-xs md:text-sm text-text-muted hover:border-accent hover:text-text-secondary transition-all shadow-inner"

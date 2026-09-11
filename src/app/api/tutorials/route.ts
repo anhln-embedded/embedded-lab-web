@@ -28,6 +28,7 @@ export async function GET() {
       totalArticles: t.articles.length,
       author: t.author,
       authorTitle: t.authorTitle || "Mentor Lab",
+      authorAvatar: (t as any).authorAvatar || (t.articles[0] as any)?.authorAvatar || "/images/logo.png",
       coverImage: t.coverImage || "/images/logo.png",
       posts: t.articles.map((a) => ({
         id: a.id,
@@ -69,6 +70,7 @@ export async function GET() {
         totalArticles: 0,
         author: t.author,
         authorTitle: t.authorTitle || "Mentor Lab",
+        authorAvatar: (t as any).authorAvatar || "/images/logo.png",
         coverImage: t.coverImage || "/images/logo.png",
         posts: [],
       }));
@@ -93,6 +95,7 @@ export async function POST(request: Request) {
       description,
       author = "Kỹ sư Lab PTIT",
       authorTitle = "Mentor Lab",
+      authorAvatar = "/images/logo.png",
       coverImage = "/images/logo.png",
       posts = [],
     } = body;
@@ -138,8 +141,7 @@ export async function POST(request: Request) {
       };
     });
 
-    // Đảm bảo database đã có đầy đủ các cột và bảng mới nhất (kể cả trên server production)
-    await ensureTutorialSchema();
+    const maxOrderTopic = await prisma.tutorialTopic.aggregate({ _max: { order: true } }).catch(() => ({ _max: { order: 0 } }));
 
     let created;
     try {
@@ -155,7 +157,9 @@ export async function POST(request: Request) {
           description,
           author,
           authorTitle,
+          authorAvatar,
           coverImage,
+          order: (maxOrderTopic?._max?.order ?? 0) + 1,
           articles: {
             create: sanitizedArticles,
           },

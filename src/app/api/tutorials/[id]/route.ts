@@ -42,6 +42,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       totalArticles: topic.articles.length,
       author: topic.author,
       authorTitle: topic.authorTitle || "Mentor Lab",
+      authorAvatar: (topic as any).authorAvatar || "/images/logo.png",
       coverImage: topic.coverImage || "/images/logo.png",
       posts: topic.articles.map((a) => ({
         id: a.id,
@@ -55,7 +56,7 @@ export async function GET(request: Request, { params }: RouteParams) {
         contentHtml: a.contentHtml || "",
         authorName: a.authorName || topic.author || "Kỹ sư Lab PTIT",
         authorTitle: a.authorTitle || topic.authorTitle || "Mentor Lab Embedded-AIoT",
-        authorAvatar: a.authorAvatar || topic.coverImage || "/images/logo.png",
+        authorAvatar: a.authorAvatar || (topic as any).authorAvatar || "/images/logo.png",
         codeSnippet: a.codeSnippet
           ? {
               code: a.codeSnippet,
@@ -92,6 +93,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
       description,
       author,
       authorTitle,
+      authorAvatar,
       coverImage,
       posts = [],
     } = body;
@@ -214,6 +216,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
         ...(description !== undefined && { description }),
         ...(author !== undefined && { author }),
         ...(authorTitle !== undefined && { authorTitle }),
+        ...(authorAvatar !== undefined && { authorAvatar }),
         ...(coverImage !== undefined && { coverImage }),
       },
       include: {

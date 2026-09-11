@@ -67,6 +67,7 @@ export default function EditTutorialTopicPage({ params }: PageProps) {
   const [description, setDescription] = useState("");
   const [author, setAuthor] = useState("Kỹ sư Lab PTIT");
   const [authorTitle, setAuthorTitle] = useState("Mentor Lab");
+  const [authorAvatar, setAuthorAvatar] = useState("/images/logo.png");
   const [coverImage, setCoverImage] = useState("/images/logo.png");
 
   // Articles List
@@ -123,6 +124,7 @@ export default function EditTutorialTopicPage({ params }: PageProps) {
           setDescription(t.description);
           setAuthor(t.author);
           setAuthorTitle(t.authorTitle || "Mentor Lab");
+          setAuthorAvatar(t.authorAvatar || "/images/logo.png");
           setCoverImage(t.coverImage || "/images/logo.png");
           setPosts(
             t.posts.map((p: any) => ({
@@ -267,6 +269,7 @@ export default function EditTutorialTopicPage({ params }: PageProps) {
           description,
           author,
           authorTitle,
+          authorAvatar,
           coverImage,
           posts,
         }),
@@ -366,6 +369,7 @@ export default function EditTutorialTopicPage({ params }: PageProps) {
                       onClick={() => {
                         setAuthor(user.name);
                         if (user.bio) setAuthorTitle(user.bio);
+                        if (user.avatar) setAuthorAvatar(user.avatar);
                         setToastMessage(`Đã chuyển tác giả sang "${user.name}". Vui lòng bấm "Lưu Toàn Bộ" để xác nhận.`);
                         setTimeout(() => setToastMessage(null), 3500);
                       }}

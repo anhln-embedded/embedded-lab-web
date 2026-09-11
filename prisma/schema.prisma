@@ -109,6 +109,7 @@ model TutorialTopic {
   description  String
   author       String            @default("Kỹ sư Lab PTIT")
   authorTitle  String?           @default("Mentor Lab")
+  authorAvatar String?           @default("/images/logo.png")
   coverImage   String?           @default("/images/logo.png")
   order        Int               @default(0)
   createdAt    DateTime          @default(now())

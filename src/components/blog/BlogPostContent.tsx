@@ -26,6 +26,7 @@ import {
   MessageSquare,
   Edit3
 } from "lucide-react";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 
 interface BlogPostContentProps {
   post: BlogPostData;
@@ -194,9 +195,10 @@ export function BlogPostContent({ post }: BlogPostContentProps) {
                 <span>{post.readingTime} phút đọc</span>
               </div>
               <span>•</span>
-              <span className="hidden sm:inline-block px-2.5 py-0.5 rounded bg-bg-elevated text-text-secondary font-mono">
-                {post.author}
-              </span>
+              <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-bg-elevated border border-border text-xs text-text-primary">
+                <UserAvatar avatar={post.authorAvatar} name={post.author} className="w-4 h-4 rounded-full" size={16} textClassName="text-[9px]" />
+                <span className="font-semibold">{post.author}</span>
+              </div>
             </div>
 
             <div className="flex items-center gap-2">
@@ -270,6 +272,34 @@ export function BlogPostContent({ post }: BlogPostContentProps) {
                     </Badge>
                   </Link>
                 ))}
+              </div>
+            </div>
+
+            {/* Author Profile Box dưới bài viết */}
+            <div className="p-6 rounded-3xl bg-bg-panel border border-border/80 flex items-center gap-4 sm:gap-5 shadow-lg relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-accent/5 rounded-full blur-2xl pointer-events-none" />
+              <UserAvatar
+                avatar={post.authorAvatar}
+                name={post.author}
+                className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border-2 border-accent/30 shadow-md flex-shrink-0"
+                size={64}
+                textClassName="text-2xl"
+              />
+              <div className="space-y-1 min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-accent/15 text-accent border border-accent/30">
+                    Tác giả bản tin
+                  </span>
+                  <span className="text-xs text-text-muted font-medium">
+                    {post.authorTitle || "Embedded R&D Lab PTIT"}
+                  </span>
+                </div>
+                <h4 className="text-base sm:text-lg font-bold text-text-primary truncate">
+                  {post.author}
+                </h4>
+                <p className="text-xs text-text-muted leading-relaxed">
+                  Bản tin & hoạt động nghiên cứu kỹ thuật thuộc phòng thí nghiệm Hệ Thống Nhúng & AIoT (Khoa Điện Tử 1 - Học viện Công nghệ Bưu chính Viễn thông).
+                </p>
               </div>
             </div>
 

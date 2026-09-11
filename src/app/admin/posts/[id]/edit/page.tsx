@@ -146,7 +146,8 @@ export default function EditPostPage() {
         readingTime: calculatedReadingTime,
         series: settings.series.trim() || undefined,
         authorName: settings.authorName?.trim() || user?.name || "Embedded-AIoT Lab PTIT",
-        authorTitle: settings.authorTitle?.trim() || (user?.role === "superadmin" ? "Super Admin Lab" : "Kỹ sư Lab PTIT"),
+        authorTitle: settings.authorTitle?.trim() || user?.bio || (user?.role === "superadmin" ? "Super Admin Lab" : "Kỹ sư Lab PTIT"),
+        authorAvatar: user?.avatar || "/images/logo.png",
       };
 
       const res = await fetch(`/api/posts/${postId}`, {

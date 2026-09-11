@@ -18,6 +18,7 @@ import {
   Edit3
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 import { useAuth } from "@/context/AuthContext";
 
 interface PageProps {
@@ -116,6 +117,24 @@ export default function TopicDetailPage({ params }: PageProps) {
         <p className="text-xs sm:text-sm text-text-secondary leading-relaxed">
           {topic.description}
         </p>
+
+        {/* Tác giả chuyên đề */}
+        <div className="flex items-center gap-2 pt-1 text-xs text-text-muted">
+          <span className="font-semibold text-text-secondary">Tác giả / Giảng viên:</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-bg-elevated border border-border">
+            <UserAvatar
+              avatar={topic.authorAvatar}
+              name={topic.author}
+              className="w-5 h-5 rounded-full border border-border shadow-2xs"
+              size={20}
+              textClassName="text-[9px]"
+            />
+            <span className="font-bold text-text-primary">{topic.author}</span>
+            {topic.authorTitle && (
+              <span className="text-[11px] text-text-muted">({topic.authorTitle})</span>
+            )}
+          </div>
+        </div>
 
         {/* Action Button */}
         {firstPost && (

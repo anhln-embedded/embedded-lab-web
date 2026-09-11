@@ -116,7 +116,7 @@ void app_main(void) {
     setIsSubmitting(true);
 
     try {
-      const postsPayload = importedPosts && importedPosts.length > 0
+      const postsPayload = (importedPosts && importedPosts.length > 0
         ? importedPosts
         : [
             {
@@ -130,7 +130,12 @@ void app_main(void) {
               codeFilename: "main.c",
               draft: false,
             },
-          ];
+          ]).map((p: any) => ({
+            ...p,
+            authorName: p.authorName || author,
+            authorTitle: p.authorTitle || authorTitle,
+            authorAvatar: p.authorAvatar || user?.avatar || "/images/logo.png",
+          }));
 
       const res = await fetch("/api/tutorials", {
         method: "POST",
@@ -146,6 +151,7 @@ void app_main(void) {
           description,
           author,
           authorTitle,
+          authorAvatar: user?.avatar || "/images/logo.png",
           posts: postsPayload,
         }),
       });

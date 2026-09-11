@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import { User, useAuth } from "@/context/AuthContext";
-import { X, User as UserIcon, Briefcase, CheckCircle2, ShieldCheck, Sparkles } from "lucide-react";
+import { X, User as UserIcon, Briefcase, CheckCircle2, ShieldCheck, Sparkles, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ export function EditProfileModal({ isOpen, onClose, onUpdated }: EditProfileModa
 
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
+  const [avatar, setAvatar] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -24,6 +26,7 @@ export function EditProfileModal({ isOpen, onClose, onUpdated }: EditProfileModa
     if (user) {
       setName(user.name || "");
       setTitle(user.bio || "");
+      setAvatar(user.avatar || "");
       setSuccessMsg(null);
       setErrorMsg(null);
     }
@@ -50,6 +53,7 @@ export function EditProfileModal({ isOpen, onClose, onUpdated }: EditProfileModa
           id: user.id,
           name: name.trim(),
           title: title.trim(),
+          avatar: avatar.trim(),
         }),
       });
 
@@ -63,6 +67,7 @@ export function EditProfileModal({ isOpen, onClose, onUpdated }: EditProfileModa
         ...user,
         name: name.trim(),
         bio: title.trim() || user.bio,
+        avatar: avatar.trim() || user.avatar,
       };
 
       loginWithOAuth(updatedUser);
@@ -160,6 +165,51 @@ export function EditProfileModal({ isOpen, onClose, onUpdated }: EditProfileModa
               placeholder="VD: Mentor Embedded-AIoT Lab PTIT / Quản trị viên..."
               className="w-full px-3.5 py-2.5 rounded-xl bg-bg-elevated border border-border text-text-primary text-xs focus:outline-none focus:border-accent"
             />
+          </div>
+
+          {/* Avatar Selector */}
+          <div>
+            <label className="block font-bold text-text-secondary mb-1.5 flex items-center gap-1">
+              <Sparkles className="w-3.5 h-3.5 text-accent" />
+              <span>Avatar hiển thị cạnh bài viết</span>
+            </label>
+            <div className="flex items-center gap-3 mb-2">
+              <UserAvatar
+                avatar={avatar}
+                name={name || user.name}
+                role={user.role}
+                className="w-10 h-10 rounded-full border-2 border-accent/40 shadow-xs"
+                size={40}
+                textClassName="text-lg"
+              />
+              <div className="flex-1 min-w-0">
+                <input
+                  type="text"
+                  value={avatar}
+                  onChange={(e) => setAvatar(e.target.value)}
+                  placeholder="URL ảnh (https://...) hoặc chọn biểu tượng bên dưới"
+                  className="w-full px-3 py-2 rounded-xl bg-bg-elevated border border-border text-text-primary text-[11px] focus:outline-none focus:border-accent"
+                />
+              </div>
+            </div>
+            {/* Quick avatar badges */}
+            <div className="flex items-center gap-1.5 flex-wrap pt-1">
+              <span className="text-[10px] text-text-muted">Gợi ý nhanh:</span>
+              {["🛡️", "🔬", "✍️", "👨‍💻", "⚡", "🚀", "🐧", "🤖", "🎓"].map((emoji) => (
+                <button
+                  key={emoji}
+                  type="button"
+                  onClick={() => setAvatar(emoji)}
+                  className={`w-7 h-7 rounded-lg border flex items-center justify-center text-sm transition-all hover:scale-110 cursor-pointer ${
+                    avatar === emoji
+                      ? "border-accent bg-accent/20 scale-105"
+                      : "border-border bg-bg-elevated hover:border-accent/40"
+                  }`}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
           </div>
 
           {errorMsg && (

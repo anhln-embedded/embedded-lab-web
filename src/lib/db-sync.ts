@@ -35,6 +35,12 @@ export async function ensureTutorialSchema() {
       );
     } catch {}
 
+    try {
+      await prisma.$executeRawUnsafe(
+        `ALTER TABLE "TutorialTopic" ADD COLUMN "authorAvatar" TEXT DEFAULT '/images/logo.png'`
+      );
+    } catch {}
+
     // 2. Tạo bảng TutorialComment nếu chưa tồn tại
     try {
       await prisma.$executeRawUnsafe(`
