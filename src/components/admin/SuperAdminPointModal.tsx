@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { createPortal } from "react-dom";
 import {
   Zap,
   X,
@@ -17,8 +18,9 @@ import {
   History,
   RotateCcw,
   FileText,
-  Clock,
   Flame,
+  Users,
+  UserCheck,
 } from "lucide-react";
 import { useAuth, User } from "@/context/AuthContext";
 import { UserAvatar } from "@/components/ui/UserAvatar";
@@ -38,6 +40,7 @@ export function SuperAdminPointModal({
 }: SuperAdminPointModalProps) {
   const { user: currentSuperAdmin, allUsers, adjustUserPoints } = useAuth();
 
+  const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<"adjust" | "audit">("adjust");
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [userSearch, setUserSearch] = useState<string>("");
@@ -53,24 +56,40 @@ export function SuperAdminPointModal({
   const [isLoadingAudit, setIsLoadingAudit] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
 
-  // Synchronize target user when modal opens
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Danh sách các user khác (không phải chính tài khoản Super Admin đang đăng nhập)
+  const otherUsers = useMemo(() => {
+    if (!currentSuperAdmin) return allUsers;
+    return allUsers.filter(
+      (u) => u.id !== currentSuperAdmin.id && u.email !== currentSuperAdmin.email
+    );
+  }, [allUsers, currentSuperAdmin]);
+
+  // Khởi tạo user được chọn: Ưu tiên chọn user khác (thành viên/sinh viên), không tự chọn chính mình
   useEffect(() => {
     if (isOpen) {
       if (initialTargetUser) {
         setSelectedUserId(initialTargetUser.id);
-      } else if (!selectedUserId && allUsers.length > 0) {
-        setSelectedUserId(allUsers[0].id);
+      } else {
+        if (otherUsers.length > 0) {
+          setSelectedUserId(otherUsers[0].id);
+        } else if (allUsers.length > 0) {
+          setSelectedUserId(allUsers[0].id);
+        }
       }
       setFeedback(null);
     }
-  }, [isOpen, initialTargetUser, allUsers]);
+  }, [isOpen, initialTargetUser, otherUsers, allUsers]);
 
-  // Find the selected user object
+  // Đối tượng user mục tiêu đang được chọn
   const activeTargetUser = useMemo(() => {
     return allUsers.find((u) => u.id === selectedUserId) || initialTargetUser || null;
   }, [allUsers, selectedUserId, initialTargetUser]);
 
-  // Filter users for search selector
+  // Bộ lọc tìm kiếm user
   const filteredUsers = useMemo(() => {
     if (!userSearch.trim()) return allUsers;
     const q = userSearch.toLowerCase();
@@ -79,14 +98,14 @@ export function SuperAdminPointModal({
     );
   }, [allUsers, userSearch]);
 
-  // Current values
+  // Thông số hiện tại của user đang chọn
   const currentExp = Number(activeTargetUser?.exp ?? 0);
   const currentCP = Number(activeTargetUser?.contributionPoints ?? 0);
   const currentLevel = calculateLevel(currentExp);
   const currentLevelInfo = getLevelInfo(currentLevel);
   const currentRankInfo = getCreatorRankInfo(currentCP);
 
-  // Effective streak calculation
+  // Tính toán chuỗi thực tế
   const streakInfo = useMemo(() => {
     return getEffectiveStreak(
       Number(activeTargetUser?.streakDays ?? 0),
@@ -94,41 +113,43 @@ export function SuperAdminPointModal({
     );
   }, [activeTargetUser]);
 
-  // Fetch audit data for active user
-  const fetchAuditData = useCallback(async (userId: string) => {
-    if (!userId || !currentSuperAdmin) return;
-    setIsLoadingAudit(true);
-    try {
-      const res = await fetch(
-        `/api/admin/points?userId=${encodeURIComponent(userId)}&adminEmail=${encodeURIComponent(
-          currentSuperAdmin.email
-        )}`,
-        {
-          headers: {
-            "x-user-email": currentSuperAdmin.email,
-            "x-user-role": currentSuperAdmin.role,
-          },
+  // Fetch dữ liệu thẩm định
+  const fetchAuditData = useCallback(
+    async (userId: string) => {
+      if (!userId || !currentSuperAdmin) return;
+      setIsLoadingAudit(true);
+      try {
+        const res = await fetch(
+          `/api/admin/points?userId=${encodeURIComponent(userId)}&adminEmail=${encodeURIComponent(
+            currentSuperAdmin.email
+          )}`,
+          {
+            headers: {
+              "x-user-email": currentSuperAdmin.email,
+              "x-user-role": currentSuperAdmin.role,
+            },
+          }
+        );
+        const json = await res.json();
+        if (json.success) {
+          setAuditData(json.data);
         }
-      );
-      const json = await res.json();
-      if (json.success) {
-        setAuditData(json.data);
+      } catch (e) {
+        console.warn("Could not load audit data:", e);
+      } finally {
+        setIsLoadingAudit(false);
       }
-    } catch (e) {
-      console.warn("Could not load audit data:", e);
-    } finally {
-      setIsLoadingAudit(false);
-    }
-  }, [currentSuperAdmin]);
+    },
+    [currentSuperAdmin]
+  );
 
-  // Trigger audit fetch when switching to audit tab or changing user
   useEffect(() => {
     if (isOpen && activeTab === "audit" && selectedUserId) {
       fetchAuditData(selectedUserId);
     }
   }, [isOpen, activeTab, selectedUserId, fetchAuditData]);
 
-  // Live preview values for Adjust Tab
+  // Live preview
   const { previewExp, previewCP, previewLevel, previewLevelInfo, previewRankInfo } = useMemo(() => {
     let pExp = currentExp;
     let pCP = currentCP;
@@ -141,7 +162,6 @@ export function SuperAdminPointModal({
       if (pointCategory === "exp" || pointCategory === "both") pExp = currentExp + val;
       if (pointCategory === "cp" || pointCategory === "both") pCP = currentCP + val;
     } else {
-      // subtract
       if (pointCategory === "exp" || pointCategory === "both") pExp = Math.max(0, currentExp - val);
       if (pointCategory === "cp" || pointCategory === "both") pCP = Math.max(0, currentCP - val);
     }
@@ -156,7 +176,7 @@ export function SuperAdminPointModal({
     };
   }, [currentExp, currentCP, actionType, pointCategory, amount]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
   if (!currentSuperAdmin || currentSuperAdmin.role !== "superadmin") return null;
 
   const handleQuickPreset = (val: number) => {
@@ -200,7 +220,6 @@ export function SuperAdminPointModal({
         type: "success",
         message: `⚡ Đã cập nhật thành công điểm cho ${activeTargetUser.name}!`,
       });
-      // Refresh audit data if currently open
       if (activeTab === "audit") {
         fetchAuditData(activeTargetUser.id);
       }
@@ -213,7 +232,6 @@ export function SuperAdminPointModal({
     }
   };
 
-  // Đồng bộ chuẩn hóa điểm EXP theo lịch sử đọc thực tế
   const handleSyncReadingHistory = async () => {
     if (!activeTargetUser || !currentSuperAdmin) return;
     if (
@@ -262,16 +280,23 @@ export function SuperAdminPointModal({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in">
+  const isSelfSelected = activeTargetUser && currentSuperAdmin && activeTargetUser.id === currentSuperAdmin.id;
+
+  // Sử dụng createPortal gắn thẳng vào document.body để thoát hoàn toàn khỏi <header> và các thẻ cha có backdrop-filter/sticky
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[99999] overflow-y-auto bg-black/80 backdrop-blur-md p-3 sm:p-6 flex items-center justify-center animate-fade-in"
+      onClick={onClose}
+    >
       <div
-        className="relative w-full max-w-2xl bg-bg-panel border border-purple-500/40 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
+        className="relative w-full max-w-2xl bg-bg-panel border border-purple-500/50 rounded-3xl shadow-2xl overflow-hidden flex flex-col my-auto max-h-[92vh]"
         style={{
-          boxShadow: "0 0 50px -10px rgba(168, 85, 247, 0.35)",
+          boxShadow: "0 0 50px -10px rgba(168, 85, 247, 0.4)",
         }}
+        onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="relative px-6 py-4 bg-gradient-to-r from-purple-950/90 via-bg-elevated to-bg-elevated border-b border-purple-500/30 flex items-center justify-between">
+        {/* Header - Neon Super Admin Theme */}
+        <div className="relative px-6 py-4 bg-gradient-to-r from-purple-950/90 via-bg-elevated to-bg-elevated border-b border-purple-500/30 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-300 shadow-inner">
               <Zap className="w-5 h-5 text-purple-400 animate-pulse" />
@@ -286,7 +311,7 @@ export function SuperAdminPointModal({
                 </span>
               </div>
               <p className="text-xs text-purple-300/70 font-mono">
-                Điều chỉnh điểm & Thẩm định tính chính xác của chuỗi đọc bài
+                Cộng / trừ điểm cho thành viên khác & Thẩm định tính chính xác của chuỗi đọc
               </p>
             </div>
           </div>
@@ -294,14 +319,14 @@ export function SuperAdminPointModal({
           <button
             onClick={onClose}
             className="p-2 rounded-xl text-text-muted hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-            title="Đóng modal"
+            title="Đóng cửa sổ"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Tab Switcher */}
-        <div className="px-6 pt-3 border-b border-border/80 flex items-center gap-2 bg-bg-elevated/40">
+        <div className="px-6 pt-3 border-b border-border/80 flex items-center gap-2 bg-bg-elevated/40 shrink-0">
           <button
             type="button"
             onClick={() => setActiveTab("adjust")}
@@ -330,7 +355,7 @@ export function SuperAdminPointModal({
         </div>
 
         {/* Scrollable Content Body */}
-        <div className="p-6 overflow-y-auto space-y-6 flex-1 text-xs">
+        <div className="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1 text-xs">
           {/* Status Feedback Toast */}
           {feedback && (
             <div
@@ -349,46 +374,89 @@ export function SuperAdminPointModal({
             </div>
           )}
 
-          {/* 1. Target User Selector (Shared between both tabs) */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
+          {/* 1. Target User Selector (Người Dùng Mục Tiêu Cần Tác Động) */}
+          <div className="p-4 rounded-2xl bg-bg-elevated/70 border border-purple-500/30 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <label className="font-bold text-text-primary uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-                <span>Người Dùng Đang Thao Tác</span>
-                <span className="text-text-muted font-normal">({allUsers.length} thành viên)</span>
+                <Users className="w-4 h-4 text-purple-400" />
+                <span>1. Chọn Thành Viên Cần Thao Tác</span>
+                <span className="text-purple-300 font-bold">({otherUsers.length} thành viên khác)</span>
               </label>
-              <div className="relative w-48 sm:w-60">
+
+              {/* Search Box */}
+              <div className="relative w-full sm:w-64">
                 <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
                 <input
                   type="text"
                   value={userSearch}
                   onChange={(e) => setUserSearch(e.target.value)}
-                  placeholder="Lọc tên hoặc email..."
-                  className="w-full pl-8 pr-2.5 py-1 text-xs rounded-xl bg-bg-elevated border border-border text-text-primary placeholder:text-text-muted focus:outline-none focus:border-purple-500"
+                  placeholder="Tìm theo tên hoặc email..."
+                  className="w-full pl-8 pr-2.5 py-1 text-xs rounded-xl bg-bg-panel border border-border text-text-primary placeholder:text-text-muted focus:outline-none focus:border-purple-500 transition-all"
                 />
               </div>
             </div>
 
-            <select
-              value={selectedUserId}
-              onChange={(e) => setSelectedUserId(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-bg-elevated border border-border text-xs text-text-primary focus:outline-none focus:border-purple-500 cursor-pointer font-medium"
-            >
-              {filteredUsers.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.name} — {u.email} ({u.role.toUpperCase()} · Lv.{u.level || 1} · {u.exp || 0} EXP · {u.contributionPoints || 0} CP)
-                </option>
-              ))}
-            </select>
+            {/* Quick Click User Chips for Other Members */}
+            {otherUsers.length > 0 && (
+              <div className="space-y-1">
+                <div className="text-[10px] text-text-muted font-semibold flex items-center gap-1">
+                  <span>Chọn nhanh người khác:</span>
+                </div>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {otherUsers.slice(0, 6).map((u) => (
+                    <button
+                      key={u.id}
+                      type="button"
+                      onClick={() => setSelectedUserId(u.id)}
+                      className={`px-2.5 py-1 rounded-xl border flex items-center gap-1.5 transition-all cursor-pointer text-[11px] ${
+                        selectedUserId === u.id
+                          ? "bg-purple-600 text-white font-bold border-purple-500 shadow-sm"
+                          : "bg-bg-panel border-border text-text-secondary hover:text-text-primary hover:border-purple-500/40"
+                      }`}
+                    >
+                      <UserAvatar avatar={u.avatar} name={u.name} role={u.role} className="w-4 h-4 rounded-full" size={16} />
+                      <span className="truncate max-w-[110px]">{u.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
-            {/* Active User Card & Current Stats Display */}
+            {/* Dropdown Select (Tách riêng Thành viên khác và Tài khoản của bạn) */}
+            <div>
+              <select
+                value={selectedUserId}
+                onChange={(e) => setSelectedUserId(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-bg-panel border border-border text-xs text-text-primary focus:outline-none focus:border-purple-500 cursor-pointer font-medium"
+              >
+                <optgroup label="--- Danh sách thành viên / Sinh viên / Admin khác ---">
+                  {filteredUsers
+                    .filter((u) => u.id !== currentSuperAdmin?.id)
+                    .map((u) => (
+                      <option key={u.id} value={u.id}>
+                        👤 {u.name} ({u.email}) — [{u.role.toUpperCase()}] · Lv.{u.level || 1} · {u.exp || 0} EXP · {u.contributionPoints || 0} CP
+                      </option>
+                    ))}
+                </optgroup>
+                {currentSuperAdmin && (
+                  <optgroup label="--- Tài khoản Super Admin của bạn ---">
+                    <option value={currentSuperAdmin.id}>
+                      🛡️ {currentSuperAdmin.name} (Chính bạn) — {currentSuperAdmin.email}
+                    </option>
+                  </optgroup>
+                )}
+              </select>
+            </div>
+
+            {/* Active User Summary Card */}
             {activeTargetUser && (
-              <div className="p-3.5 rounded-2xl bg-bg-elevated/70 border border-purple-500/20 flex flex-wrap items-center justify-between gap-3">
+              <div className="p-3 rounded-xl bg-bg-panel border border-border/80 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <UserAvatar
                     avatar={activeTargetUser.avatar}
                     name={activeTargetUser.name}
                     role={activeTargetUser.role}
-                    className="w-10 h-10 rounded-xl border border-purple-500/30"
+                    className="w-10 h-10 rounded-xl border border-purple-500/30 shrink-0"
                     size={40}
                   />
                   <div>
@@ -396,23 +464,15 @@ export function SuperAdminPointModal({
                       <span className="font-bold text-sm text-text-primary">
                         {activeTargetUser.name}
                       </span>
-                      <span
-                        className="text-[10px] font-bold uppercase px-2 py-0.2 rounded-full border"
-                        style={{
-                          color:
-                            activeTargetUser.role === "superadmin"
-                              ? "#c084fc"
-                              : activeTargetUser.role === "admin"
-                              ? "#f05a28"
-                              : "#06b6d4",
-                          borderColor:
-                            activeTargetUser.role === "superadmin"
-                              ? "rgba(192, 132, 252, 0.4)"
-                              : "rgba(240, 90, 40, 0.4)",
-                        }}
-                      >
-                        {activeTargetUser.role}
-                      </span>
+                      {isSelfSelected ? (
+                        <span className="text-[10px] font-bold uppercase px-2 py-0.2 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                          Chính bạn
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-bold uppercase px-2 py-0.2 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40">
+                          {activeTargetUser.role}
+                        </span>
+                      )}
                     </div>
                     <span className="text-text-muted font-mono text-[11px]">
                       {activeTargetUser.email}
@@ -440,7 +500,7 @@ export function SuperAdminPointModal({
                     className={`px-2.5 py-1.5 rounded-xl border text-center ${
                       streakInfo.isStreakActive
                         ? "bg-orange-500/10 border-orange-500/30 text-orange-400"
-                        : "bg-bg-elevated border-border text-text-muted"
+                        : "bg-bg-panel border-border text-text-muted"
                     }`}
                   >
                     <div className="text-[10px] font-semibold flex items-center justify-center gap-0.5">
@@ -460,9 +520,9 @@ export function SuperAdminPointModal({
               TAB 1: PHÙ PHÉP & ĐIỀU CHỈNH ĐIỂM
           ========================================================================= */}
           {activeTab === "adjust" && (
-            <form onSubmit={handleApply} className="space-y-5">
+            <form onSubmit={handleApply} className="space-y-4">
               {/* 2. Loại Thao Tác */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <label className="font-bold text-text-primary uppercase tracking-wider text-[11px]">
                   2. Loại Thao Tác
                 </label>
@@ -509,7 +569,7 @@ export function SuperAdminPointModal({
               </div>
 
               {/* 3. Điểm Số Cần Thay Đổi */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <label className="font-bold text-text-primary uppercase tracking-wider text-[11px]">
                   3. Điểm Số Cần Thay Đổi
                 </label>
@@ -556,7 +616,7 @@ export function SuperAdminPointModal({
               </div>
 
               {/* 4. Số Điểm & Quick Presets */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <label className="font-bold text-text-primary uppercase tracking-wider text-[11px]">
                   4. Nhập Số Điểm
                 </label>
@@ -605,7 +665,7 @@ export function SuperAdminPointModal({
                 <div className="flex items-center justify-between text-[11px] font-bold text-purple-300">
                   <span className="flex items-center gap-1.5 uppercase tracking-wider">
                     <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                    Dự Báo Kết Quả Sau Khi Áp Dụng
+                    Dự Báo Kết Quả Sau Khi Áp Dụng Cho {activeTargetUser?.name}
                   </span>
                   {previewLevel !== currentLevel && (
                     <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 text-[10px] animate-pulse">
@@ -895,14 +955,15 @@ export function SuperAdminPointModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-2.5 bg-bg-elevated/50 border-t border-border flex items-center justify-between text-[11px] text-text-muted">
+        <div className="px-6 py-2.5 bg-bg-elevated/50 border-t border-border flex items-center justify-between text-[11px] text-text-muted shrink-0">
           <div className="flex items-center gap-1.5">
             <ShieldAlert className="w-3.5 h-3.5 text-purple-400" />
-            <span>Múi giờ hệ thống: Giờ chuẩn Việt Nam (GMT+7) · Chống chuỗi ma tự động</span>
+            <span>Múi giờ: GMT+7 · Chống chuỗi ma · Tự động ưu tiên chọn thành viên khác</span>
           </div>
           <span className="font-mono text-[10px]">SuperAdmin Auditor</span>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
