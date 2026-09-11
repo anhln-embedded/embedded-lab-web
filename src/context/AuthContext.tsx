@@ -10,6 +10,7 @@ export interface User {
   email: string;
   role: UserRole;
   avatar?: string;
+  googleAvatar?: string;
   bio?: string;
   createdAt: string;
 }
@@ -361,13 +362,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const assignedRole: UserRole = isSuperAdmin ? "superadmin" : userData.role || "user";
     const existing = allUsers.find((u) => normalizeEmail(u.email) === normalizeEmail(cleanEmail));
 
+    const isGoogle = userData.provider === "google" || (userData.avatar && userData.avatar.includes("googleusercontent.com"));
+    const detectedGoogleAvatar: string | undefined =
+      (isGoogle && userData.avatar)
+        ? userData.avatar
+        : (existing?.googleAvatar || (typeof window !== "undefined" ? (safeStorage.getItem(`google_avatar_${cleanEmail}`) || undefined) : undefined));
+
+    if (detectedGoogleAvatar) {
+      safeStorage.setItem(`google_avatar_${cleanEmail}`, detectedGoogleAvatar);
+    }
+
     if (existing) {
       const updatedUser: User = {
         ...existing,
         name: userData.name || existing.name,
         avatar: userData.avatar || existing.avatar || (assignedRole === "superadmin" ? "🛡️" : "👤"),
+        googleAvatar: detectedGoogleAvatar || existing.googleAvatar,
         role: isSuperAdmin ? "superadmin" : existing.role,
-        bio: isSuperAdmin ? "Super Admin quản trị viên Embedded-AIoT Lab PTIT" : existing.bio,
+        bio: existing.bio || "",
       };
 
       const updatedList = allUsers.map((u) => (u.id === existing.id ? updatedUser : u));
@@ -390,9 +402,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: cleanEmail,
         role: assignedRole,
         avatar: userData.avatar || (assignedRole === "superadmin" ? "🛡️" : "👤"),
-        bio: isSuperAdmin
-          ? "Super Admin quản trị viên Embedded-AIoT Lab PTIT"
-          : "Thành viên Embedded-AIoT Lab PTIT (Đăng nhập qua Google)",
+        googleAvatar: detectedGoogleAvatar,
+        bio: "",
         createdAt: new Date().toISOString().split("T")[0],
       };
 
