@@ -27,7 +27,10 @@ import {
   Compass,
   Route,
   Trophy,
-  Zap
+  Zap,
+  MessageSquare,
+  Newspaper,
+  Cpu
 } from "lucide-react";
 import { SearchModal } from "@/components/ui/SearchModal";
 import { UserAvatar } from "@/components/ui/UserAvatar";
@@ -37,15 +40,18 @@ export function Header() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
-  const [mobileStudyOpen, setMobileStudyOpen] = React.useState(true);
-  const [desktopStudyOpen, setDesktopStudyOpen] = React.useState(false);
+  const [mobileDropdownsOpen, setMobileDropdownsOpen] = React.useState<Record<string, boolean>>({
+    "Học tập": true,
+    "Khác": true,
+  });
+  const [desktopDropdownOpen, setDesktopDropdownOpen] = React.useState<string | null>(null);
   const [userMenuOpen, setUserMenuOpen] = React.useState(false);
   const [darkMode, setDarkMode] = React.useState(false);
   const [mounted, setMounted] = React.useState(false);
   const [secretPointModalOpen, setSecretPointModalOpen] = React.useState(false);
 
   const userMenuRef = React.useRef<HTMLDivElement>(null);
-  const studyMenuRef = React.useRef<HTMLDivElement>(null);
+  const navContainerRef = React.useRef<HTMLElement>(null);
 
   const handleUserLogout = () => {
     logout();
@@ -69,8 +75,8 @@ export function Header() {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setUserMenuOpen(false);
       }
-      if (studyMenuRef.current && !studyMenuRef.current.contains(event.target as Node)) {
-        setDesktopStudyOpen(false);
+      if (navContainerRef.current && !navContainerRef.current.contains(event.target as Node)) {
+        setDesktopDropdownOpen(null);
       }
     };
 
@@ -137,7 +143,9 @@ export function Header() {
           </Link>
 
           {/* Center: Desktop Navigation */}
+          {/* Center: Desktop Navigation */}
           <nav
+            ref={navContainerRef}
             className="hidden lg:flex items-center justify-center gap-3.5 xl:gap-6 flex-1"
             aria-label="Main navigation"
           >
@@ -146,28 +154,31 @@ export function Header() {
                 const isGroupActive = item.items.some(
                   (sub) => pathname === sub.href || pathname.startsWith(`${sub.href}/`)
                 );
+                const isDropdownOpen = desktopDropdownOpen === item.label;
+
                 return (
                   <div
                     key={item.label}
-                    ref={studyMenuRef}
                     className="relative group py-2"
-                    onMouseEnter={() => setDesktopStudyOpen(true)}
-                    onMouseLeave={() => setDesktopStudyOpen(false)}
+                    onMouseEnter={() => setDesktopDropdownOpen(item.label)}
+                    onMouseLeave={() => setDesktopDropdownOpen(null)}
                   >
                     <button
-                      onClick={() => setDesktopStudyOpen((prev) => !prev)}
+                      onClick={() =>
+                        setDesktopDropdownOpen((prev) => (prev === item.label ? null : item.label))
+                      }
                       className={cn(
                         "flex items-center gap-1.5 py-1 text-xs xl:text-sm font-medium transition-colors hover:text-accent focus:outline-none cursor-pointer",
                         isGroupActive ? "text-accent font-semibold" : "text-text-secondary"
                       )}
                       aria-haspopup="true"
-                      aria-expanded={desktopStudyOpen}
+                      aria-expanded={isDropdownOpen}
                     >
                       <span>{item.label}</span>
                       <ChevronDown
                         className={cn(
                           "w-3.5 h-3.5 transition-transform duration-200 text-text-muted group-hover:text-accent",
-                          desktopStudyOpen ? "rotate-180 text-accent" : "group-hover:rotate-180"
+                          isDropdownOpen ? "rotate-180 text-accent" : "group-hover:rotate-180"
                         )}
                       />
                       {isGroupActive && (
@@ -179,7 +190,7 @@ export function Header() {
                     <div
                       className={cn(
                         "absolute top-full left-1/2 -translate-x-1/2 pt-2 transition-all duration-200 ease-out z-50",
-                        desktopStudyOpen
+                        isDropdownOpen
                           ? "opacity-100 visible pointer-events-auto"
                           : "opacity-0 invisible pointer-events-none group-hover:opacity-100 group-hover:visible group-hover:pointer-events-auto"
                       )}
@@ -197,13 +208,19 @@ export function Header() {
                               ? GraduationCap
                               : subItem.icon === "Sparkles"
                               ? Sparkles
+                              : subItem.icon === "MessageSquare"
+                              ? MessageSquare
+                              : subItem.icon === "Newspaper"
+                              ? Newspaper
+                              : subItem.icon === "Cpu"
+                              ? Cpu
                               : Compass;
 
                           return (
                             <Link
                               key={subItem.href}
                               href={subItem.href}
-                              onClick={() => setDesktopStudyOpen(false)}
+                              onClick={() => setDesktopDropdownOpen(null)}
                               className={cn(
                                 "flex items-start gap-3 p-2.5 rounded-xl transition-all group/sub",
                                 isSubActive
@@ -644,11 +661,18 @@ export function Header() {
                     const isGroupActive = item.items.some(
                       (sub) => pathname === sub.href || pathname.startsWith(`${sub.href}/`)
                     );
+                    const isSubOpen = Boolean(mobileDropdownsOpen[item.label]);
+
                     return (
                       <div key={item.label} className="space-y-1">
                         <button
                           type="button"
-                          onClick={() => setMobileStudyOpen((prev) => !prev)}
+                          onClick={() =>
+                            setMobileDropdownsOpen((prev) => ({
+                              ...prev,
+                              [item.label]: !prev[item.label],
+                            }))
+                          }
                           className={cn(
                             "w-full px-3 py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center justify-between text-left cursor-pointer",
                             isGroupActive
@@ -663,11 +687,11 @@ export function Header() {
                           <ChevronDown
                             className={cn(
                               "w-4 h-4 text-text-muted transition-transform duration-200",
-                              mobileStudyOpen ? "rotate-180 text-accent" : ""
+                              isSubOpen ? "rotate-180 text-accent" : ""
                             )}
                           />
                         </button>
-                        {mobileStudyOpen && (
+                        {isSubOpen && (
                           <div className="pl-3 pr-1 py-1 space-y-1 border-l-2 border-accent/30 ml-3 animate-fade-in">
                             {item.items.map((subItem) => {
                               const isSubActive =
@@ -681,6 +705,12 @@ export function Header() {
                                   ? GraduationCap
                                   : subItem.icon === "Sparkles"
                                   ? Sparkles
+                                  : subItem.icon === "MessageSquare"
+                                  ? MessageSquare
+                                  : subItem.icon === "Newspaper"
+                                  ? Newspaper
+                                  : subItem.icon === "Cpu"
+                                  ? Cpu
                                   : Compass;
 
                               return (

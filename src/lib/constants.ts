@@ -47,8 +47,27 @@ export const siteConfig = {
       ],
     },
     { label: "Nghiên cứu", href: "/research" },
-    { label: "Mô phỏng", href: "/tools/stm32-simulator" },
     { label: "Bản tin", href: "/blog" },
+    {
+      label: "Khác",
+      href: "/discuss",
+      items: [
+        {
+          label: "Thảo luận",
+          href: "/discuss",
+          description: "Kỹ thuật thực chiến, góc khuất nghề nghiệp & gỡ rối phần cứng",
+          icon: "MessageSquare",
+          badge: "Mới",
+        },
+        {
+          label: "Mô phỏng",
+          href: "/tools/stm32-simulator",
+          description: "Trình giả lập vi điều khiển STM32 & phần cứng trực tuyến",
+          icon: "Cpu",
+          badge: "STM32",
+        },
+      ],
+    },
   ],
 };
 
