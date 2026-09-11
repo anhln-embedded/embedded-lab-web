@@ -20,9 +20,13 @@ import {
   Route,
   User as UserIcon,
   X,
+  Trophy,
+  Flame,
+  Award
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { UserAvatar } from "@/components/ui/UserAvatar";
+import { LAB_BADGES, getExpProgress, getCreatorRankInfo } from "@/lib/gamification";
 
 const isProduction =
   process.env.NEXT_PUBLIC_APP_ENV === "production" ||
@@ -508,6 +512,93 @@ export function UserProfileView() {
               <span>{toastMsg.text}</span>
             </div>
           )}
+        </div>
+
+        {/* GAMIFICATION STATS WIDGET */}
+        <div className="p-4 rounded-2xl bg-bg-elevated/60 border border-border/80 space-y-3">
+          {/* Level & EXP Progress */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-bold text-text-primary flex items-center gap-1.5">
+                <span>{getExpProgress(user.exp || 0).badge}</span>
+                <span>Cấp {getExpProgress(user.exp || 0).currentLevel} · {getExpProgress(user.exp || 0).title}</span>
+              </span>
+              <span className="font-mono text-emerald-400 font-bold">
+                {user.exp || 0} / {getExpProgress(user.exp || 0).nextLevelMinExp} EXP
+              </span>
+            </div>
+            
+            {/* Progress Bar */}
+            <div className="w-full h-2 rounded-full bg-bg-panel overflow-hidden border border-border/60">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-accent to-emerald-400 transition-all duration-500"
+                style={{ width: `${getExpProgress(user.exp || 0).progressPercent}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Key Metrics Row */}
+          <div className="grid grid-cols-3 gap-2 pt-1 text-center">
+            <div className="p-2 rounded-xl bg-bg-panel border border-border/60">
+              <div className="text-xs font-black text-accent font-mono">
+                {user.contributionPoints || 0}
+              </div>
+              <div className="text-[9px] text-text-muted font-bold uppercase tracking-wider">
+                Điểm CP
+              </div>
+            </div>
+
+            <div className="p-2 rounded-xl bg-bg-panel border border-border/60">
+              <div className="text-xs font-black text-text-primary font-mono">
+                {user.readArticlesCount || 0}
+              </div>
+              <div className="text-[9px] text-text-muted font-bold uppercase tracking-wider">
+                Bài đã đọc
+              </div>
+            </div>
+
+            <div className="p-2 rounded-xl bg-bg-panel border border-border/60">
+              <div className="text-xs font-black text-orange-400 font-mono flex items-center justify-center gap-0.5">
+                <Flame className="w-3 h-3 text-orange-400" />
+                <span>{user.streakDays || 1}</span>
+              </div>
+              <div className="text-[9px] text-text-muted font-bold uppercase tracking-wider">
+                Ngày streak
+              </div>
+            </div>
+          </div>
+
+          {/* Badges Shelf & Ranking Link */}
+          <div className="pt-2 border-t border-border/60 flex items-center justify-between">
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] text-text-muted font-bold mr-1">Huy hiệu:</span>
+              {(user.badges || []).length > 0 ? (
+                (user.badges || []).slice(0, 5).map((id) => {
+                  const b = LAB_BADGES.find((item) => item.id === id);
+                  if (!b) return null;
+                  return (
+                    <span
+                      key={b.id}
+                      className="w-6 h-6 rounded-lg bg-bg-panel border border-border flex items-center justify-center text-xs shadow-xs"
+                      title={`${b.title}: ${b.description}`}
+                    >
+                      {b.icon}
+                    </span>
+                  );
+                })
+              ) : (
+                <span className="text-[10px] text-text-muted italic">Chưa mở khóa</span>
+              )}
+            </div>
+
+            <Link
+              href="/ranking"
+              className="text-[11px] text-accent hover:underline font-bold flex items-center gap-1"
+            >
+              <Trophy className="w-3 h-3 text-amber-400" />
+              <span>Bảng Xếp Hạng</span>
+            </Link>
+          </div>
         </div>
 
         {/* ACTION BUTTONS */}

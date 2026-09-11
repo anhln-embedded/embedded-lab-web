@@ -25,7 +25,8 @@ import {
   BookOpen,
   Sparkles,
   Compass,
-  Route
+  Route,
+  Trophy
 } from "lucide-react";
 import { SearchModal } from "@/components/ui/SearchModal";
 import { UserAvatar } from "@/components/ui/UserAvatar";
@@ -343,6 +344,9 @@ export function Header() {
                           ? "Lab Member"
                           : "Sinh viên"}
                       </span>
+                      <span className="px-1.5 py-0.5 rounded-md text-[9px] font-black bg-accent/20 text-accent font-mono leading-none border border-accent/30">
+                        Lv.{user.level || 1}
+                      </span>
                     </div>
                     <ChevronDown className="w-3.5 h-3.5 text-text-muted" />
                   </button>
@@ -351,7 +355,12 @@ export function Header() {
                   {userMenuOpen && (
                     <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-bg-panel border border-border shadow-2xl p-2 z-50 animate-fade-in text-xs">
                       <div className="px-3 py-2.5 border-b border-border/80 mb-1">
-                        <div className="font-bold text-text-primary">{user.name}</div>
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-text-primary truncate">{user.name}</span>
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-accent text-white">
+                            Lv.{user.level || 1}
+                          </span>
+                        </div>
                         <div className="text-[11px] text-text-muted font-mono truncate">{user.email}</div>
                       </div>
 
@@ -376,6 +385,15 @@ export function Header() {
                           <span>Quản Lý Thành Viên</span>
                         </Link>
                       )}
+
+                      <Link
+                        href="/ranking"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg text-text-secondary hover:text-amber-400 hover:bg-bg-elevated transition-colors"
+                      >
+                        <Trophy className="w-4 h-4 text-amber-400" />
+                        <span>Bảng Xếp Hạng & Thưởng</span>
+                      </Link>
 
                       <Link
                         href="/roadmap"
@@ -513,6 +531,15 @@ export function Header() {
                       <span>Quản Lý Thành Viên</span>
                     </Link>
                   )}
+
+                  <Link
+                    href="/ranking"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2 p-2 rounded-xl text-text-secondary hover:text-amber-400 hover:bg-bg-panel transition-colors font-semibold"
+                  >
+                    <Trophy className="w-4 h-4 text-amber-400" />
+                    <span>Bảng Xếp Hạng & Thưởng</span>
+                  </Link>
 
                   <Link
                     href="/roadmap"

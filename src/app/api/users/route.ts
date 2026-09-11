@@ -62,6 +62,12 @@ export async function GET(request: Request) {
           u.avatar ||
           (role === "superadmin" ? "🛡️" : role === "admin" ? "✍️" : role === "lab_member" ? "🔬" : "🎓"),
         bio: u.title || "",
+        exp: (u as any).exp ?? 0,
+        level: (u as any).level ?? 1,
+        contributionPoints: (u as any).contributionPoints ?? 0,
+        readArticlesCount: (u as any).readArticlesCount ?? 0,
+        streakDays: (u as any).streakDays ?? 1,
+        badges: (u as any).badges ? JSON.parse((u as any).badges) : [],
         createdAt: u.createdAt.toISOString().split("T")[0],
       };
     });

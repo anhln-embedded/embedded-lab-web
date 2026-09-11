@@ -27,6 +27,7 @@ import {
   Edit3
 } from "lucide-react";
 import { UserAvatar } from "@/components/ui/UserAvatar";
+import { ReadingRewardTracker } from "@/components/gamification/ReadingRewardTracker";
 
 interface BlogPostContentProps {
   post: BlogPostData;
@@ -449,6 +450,13 @@ export function BlogPostContent({ post }: BlogPostContentProps) {
           </aside>
         </div>
       </div>
+
+      {/* Gamification Reading Reward Tracker */}
+      <ReadingRewardTracker
+        articleId={post._id || post.slug}
+        articleType="post"
+        title={post.title}
+      />
     </article>
   );
 }

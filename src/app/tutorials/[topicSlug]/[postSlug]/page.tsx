@@ -43,6 +43,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { UserAvatar } from "@/components/ui/UserAvatar";
+import { ReadingRewardTracker } from "@/components/gamification/ReadingRewardTracker";
 
 interface PageProps {
   params: Promise<{
@@ -938,6 +939,15 @@ export default function TutorialPostDetailPage({ params }: PageProps) {
             }
           }}
           onOpenHistory={() => setIsHistoryModalOpen(true)}
+        />
+      )}
+
+      {/* Gamification Reading Reward Tracker */}
+      {currentPost && (
+        <ReadingRewardTracker
+          articleId={currentPost.id || currentPost.slug || resolvedParams.postSlug}
+          articleType="tutorial"
+          title={currentPost.title}
         />
       )}
     </div>

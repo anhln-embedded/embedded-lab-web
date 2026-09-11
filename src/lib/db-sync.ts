@@ -92,9 +92,78 @@ export async function ensureTutorialSchema() {
       `);
     } catch {}
 
+    // 4. Đồng bộ bảng và cột Gamification
+    await ensureGamificationSchema();
+
     isSchemaEnsured = true;
   } catch (error) {
     console.error("Lỗi khi tự động đồng bộ schema:", error);
+  }
+}
+
+let isGamificationEnsured = false;
+
+/**
+ * Tự động đồng bộ schema Gamification (EXP, Level, Điểm cống hiến, Bảng log đọc)
+ */
+export async function ensureGamificationSchema() {
+  if (isGamificationEnsured) return;
+
+  try {
+    // 1. Thêm các cột Gamification cho bảng User
+    const userColumns = [
+      `ALTER TABLE "User" ADD COLUMN "exp" INTEGER DEFAULT 0`,
+      `ALTER TABLE "User" ADD COLUMN "level" INTEGER DEFAULT 1`,
+      `ALTER TABLE "User" ADD COLUMN "contributionPoints" INTEGER DEFAULT 0`,
+      `ALTER TABLE "User" ADD COLUMN "readArticlesCount" INTEGER DEFAULT 0`,
+      `ALTER TABLE "User" ADD COLUMN "streakDays" INTEGER DEFAULT 1`,
+      `ALTER TABLE "User" ADD COLUMN "lastActiveDate" TEXT`,
+      `ALTER TABLE "User" ADD COLUMN "badges" TEXT DEFAULT '[]'`,
+    ];
+
+    for (const sql of userColumns) {
+      try {
+        await prisma.$executeRawUnsafe(sql);
+      } catch {}
+    }
+
+    // 2. Tạo bảng UserReadingLog
+    try {
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "UserReadingLog" (
+          "id" TEXT NOT NULL PRIMARY KEY,
+          "userId" TEXT NOT NULL,
+          "articleId" TEXT NOT NULL,
+          "articleType" TEXT NOT NULL DEFAULT 'post',
+          "earnedExp" INTEGER NOT NULL DEFAULT 15,
+          "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      await prisma.$executeRawUnsafe(`
+        CREATE UNIQUE INDEX IF NOT EXISTS "UserReadingLog_userId_articleId_key" ON "UserReadingLog"("userId", "articleId")
+      `);
+      await prisma.$executeRawUnsafe(`
+        CREATE INDEX IF NOT EXISTS "UserReadingLog_userId_idx" ON "UserReadingLog"("userId")
+      `);
+    } catch {}
+
+    // 3. Tự động khởi tạo điểm cống hiến cho tác giả chính nếu đang là 0
+    try {
+      await prisma.$executeRawUnsafe(`
+        UPDATE "User" 
+        SET "contributionPoints" = 450, 
+            "exp" = 220, 
+            "level" = 4, 
+            "readArticlesCount" = 12, 
+            "streakDays" = 5, 
+            "badges" = '["pioneer_author","embedded_scholar","streak_3","master_aiot"]' 
+        WHERE "email" LIKE '%anhln%' AND ("contributionPoints" IS NULL OR "contributionPoints" = 0)
+      `);
+    } catch {}
+
+    isGamificationEnsured = true;
+  } catch (error) {
+    console.error("Lỗi khi tự động đồng bộ Gamification schema:", error);
   }
 }
 

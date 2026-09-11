@@ -12,6 +12,12 @@ export interface User {
   avatar?: string;
   googleAvatar?: string;
   bio?: string;
+  exp?: number;
+  level?: number;
+  contributionPoints?: number;
+  readArticlesCount?: number;
+  streakDays?: number;
+  badges?: string[];
   createdAt: string;
 }
 
@@ -160,6 +166,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 avatar: dbMatch.avatar || prevUser.avatar,
                 bio: dbMatch.title || dbMatch.bio || prevUser.bio,
                 role: (prevUser.role === "superadmin" || dbMatch.role === "superadmin") ? "superadmin" : (dbMatch.role || prevUser.role),
+                exp: dbMatch.exp ?? prevUser.exp ?? 0,
+                level: dbMatch.level ?? prevUser.level ?? 1,
+                contributionPoints: dbMatch.contributionPoints ?? prevUser.contributionPoints ?? 0,
+                readArticlesCount: dbMatch.readArticlesCount ?? prevUser.readArticlesCount ?? 0,
+                streakDays: dbMatch.streakDays ?? prevUser.streakDays ?? 1,
+                badges: dbMatch.badges || prevUser.badges || [],
               };
               safeStorage.setItem(CURRENT_USER_KEY, JSON.stringify(merged));
               return merged;

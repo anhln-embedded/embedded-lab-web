@@ -88,13 +88,32 @@ model Comment {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String
-  role      String   @default("student") // student, mentor, admin, superadmin
-  avatar    String?  @default("/images/logo.png")
-  title     String?
-  createdAt DateTime @default(now())
+  id                 String   @id @default(cuid())
+  email              String   @unique
+  name               String
+  role               String   @default("student") // student, mentor, admin, superadmin
+  avatar             String?  @default("/images/logo.png")
+  title              String?
+  exp                Int      @default(0)
+  level              Int      @default(1)
+  contributionPoints Int      @default(0)
+  readArticlesCount  Int      @default(0)
+  streakDays         Int      @default(1)
+  lastActiveDate     String?
+  badges             String?  @default("[]") // JSON string of badge IDs
+  createdAt          DateTime @default(now())
+}
+
+model UserReadingLog {
+  id          String   @id @default(cuid())
+  userId      String
+  articleId   String
+  articleType String   @default("post") // post, tutorial, lesson
+  earnedExp   Int      @default(15)
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, articleId])
+  @@index([userId])
 }
 
 model TutorialTopic {

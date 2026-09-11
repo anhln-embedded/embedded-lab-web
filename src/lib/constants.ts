@@ -49,6 +49,7 @@ export const siteConfig = {
     { label: "Nghiên cứu", href: "/research" },
     { label: "Mô phỏng", href: "/tools/stm32-simulator" },
     { label: "Bản tin", href: "/blog" },
+    { label: "Xếp hạng", href: "/ranking" },
   ],
 };
 
