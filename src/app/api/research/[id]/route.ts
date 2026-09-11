@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { normalizeEmail, parseEmailList } from "@/lib/utils";
 
 interface Params {
   params: Promise<{ id: string }>;
@@ -40,10 +41,35 @@ export async function GET(request: Request, { params }: Params) {
   }
 }
 
-// DELETE /api/research/[id]
+// DELETE /api/research/[id] (Chỉ Admin)
 export async function DELETE(request: Request, { params }: Params) {
   try {
     const { id } = await params;
+
+    // Xác thực quyền Admin/SuperAdmin
+    const { searchParams } = new URL(request.url);
+    const headerRole = request.headers.get("x-user-role") || searchParams.get("role");
+    const headerEmail = request.headers.get("x-user-email") || searchParams.get("email");
+
+    let isAuthorized = headerRole === "admin" || headerRole === "superadmin";
+    if (!isAuthorized && headerEmail) {
+      const envRaw =
+        (typeof process !== "undefined" &&
+          (process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAILS || process.env.SUPER_ADMIN_EMAILS)) ||
+        "anhln.embedded@gmail.com,anhlnembedded@gmail.com";
+      const superAdmins = parseEmailList(envRaw);
+      isAuthorized = superAdmins.includes(normalizeEmail(headerEmail));
+    }
+
+    if (!isAuthorized) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Truy cập bị từ chối: Chỉ Quản trị viên (Admin/SuperAdmin) mới có quyền xóa bài báo nghiên cứu.",
+        },
+        { status: 403 }
+      );
+    }
 
     // 1. Thử xóa khỏi database SQLite
     try {

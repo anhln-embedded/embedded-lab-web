@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { DEFAULT_RESEARCH_PAPERS } from "@/lib/research-store";
+import { normalizeEmail, parseEmailList } from "@/lib/utils";
 
 // GET /api/research - Lấy danh sách bài báo nghiên cứu khoa học
 export async function GET(request: Request) {
@@ -136,7 +137,7 @@ export async function GET(request: Request) {
   }
 }
 
-// POST /api/research - Thêm mới hoặc cập nhật bài báo nghiên cứu khoa học
+// POST /api/research - Thêm mới hoặc cập nhật bài báo nghiên cứu khoa học (Chỉ Admin)
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -164,7 +165,34 @@ export async function POST(request: Request) {
       bibtex,
       status,
       featured,
+      user,
     } = body;
+
+    // Xác thực quyền Admin/SuperAdmin
+    const headerRole = request.headers.get("x-user-role");
+    const headerEmail = request.headers.get("x-user-email");
+    const role = headerRole || user?.role;
+    const email = headerEmail || user?.email;
+
+    let isAuthorized = role === "admin" || role === "superadmin";
+    if (!isAuthorized && email) {
+      const envRaw =
+        (typeof process !== "undefined" &&
+          (process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAILS || process.env.SUPER_ADMIN_EMAILS)) ||
+        "anhln.embedded@gmail.com,anhlnembedded@gmail.com";
+      const superAdmins = parseEmailList(envRaw);
+      isAuthorized = superAdmins.includes(normalizeEmail(email));
+    }
+
+    if (!isAuthorized) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Truy cập bị từ chối: Chỉ Quản trị viên (Admin/SuperAdmin) mới có quyền đăng hoặc chỉnh sửa bài báo nghiên cứu.",
+        },
+        { status: 403 }
+      );
+    }
 
     if (!title || !authors || !venue) {
       return NextResponse.json(

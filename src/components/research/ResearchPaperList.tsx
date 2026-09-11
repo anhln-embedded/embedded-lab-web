@@ -40,8 +40,12 @@ import {
   GraduationCap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
 
 export function ResearchPaperList() {
+  const { user } = useAuth();
+  const isAdmin = Boolean(user && (user.role === "admin" || user.role === "superadmin"));
+
   const [papers, setPapers] = React.useState<ResearchPaper[]>([]);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [selectedType, setSelectedType] = React.useState<string>("all");
@@ -139,27 +143,52 @@ export function ResearchPaperList() {
   };
 
   const handleOpenAddModal = () => {
+    if (!isAdmin) {
+      showToast("Chỉ Quản trị viên (Admin) mới có quyền đăng bài báo khoa học!");
+      return;
+    }
     setEditingPaper(null);
     setEditModalOpen(true);
   };
 
   const handleOpenEditModal = (paper: ResearchPaper) => {
+    if (!isAdmin) {
+      showToast("Chỉ Quản trị viên (Admin) mới có quyền chỉnh sửa bài báo khoa học!");
+      return;
+    }
     setEditingPaper(paper);
     setEditModalOpen(true);
   };
 
   const handleSavePaper = async (paper: ResearchPaper) => {
+    if (!isAdmin) {
+      showToast("Chỉ Quản trị viên (Admin) mới có quyền lưu bài báo khoa học!");
+      return;
+    }
+
     // Lưu vào localStorage
     const updated = saveResearchPaper(paper);
     setPapers(updated);
 
-    // Đồng bộ với API server
+    // Đồng bộ với API server kèm xác thực quyền
     try {
-      await fetch("/api/research", {
+      const res = await fetch("/api/research", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(paper),
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-role": user?.role || "",
+          "x-user-email": user?.email || "",
+        },
+        body: JSON.stringify({
+          ...paper,
+          user: { id: user?.id, email: user?.email, role: user?.role },
+        }),
       });
+      const data = await res.json();
+      if (!data.success) {
+        showToast(data.error || "Không thể lưu bài báo lên server.");
+        return;
+      }
     } catch (err) {
       console.warn("Lỗi khi đồng bộ bài báo lên server:", err);
     }
@@ -168,6 +197,11 @@ export function ResearchPaperList() {
   };
 
   const handleDeletePaper = async (id: string, title: string) => {
+    if (!isAdmin) {
+      showToast("Chỉ Quản trị viên (Admin) mới có quyền xóa bài báo!");
+      return;
+    }
+
     if (!window.confirm(`Bạn có chắc chắn muốn xóa bài báo:\n"${title}"?`)) {
       return;
     }
@@ -179,11 +213,20 @@ export function ResearchPaperList() {
     deleteResearchPaper(id);
     saveDeletedPaperId(id);
 
-    // 3. Gửi lệnh xóa lên Server API
+    // 3. Gửi lệnh xóa lên Server API kèm xác thực quyền Admin
     try {
-      await fetch(`/api/research/${id}`, {
+      const res = await fetch(`/api/research/${id}`, {
         method: "DELETE",
+        headers: {
+          "x-user-role": user?.role || "",
+          "x-user-email": user?.email || "",
+        },
       });
+      const data = await res.json();
+      if (!data.success) {
+        showToast(data.error || "Không thể xóa bài báo trên server.");
+        return;
+      }
     } catch (err) {
       console.warn("Lỗi khi gửi yêu cầu xóa bài lên server:", err);
     }
@@ -293,14 +336,16 @@ export function ResearchPaperList() {
             )}
           </div>
 
-          {/* Action: Add Paper Button */}
-          <button
-            onClick={handleOpenAddModal}
-            className="px-5 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold transition-all shadow-md hover:shadow-accent/20 flex items-center justify-center gap-2 cursor-pointer flex-shrink-0"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Đăng Bài Nghiên Cứu</span>
-          </button>
+          {/* Action: Add Paper Button (Chỉ Admin mới nhìn thấy và thao tác) */}
+          {isAdmin && (
+            <button
+              onClick={handleOpenAddModal}
+              className="px-5 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold transition-all shadow-md hover:shadow-accent/20 flex items-center justify-center gap-2 cursor-pointer flex-shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Đăng Bài Nghiên Cứu</span>
+            </button>
+          )}
         </div>
 
         {/* Filters Row: Type Tabs & Dropdowns */}
@@ -586,23 +631,25 @@ export function ResearchPaperList() {
                     </button>
                   </div>
 
-                  {/* Management: Edit / Delete */}
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => handleOpenEditModal(paper)}
-                      className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-elevated transition-colors cursor-pointer"
-                      title="Chỉnh sửa bài báo này"
-                    >
-                      <Edit3 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDeletePaper(paper.id, paper.title)}
-                      className="p-1.5 rounded-lg text-text-muted hover:text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
-                      title="Xóa bài báo này"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+                  {/* Management: Edit / Delete (Chỉ Admin mới nhìn thấy và thao tác) */}
+                  {isAdmin && (
+                    <div className="flex items-center gap-1.5 border-l border-border/60 pl-2">
+                      <button
+                        onClick={() => handleOpenEditModal(paper)}
+                        className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-elevated transition-colors cursor-pointer"
+                        title="Chỉnh sửa bài báo này (Chỉ Admin)"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeletePaper(paper.id, paper.title)}
+                        className="p-1.5 rounded-lg text-text-muted hover:text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                        title="Xóa bài báo này (Chỉ Admin)"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             );
