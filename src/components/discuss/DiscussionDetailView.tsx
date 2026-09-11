@@ -171,13 +171,13 @@ export function DiscussionDetailView({
   return (
     <div className="space-y-6">
       {/* Top Back Navigation Bar */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <button
           onClick={onBack}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-bg-panel border border-border text-xs font-semibold text-text-secondary hover:text-accent hover:border-accent/40 transition-all shadow-sm"
+          className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-bg-panel border border-border text-xs font-semibold text-text-secondary hover:text-accent hover:border-accent/40 transition-all shadow-sm flex-shrink-0"
         >
           <ChevronLeft className="w-4 h-4" />
-          <span>Quay lại danh sách diễn đàn</span>
+          <span>Quay lại<span className="hidden sm:inline"> danh sách diễn đàn</span></span>
         </button>
 
         {/* Nút Xóa bài dành cho Admin / Tác giả */}
@@ -194,16 +194,17 @@ export function DiscussionDetailView({
                 onDeleteThread?.(thread.id);
               }
             }}
-            className="text-rose-500 border-rose-500/40 hover:bg-rose-500 hover:text-white transition-all text-xs font-bold shadow-sm"
+            className="text-rose-500 border-rose-500/40 hover:bg-rose-500 hover:text-white transition-all text-xs font-bold shadow-sm flex-shrink-0"
           >
-            <Trash2 className="w-3.5 h-3.5 mr-1.5" />
-            Xóa Chủ Đề Này
+            <Trash2 className="w-3.5 h-3.5 sm:mr-1.5" />
+            <span className="hidden sm:inline">Xóa Chủ Đề Này</span>
+            <span className="sm:hidden">Xóa Bài</span>
           </Button>
         )}
       </div>
 
       {/* Main Original Post (OP Card) */}
-      <div className="bg-bg-panel border border-border/80 rounded-3xl p-6 md:p-8 space-y-6 shadow-sm">
+      <div className="bg-bg-panel border border-border/80 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 space-y-5 sm:space-y-6 shadow-sm">
         {/* OP Header */}
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-2">
@@ -222,7 +223,7 @@ export function DiscussionDetailView({
             </div>
           </div>
 
-          <h1 className="text-xl md:text-2xl lg:text-3xl font-extrabold text-text-primary leading-tight">
+          <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-extrabold text-text-primary leading-tight">
             {thread.title}
           </h1>
 
@@ -232,19 +233,19 @@ export function DiscussionDetailView({
               avatar={thread.authorAvatar}
               name={thread.author}
               role={thread.authorRole}
-              className="w-12 h-12 rounded-2xl border-2 border-accent/40 shadow-sm flex-shrink-0"
-              textClassName="text-2xl"
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl border-2 border-accent/40 shadow-sm flex-shrink-0"
+              textClassName="text-xl sm:text-2xl"
               size={48}
             />
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-sm text-text-primary">{thread.author}</span>
-                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-accent/15 text-accent border border-accent/30">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-bold text-xs sm:text-sm text-text-primary">{thread.author}</span>
+                <span className="text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-full bg-accent/15 text-accent border border-accent/30">
                   {thread.authorTitle || "Thành viên"}
                 </span>
               </div>
-              <span className="text-xs text-text-muted">
-                Tác giả bài viết • {thread.viewsCount} lượt xem • {thread.repliesCount} phản hồi
+              <span className="text-[10px] sm:text-xs text-text-muted block truncate mt-0.5">
+                Tác giả bài viết • {thread.viewsCount} xem • {thread.repliesCount} phản hồi
               </span>
             </div>
           </div>
@@ -673,11 +674,11 @@ export function DiscussionDetailView({
                   required
                 />
 
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-text-muted">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-1">
+                  <span className="text-[10px] sm:text-[11px] text-text-muted leading-relaxed">
                     Vui lòng thảo luận văn minh, tôn trọng người khác và cùng nhau chia sẻ kiến thức.
                   </span>
-                  <Button type="submit" variant="primary" size="sm" disabled={isSubmitting}>
+                  <Button type="submit" variant="primary" size="sm" disabled={isSubmitting} className="self-end sm:self-auto flex-shrink-0">
                     <Send className="w-3.5 h-3.5 mr-1.5" />
                     Gửi Phản Hồi
                   </Button>

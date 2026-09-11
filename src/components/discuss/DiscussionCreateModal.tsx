@@ -168,29 +168,29 @@ export function DiscussionCreateModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm animate-fade-in overflow-y-auto">
       <div
-        className="relative w-full max-w-2xl bg-bg-panel border border-border/90 rounded-3xl shadow-2xl overflow-hidden my-8"
+        className="relative w-full max-w-2xl bg-bg-panel border border-border/90 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden my-auto sm:my-8"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border/80 bg-bg-elevated/40">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-accent/10 text-accent">
-              <PlusCircle className="w-5 h-5" />
+        <div className="flex items-center justify-between px-4 py-3.5 sm:px-6 sm:py-4 border-b border-border/80 bg-bg-elevated/40 gap-2.5">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="p-2 rounded-xl bg-accent/10 text-accent flex-shrink-0">
+              <PlusCircle className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div>
-              <h2 className="text-base font-bold text-text-primary">
+            <div className="min-w-0">
+              <h2 className="text-sm sm:text-base font-bold text-text-primary truncate">
                 Tạo Chủ Đề Thảo Luận Mới
               </h2>
-              <p className="text-xs text-text-muted">
+              <p className="text-[10px] sm:text-xs text-text-muted line-clamp-1 sm:line-clamp-none">
                 Chia sẻ thắc mắc kỹ thuật, đính kèm file/ảnh hoặc trao đổi kinh nghiệm cùng cộng đồng
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-elevated transition-colors"
+            className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-elevated transition-colors flex-shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
@@ -199,12 +199,12 @@ export function DiscussionCreateModal({
         {/* Body Content */}
         {!user ? (
           /* Chưa đăng nhập */
-          <div className="p-8 text-center space-y-4">
-            <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center justify-center mx-auto">
-              <Lock className="w-7 h-7" />
+          <div className="p-6 sm:p-8 text-center space-y-4">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center justify-center mx-auto">
+              <Lock className="w-6 h-6 sm:w-7 sm:h-7" />
             </div>
             <div className="space-y-1">
-              <h3 className="text-base font-bold text-text-primary">
+              <h3 className="text-sm sm:text-base font-bold text-text-primary">
                 Yêu Cầu Đăng Nhập Diễn Đàn
               </h3>
               <p className="text-xs text-text-muted max-w-md mx-auto leading-relaxed">
@@ -213,8 +213,8 @@ export function DiscussionCreateModal({
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-              <Button asChild variant="primary">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-3 pt-2">
+              <Button asChild variant="primary" size="sm">
                 <Link href="/login?redirect=/discuss">
                   <LogIn className="w-4 h-4 mr-2" />
                   Đăng Nhập Ngay
@@ -223,17 +223,18 @@ export function DiscussionCreateModal({
 
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => {
                   quickLogin("user");
                 }}
               >
-                ⚡ Đăng nhập Nhanh (Guest Demo)
+                ⚡ Đăng nhập Nhanh (Demo)
               </Button>
             </div>
           </div>
         ) : (
           /* Form tạo chủ đề tinh gọn */
-          <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[calc(85vh-8rem)] overflow-y-auto">
+          <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-3.5 sm:space-y-4 max-h-[calc(90vh-7rem)] sm:max-h-[calc(85vh-8rem)] overflow-y-auto">
             {errorMsg && (
               <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
@@ -242,7 +243,7 @@ export function DiscussionCreateModal({
             )}
 
             {/* Author bar & Phân loại Thẻ Tiền Tố */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 rounded-xl bg-bg-elevated/40 border border-border/60">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 p-3 rounded-xl bg-bg-elevated/40 border border-border/60">
               <div className="flex items-center gap-2.5">
                 <UserAvatar
                   avatar={user.avatar || user.googleAvatar}
@@ -252,7 +253,9 @@ export function DiscussionCreateModal({
                   size={32}
                 />
                 <div>
-                  <span className="font-bold text-text-primary text-xs block">{user.name}</span>
+                  <span className="font-bold text-text-primary text-xs block truncate max-w-[160px] sm:max-w-none">
+                    {user.name}
+                  </span>
                   <span className="text-[10px] text-accent font-medium">
                     {user.role === "superadmin"
                       ? "Quản trị viên"
@@ -267,17 +270,31 @@ export function DiscussionCreateModal({
 
               {/* Thẻ tiền tố / Flair */}
               <div className="flex items-center gap-2 w-full sm:w-auto">
-                <span className="text-xs font-semibold text-text-muted whitespace-nowrap">Thẻ phân loại:</span>
+                <span className="text-xs font-semibold text-text-muted whitespace-nowrap flex-shrink-0">
+                  Thẻ phân loại:
+                </span>
                 <select
                   value={flair}
                   onChange={(e) => setFlair(e.target.value as FlairType)}
-                  className="px-2.5 py-1.5 rounded-lg bg-bg-elevated border border-border text-xs text-text-primary focus:outline-none focus:border-accent font-medium"
+                  className="flex-1 sm:flex-none w-full sm:w-auto px-2.5 py-1.5 rounded-lg bg-bg-elevated border border-border text-xs text-text-primary focus:outline-none focus:border-accent font-medium cursor-pointer"
                 >
-                  {Object.values(DISCUSSION_FLAIRS).map((f) => (
-                    <option key={f.id} value={f.id}>
-                      {f.prefix} - {f.label}
-                    </option>
-                  ))}
+                  {Object.values(DISCUSSION_FLAIRS).map((f) => {
+                    // Tránh lặp chữ ngô nghê kiểu "[Hỏi đáp] - Hỏi đáp"
+                    let displayLabel = f.label;
+                    if (f.id === "hoi-dap") displayLabel = "[Hỏi đáp]";
+                    else if (f.id === "chia-se") displayLabel = "[Chia sẻ]";
+                    else if (f.id === "thao-luan") displayLabel = "[Thảo luận]";
+                    else if (f.id === "do-an") displayLabel = "[Project] Đồ án / Dự án";
+                    else if (f.id === "debug") displayLabel = "[Debug] Báo lỗi & Gỡ lỗi";
+                    else if (f.id === "tuyen-dung") displayLabel = "[Tìm đồng đội] Hợp tác";
+                    else displayLabel = `${f.prefix} ${f.label}`;
+
+                    return (
+                      <option key={f.id} value={f.id}>
+                        {displayLabel}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
             </div>
@@ -292,7 +309,7 @@ export function DiscussionCreateModal({
                 placeholder="Ví dụ: Làm thế nào để cấu hình DMA ADC đa kênh trên STM32F401?"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl bg-bg-elevated border border-border text-sm text-text-primary focus:outline-none focus:border-accent font-medium placeholder:text-text-muted"
+                className="w-full px-3 py-2 sm:py-2.5 rounded-xl bg-bg-elevated border border-border text-xs sm:text-sm text-text-primary focus:outline-none focus:border-accent font-medium placeholder:text-text-muted"
                 required
               />
             </div>
@@ -307,20 +324,20 @@ export function DiscussionCreateModal({
                 placeholder="Mô tả chi tiết câu hỏi, hiện tượng mạch đo, đoạn mã cần hỗ trợ gỡ lỗi hoặc ý tưởng đồ án của bạn..."
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl bg-bg-elevated border border-border text-xs leading-relaxed text-text-primary focus:outline-none focus:border-accent placeholder:text-text-muted resize-y"
+                className="w-full px-3 py-2 sm:py-2.5 rounded-xl bg-bg-elevated border border-border text-xs leading-relaxed text-text-primary focus:outline-none focus:border-accent placeholder:text-text-muted resize-y"
                 required
               />
             </div>
 
             {/* KHU VỰC TẢI FILE LÊN (File Uploader) */}
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-text-secondary flex items-center gap-1.5">
-                  <Paperclip className="w-3.5 h-3.5 text-accent" />
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                <label className="text-xs font-bold text-text-secondary flex items-center gap-1.5 flex-shrink-0">
+                  <Paperclip className="w-3.5 h-3.5 text-accent flex-shrink-0" />
                   <span>File & Hình Ảnh Đính Kèm ({attachedFiles.length}):</span>
                 </label>
-                <span className="text-[11px] text-text-muted">
-                  Hỗ trợ: Ảnh (.png, .jpg), Code (.c, .h, .py), PDF, ZIP (Tối đa 15MB/file)
+                <span className="text-[10px] sm:text-[11px] text-text-muted leading-tight">
+                  Hỗ trợ: Ảnh (.png, .jpg), Code, PDF, ZIP (Tối đa 15MB/file)
                 </span>
               </div>
 
@@ -337,15 +354,15 @@ export function DiscussionCreateModal({
               {/* Dropzone / Upload Trigger Button */}
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-border hover:border-accent/60 bg-bg-elevated/30 hover:bg-bg-elevated/70 rounded-2xl p-4 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1.5 group"
+                className="border-2 border-dashed border-border hover:border-accent/60 bg-bg-elevated/30 hover:bg-bg-elevated/70 rounded-2xl p-3.5 sm:p-4 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1.5 group"
               >
-                <div className="p-2.5 rounded-xl bg-accent/10 text-accent group-hover:scale-110 transition-transform">
-                  <UploadCloud className="w-5 h-5" />
+                <div className="p-2 sm:p-2.5 rounded-xl bg-accent/10 text-accent group-hover:scale-110 transition-transform">
+                  <UploadCloud className="w-4 h-4 sm:w-5 h-5" />
                 </div>
                 <span className="text-xs font-bold text-text-primary group-hover:text-accent transition-colors">
                   Nhấp để tải file lên từ máy tính
                 </span>
-                <span className="text-[11px] text-text-muted">
+                <span className="text-[10px] sm:text-[11px] text-text-muted text-center px-2 line-clamp-2">
                   Đính kèm sơ đồ nguyên lý mạch, ảnh dạng sóng đo kiểm hoặc file mã nguồn nén
                 </span>
               </div>
@@ -426,16 +443,16 @@ export function DiscussionCreateModal({
             </div>
 
             {/* Footer Buttons */}
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-border/80">
-              <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border/80">
+              <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={isSubmitting} className="text-xs px-3.5">
                 Hủy
               </Button>
-              <Button type="submit" variant="primary" disabled={isSubmitting}>
+              <Button type="submit" variant="primary" size="sm" disabled={isSubmitting} className="text-xs">
                 {isSubmitting ? (
-                  <span>Đang tải lên và đăng bài...</span>
+                  <span>Đang đăng bài...</span>
                 ) : (
                   <>
-                    <Send className="w-4 h-4 mr-1.5" />
+                    <Send className="w-3.5 h-3.5 mr-1.5" />
                     Đăng Chủ Đề Ngay
                   </>
                 )}

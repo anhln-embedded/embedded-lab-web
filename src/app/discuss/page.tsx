@@ -140,40 +140,39 @@ function DiscussContent() {
   return (
     <div className="container py-8 md:py-12 space-y-8">
       {/* 1. Header Banner Diễn Đàn Kỹ Thuật (VOZ + Reddit Style) */}
-      <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-bg-panel via-bg-panel to-accent/10 border border-border/80 p-6 md:p-10 shadow-lg">
+      <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-r from-bg-panel via-bg-panel to-accent/10 border border-border/80 p-4 sm:p-6 md:p-10 shadow-lg">
         <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 bg-accent/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-3 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/15 border border-accent/30 text-accent text-xs font-bold uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Diễn Đàn Công Nghệ Mở • Chuyện Nghề & Kỹ Thuật</span>
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5 md:gap-6">
+          <div className="space-y-2.5 sm:space-y-3 max-w-2xl">
+            <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full bg-accent/15 border border-accent/30 text-accent text-[11px] sm:text-xs font-bold uppercase tracking-wider">
+              <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
+              <span className="truncate">Diễn Đàn Công Nghệ Mở • Chuyện Nghề & Kỹ Thuật</span>
             </div>
 
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-text-primary tracking-tight leading-tight">
+            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-text-primary tracking-tight leading-tight">
               Thảo Luận Kỹ Thuật &{" "}
               <span className="bg-gradient-to-r from-accent to-amber-500 bg-clip-text text-transparent">
                 Góc Khuất Nghề Nghiệp
               </span>
             </h1>
 
-
             {/* Quick Stats Counter */}
-            <div className="flex flex-wrap items-center gap-4 md:gap-6 pt-2 text-xs font-medium text-text-muted">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4 md:gap-6 pt-1 sm:pt-2 text-xs font-medium text-text-muted">
               <div className="flex items-center gap-1.5">
-                <Layers className="w-4 h-4 text-accent" />
+                <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent" />
                 <span>
                   <strong className="text-text-primary font-bold">{threads.length}</strong> Chủ đề
                 </span>
               </div>
               <div className="flex items-center gap-1.5">
-                <MessageSquare className="w-4 h-4 text-cyan-400" />
+                <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400" />
                 <span>
                   <strong className="text-text-primary font-bold">{totalReplies}</strong> Bình luận
                 </span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Flame className="w-4 h-4 text-rose-400" />
+                <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-400" />
                 <span>
                   <strong className="text-text-primary font-bold">{totalVotes}</strong> Điểm Upvote
                 </span>
@@ -182,7 +181,7 @@ function DiscussContent() {
           </div>
 
           {/* Action: Create Thread Button */}
-          <div className="flex flex-col sm:flex-row md:flex-col gap-3 flex-shrink-0">
+          <div className="flex flex-col sm:flex-row md:flex-col gap-2.5 sm:gap-3 flex-shrink-0">
             <Button
               variant="primary"
               size="lg"
@@ -193,7 +192,7 @@ function DiscussContent() {
                   setIsCreateModalOpen(true);
                 }
               }}
-              className="shadow-xl shadow-accent/25"
+              className="shadow-xl shadow-accent/25 w-full sm:w-auto"
             >
               <PlusCircle className="w-5 h-5 mr-2" />
               Tạo Chủ Đề Mới
@@ -261,50 +260,50 @@ function DiscussContent() {
           {/* Controls Bar: Sort Tabs (Reddit) + Live Search Input */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-bg-panel border border-border/80 rounded-2xl p-3 shadow-sm">
             {/* Sort Tabs */}
-            <div className="flex items-center gap-1.5 bg-bg-elevated/60 p-1 rounded-xl border border-border/60">
+            <div className="flex items-center gap-1.5 bg-bg-elevated/60 p-1 rounded-xl border border-border/60 overflow-x-auto no-scrollbar max-w-full">
               <button
                 onClick={() => setSortTab("hot")}
                 className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
+                  "flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex-shrink-0",
                   sortTab === "hot"
                     ? "bg-accent text-white shadow-sm"
                     : "text-text-muted hover:text-text-primary"
                 )}
               >
                 <Flame className="w-3.5 h-3.5" />
-                <span>Đang sốt (Hot)</span>
+                <span><span className="sm:hidden">Hot</span><span className="hidden sm:inline">Đang sốt (Hot)</span></span>
               </button>
 
               <button
                 onClick={() => setSortTab("new")}
                 className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
+                  "flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex-shrink-0",
                   sortTab === "new"
                     ? "bg-accent text-white shadow-sm"
                     : "text-text-muted hover:text-text-primary"
                 )}
               >
                 <Clock className="w-3.5 h-3.5" />
-                <span>Mới nhất (New)</span>
+                <span><span className="sm:hidden">Mới</span><span className="hidden sm:inline">Mới nhất (New)</span></span>
               </button>
 
               <button
                 onClick={() => setSortTab("top")}
                 className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
+                  "flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex-shrink-0",
                   sortTab === "top"
                     ? "bg-accent text-white shadow-sm"
                     : "text-text-muted hover:text-text-primary"
                 )}
               >
                 <Trophy className="w-3.5 h-3.5" />
-                <span>Nhiều Vote (Top)</span>
+                <span><span className="sm:hidden">Top</span><span className="hidden sm:inline">Nhiều Vote (Top)</span></span>
               </button>
 
               <button
                 onClick={() => setSortTab("pinned")}
                 className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
+                  "flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex-shrink-0",
                   sortTab === "pinned"
                     ? "bg-accent text-white shadow-sm"
                     : "text-text-muted hover:text-text-primary"
@@ -316,7 +315,7 @@ function DiscussContent() {
             </div>
 
             {/* Live Search Box */}
-            <div className="relative flex-1 max-w-xs">
+            <div className="relative flex-1 w-full sm:max-w-xs">
               <Search className="w-4 h-4 absolute left-3 top-2.5 text-text-muted" />
               <input
                 type="text"
