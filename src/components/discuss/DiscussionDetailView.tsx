@@ -15,6 +15,7 @@ import {
 } from "@/lib/discussion-store";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/Button";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 import {
   ChevronLeft,
   ChevronUp,
@@ -227,9 +228,14 @@ export function DiscussionDetailView({
 
           {/* Author Badge & Member Rank (VOZ Style) */}
           <div className="flex items-center gap-3 pt-2 pb-4 border-b border-border/60">
-            <div className="w-12 h-12 rounded-2xl bg-bg-elevated border-2 border-accent/40 flex items-center justify-center text-2xl shadow-sm">
-              {thread.authorAvatar || "👤"}
-            </div>
+            <UserAvatar
+              avatar={thread.authorAvatar}
+              name={thread.author}
+              role={thread.authorRole}
+              className="w-12 h-12 rounded-2xl border-2 border-accent/40 shadow-sm flex-shrink-0"
+              textClassName="text-2xl"
+              size={48}
+            />
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-bold text-sm text-text-primary">{thread.author}</span>
@@ -495,9 +501,13 @@ export function DiscussionDetailView({
             {/* Comment Author Header */}
             <div className="flex items-center justify-between text-xs">
               <div className="flex items-center gap-2.5">
-                <span className="w-8 h-8 rounded-full bg-bg-elevated border border-border flex items-center justify-center text-sm">
-                  {cmt.authorAvatar || "👤"}
-                </span>
+                <UserAvatar
+                  avatar={cmt.authorAvatar}
+                  name={cmt.author}
+                  role={cmt.authorRole}
+                  className="w-8 h-8 rounded-full border border-border flex-shrink-0"
+                  size={32}
+                />
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-text-primary">{cmt.author}</span>
@@ -646,9 +656,13 @@ export function DiscussionDetailView({
             )}
 
             <div className="flex items-start gap-3">
-              <span className="w-8 h-8 rounded-full bg-accent/20 border border-accent/40 flex items-center justify-center text-sm flex-shrink-0 mt-1">
-                {user.avatar || user.googleAvatar || "👨‍💻"}
-              </span>
+              <UserAvatar
+                avatar={user.avatar || user.googleAvatar}
+                name={user.name}
+                role={user.role}
+                className="w-8 h-8 rounded-full border border-accent/40 flex-shrink-0 mt-1"
+                size={32}
+              />
               <div className="flex-1 min-w-0 space-y-2">
                 <textarea
                   rows={4}

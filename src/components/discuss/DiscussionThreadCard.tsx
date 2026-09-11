@@ -26,6 +26,7 @@ import {
   Paperclip,
   Trash2,
 } from "lucide-react";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 
 interface DiscussionThreadCardProps {
   thread: DiscussionThread;
@@ -174,9 +175,14 @@ export function DiscussionThreadCard({
 
           {/* Author Info */}
           <div className="flex items-center gap-1.5 text-text-muted ml-auto">
-            <span className="w-5 h-5 rounded-full bg-bg-elevated border border-border/60 flex items-center justify-center text-xs">
-              {thread.authorAvatar || "👤"}
-            </span>
+            <UserAvatar
+              avatar={thread.authorAvatar}
+              name={thread.author}
+              role={thread.authorRole}
+              className="w-5 h-5 rounded-full border border-border/60 flex-shrink-0"
+              textClassName="text-[10px]"
+              size={20}
+            />
             <span className="font-semibold text-text-primary text-[11px] hover:underline">
               {thread.author}
             </span>

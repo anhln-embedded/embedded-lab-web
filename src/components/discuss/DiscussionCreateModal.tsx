@@ -10,6 +10,7 @@ import {
   AttachedFile,
 } from "@/lib/discussion-store";
 import { Button } from "@/components/ui/Button";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 import {
   X,
   PlusCircle,
@@ -243,9 +244,13 @@ export function DiscussionCreateModal({
             {/* Author bar & Phân loại Thẻ Tiền Tố */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 rounded-xl bg-bg-elevated/40 border border-border/60">
               <div className="flex items-center gap-2.5">
-                <span className="w-8 h-8 rounded-full bg-accent/20 border border-accent/40 flex items-center justify-center text-sm">
-                  {user.avatar || user.googleAvatar || "👨‍💻"}
-                </span>
+                <UserAvatar
+                  avatar={user.avatar || user.googleAvatar}
+                  name={user.name}
+                  role={user.role}
+                  className="w-8 h-8 rounded-full border border-accent/40 flex-shrink-0"
+                  size={32}
+                />
                 <div>
                   <span className="font-bold text-text-primary text-xs block">{user.name}</span>
                   <span className="text-[10px] text-accent font-medium">
