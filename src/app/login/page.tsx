@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { UserAvatar } from "@/components/ui/UserAvatar";
+import { UserProfileView } from "@/components/profile/UserProfileView";
 
 const isProduction =
   process.env.NEXT_PUBLIC_APP_ENV === "production" ||
@@ -177,111 +178,9 @@ function LoginFormContent() {
 
   return (
     <div className="w-full flex items-center justify-center py-6 sm:py-12 px-4">
-      {/* If already logged in */}
+      {/* If already logged in: render all-in-one profile & account center */}
       {user ? (
-        <div className="w-full max-w-md space-y-6 rounded-3xl border border-border bg-bg-panel p-6 sm:p-8 shadow-2xl text-center backdrop-blur-xl">
-          <UserAvatar
-            avatar={user.avatar}
-            name={user.name}
-            role={user.role}
-            className="w-20 h-20 mx-auto rounded-3xl bg-bg-elevated border border-border shadow-inner"
-            textClassName="text-4xl"
-            size={80}
-          />
-
-          <div>
-            <div
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-2"
-              style={{
-                backgroundColor:
-                  user.role === "superadmin"
-                    ? "rgba(168, 85, 247, 0.15)"
-                    : user.role === "admin"
-                    ? "rgba(240, 90, 40, 0.15)"
-                    : "rgba(16, 185, 129, 0.15)",
-                color:
-                  user.role === "superadmin"
-                    ? "#a855f7"
-                    : user.role === "admin"
-                    ? "#f05a28"
-                    : "#10b981",
-                borderColor:
-                  user.role === "superadmin"
-                    ? "rgba(168, 85, 247, 0.3)"
-                    : user.role === "admin"
-                    ? "rgba(240, 90, 40, 0.3)"
-                    : "rgba(16, 185, 129, 0.3)",
-                borderWidth: 1,
-              }}
-            >
-              {user.role === "superadmin" && <ShieldCheck className="w-3.5 h-3.5" />}
-              {user.role === "admin" && <Edit3 className="w-3.5 h-3.5" />}
-              {user.role === "user" && <GraduationCap className="w-3.5 h-3.5" />}
-              {user.role === "superadmin"
-                ? "Super Admin"
-                : user.role === "admin"
-                ? "Admin (Tác giả)"
-                : "Sinh viên / User"}
-            </div>
-
-            <h2 className="text-xl font-bold text-text-primary">{user.name}</h2>
-            <p className="text-text-muted text-xs mt-0.5">{user.email}</p>
-          </div>
-
-          <p className="text-text-secondary text-xs bg-bg-elevated/70 p-3 rounded-2xl border border-border/60 leading-relaxed text-left">
-            {user.bio}
-          </p>
-
-          <div className="space-y-2.5 pt-2">
-            {(user.role === "superadmin" || user.role === "admin") && (
-              <Button variant="primary" asChild className="w-full bg-accent hover:bg-accent-hover text-white font-bold py-2.5 rounded-xl shadow">
-                <Link href="/admin">
-                  <span>Vào Bảng Quản Trị Admin</span>
-                  <ArrowRight className="w-4 h-4 ml-1.5" />
-                </Link>
-              </Button>
-            )}
-            <Button variant="outline" asChild className="w-full py-2.5 rounded-xl text-xs font-semibold">
-              <Link href="/roadmap">Xem Lộ Trình Học Tập (Roadmap)</Link>
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={handleLogout}
-              className="w-full py-2.5 text-xs text-red-500 hover:text-red-600 hover:bg-red-500/10 rounded-xl cursor-pointer"
-            >
-              Đăng xuất khỏi thiết bị
-            </Button>
-          </div>
-
-          {/* Quick role switcher (DEV ONLY) */}
-          {!isProduction && (
-            <div className="pt-4 border-t border-border/80 text-left space-y-2">
-              <p className="text-[11px] font-bold text-amber-500 uppercase tracking-wider flex items-center gap-1">
-                <Zap className="w-3 h-3" /> [DEV MODE] Chuyển đổi quyền nhanh:
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
-                <button
-                  onClick={() => quickDevLogin("superadmin", getSuperAdminEmails()[0] || "anhln.embedded@gmail.com")}
-                  className="p-2 rounded-lg text-[11px] font-bold border border-purple-500/30 bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 transition-colors text-center"
-                >
-                  Super Admin
-                </button>
-                <button
-                  onClick={() => quickDevLogin("admin", "mentor.lab@ptit.edu.vn")}
-                  className="p-2 rounded-lg text-[11px] font-bold border border-accent/30 bg-accent/10 text-accent hover:bg-accent/20 transition-colors text-center"
-                >
-                  Admin
-                </button>
-                <button
-                  onClick={() => quickDevLogin("user", "sinhvien@ptit.edu.vn")}
-                  className="p-2 rounded-lg text-[11px] font-bold border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors text-center"
-                >
-                  Sinh viên
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+        <UserProfileView />
       ) : (
         /* =========================================================================
            CARD ĐĂNG NHẬP / ĐĂNG KÝ VỚI GOOGLE & EMAIL

@@ -36,14 +36,12 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { CategoryManagerModal, TutorialCategoryItem } from "@/components/tutorials/CategoryManagerModal";
-import { EditProfileModal } from "@/components/ui/EditProfileModal";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
   const { user, allUsers, quickLogin } = useAuth();
 
   const [activeTab, setActiveTab] = useState<"overview" | "posts" | "courses" | "tutorials" | "roadmap">("overview");
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [posts, setPosts] = useState<BlogPostData[]>([]);
   const [courses, setCourses] = useState<CourseData[]>([]);
   const [tutorials, setTutorials] = useState<TutorialTopic[]>([]);
@@ -300,15 +298,14 @@ export default function AdminDashboardPage() {
               {user.role === "superadmin" ? "Super Admin" : "Admin"}
             </span>
             <span className="text-xs text-text-muted">| {user.name}</span>
-            <button
-              type="button"
-              onClick={() => setIsProfileModalOpen(true)}
+            <Link
+              href="/profile"
               className="inline-flex items-center gap-1 text-[11px] font-semibold text-accent hover:underline bg-accent/10 px-2.5 py-0.5 rounded-lg border border-accent/20 cursor-pointer ml-1 transition-colors"
-              title="Đổi tên hiển thị / tên tác giả khi đăng bài"
+              title="Hồ sơ tài khoản, đổi ảnh đại diện & tên tác giả"
             >
               <Edit3 className="w-3 h-3" />
-              <span>Sửa Tên Tác Giả</span>
-            </button>
+              <span>Hồ Sơ & Avatar</span>
+            </Link>
           </div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-text-primary">
             Trung Tâm Quản Trị Nội Dung Lab
@@ -1216,12 +1213,6 @@ export default function AdminDashboardPage() {
           <button onClick={() => setToastMessage(null)} className="ml-2 text-text-muted hover:text-text-primary p-1">✕</button>
         </div>
       )}
-
-      {/* Modal chỉnh sửa hồ sơ & tên tác giả */}
-      <EditProfileModal
-        isOpen={isProfileModalOpen}
-        onClose={() => setIsProfileModalOpen(false)}
-      />
     </div>
   );
 }
