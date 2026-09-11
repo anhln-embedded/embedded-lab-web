@@ -64,16 +64,16 @@ export function isSuperAdminEmail(email?: string | null): boolean {
 const DEFAULT_USERS: User[] = [
   {
     id: "usr_superadmin",
-    name: "Super Admin (PTIT Lab)",
+    name: "Lưu Ngọc Anh",
     email: "anhln.embedded@gmail.com",
     role: "superadmin",
     avatar: "🛡️",
-    bio: "Quản trị viên tối cao hệ thống Embedded AIoT Laboratory PTIT",
+    bio: "Mentor Lab Embedded-AIoT PTIT",
     createdAt: "2026-01-01",
   },
   {
     id: "usr_labmember",
-    name: "Kỹ sư Lab (Nghiên Cứu)",
+    name: "Kỹ sư Nghiên Cứu Lab",
     email: "member@ptit-lab.edu.vn",
     role: "lab_member",
     avatar: "🔬",
@@ -139,13 +139,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
       .catch((err) => console.warn("Failed to fetch auth config:", err));
 
-    // B. Fetch real users from SQLite Database API
+    // B. Fetch real users from SQLite Database API & sync active user state
     fetch("/api/users")
       .then((res) => (res.ok ? res.json() : null))
       .then((json) => {
         if (json?.success && Array.isArray(json.data) && json.data.length > 0) {
           setAllUsers(json.data);
           safeStorage.setItem(USERS_LIST_KEY, JSON.stringify(json.data));
+
+          setUser((prevUser) => {
+            if (!prevUser) return null;
+            const dbMatch = json.data.find(
+              (u: any) => normalizeEmail(u.email) === normalizeEmail(prevUser.email)
+            );
+            if (dbMatch) {
+              const merged: User = {
+                ...prevUser,
+                name: dbMatch.name || prevUser.name,
+                avatar: dbMatch.avatar || prevUser.avatar,
+                bio: dbMatch.title || dbMatch.bio || prevUser.bio,
+                role: (prevUser.role === "superadmin" || dbMatch.role === "superadmin") ? "superadmin" : (dbMatch.role || prevUser.role),
+              };
+              safeStorage.setItem(CURRENT_USER_KEY, JSON.stringify(merged));
+              return merged;
+            }
+            return prevUser;
+          });
         }
       })
       .catch((err) => console.warn("Failed to fetch users from server DB:", err));

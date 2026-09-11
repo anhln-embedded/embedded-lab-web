@@ -313,10 +313,10 @@ async function main() {
     await prisma.user.create({
       data: {
         email: primaryAdminEmail,
-        name: "Super Admin (Embedded AIoT Lab)",
+        name: "Lưu Ngọc Anh",
         role: "superadmin",
         avatar: "🛡️",
-        title: "Quản trị viên tối cao hệ thống Embedded AIoT Laboratory PTIT",
+        title: "Mentor Lab Embedded-AIoT PTIT",
       },
     });
     console.log(`✅ Đã tạo tài khoản quản trị Lab: ${primaryAdminEmail}`);

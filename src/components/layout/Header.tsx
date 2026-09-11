@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { SearchModal } from "@/components/ui/SearchModal";
 import { UserAvatar } from "@/components/ui/UserAvatar";
+import { EditProfileModal } from "@/components/ui/EditProfileModal";
 
 export function Header() {
   const pathname = usePathname();
@@ -37,6 +38,7 @@ export function Header() {
   const [mobileStudyOpen, setMobileStudyOpen] = React.useState(true);
   const [desktopStudyOpen, setDesktopStudyOpen] = React.useState(false);
   const [userMenuOpen, setUserMenuOpen] = React.useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = React.useState(false);
   const [darkMode, setDarkMode] = React.useState(false);
   const [mounted, setMounted] = React.useState(false);
 
@@ -386,6 +388,18 @@ export function Header() {
                         <span>Lộ Trình Của Tôi</span>
                       </Link>
 
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          setIsProfileModalOpen(true);
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-text-secondary hover:text-accent hover:bg-bg-elevated transition-colors text-left cursor-pointer"
+                      >
+                        <UserCheck className="w-4 h-4 text-accent" />
+                        <span>Hồ Sơ & Tên Tác Giả</span>
+                      </button>
+
                       <Link
                         href="/login"
                         onClick={() => setUserMenuOpen(false)}
@@ -523,6 +537,18 @@ export function Header() {
                     <span>Lộ Trình Của Tôi</span>
                   </Link>
 
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      setIsProfileModalOpen(true);
+                    }}
+                    className="flex items-center gap-2 p-2 rounded-xl text-text-secondary hover:text-accent hover:bg-bg-panel transition-colors text-left cursor-pointer w-full font-semibold"
+                  >
+                    <UserCheck className="w-4 h-4 text-accent" />
+                    <span>Hồ Sơ & Tên Tác Giả</span>
+                  </button>
+
                   <Link
                     href="/login"
                     onClick={() => setMobileMenuOpen(false)}
@@ -658,6 +684,12 @@ export function Header() {
           </div>
         )}
       </div>
+
+      {/* Modal chỉnh sửa hồ sơ & tên tác giả */}
+      <EditProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+      />
     </header>
   );
 }

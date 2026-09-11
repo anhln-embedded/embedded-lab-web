@@ -95,10 +95,15 @@ export async function GET(request: Request) {
             : "Thành viên Embedded-AIoT Lab PTIT",
         },
       });
-    } else if (isSuperAdmin && dbUser.role !== "superadmin") {
+    } else {
+      // Cập nhật tên thật và avatar từ tài khoản Google nếu có thay đổi
       dbUser = await prisma.user.update({
         where: { id: dbUser.id },
-        data: { role: "superadmin" },
+        data: {
+          ...(googleUser.name && { name: googleUser.name }),
+          ...(googleUser.picture && { avatar: googleUser.picture }),
+          ...(isSuperAdmin && dbUser.role !== "superadmin" && { role: "superadmin" }),
+        },
       });
     }
 

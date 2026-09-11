@@ -59,8 +59,21 @@ export default function NewTutorialTopicPage() {
   const [badge, setBadge] = useState("Hot Series");
   const [level, setLevel] = useState("Intermediate");
   const [description, setDescription] = useState("");
-  const [author, setAuthor] = useState("Kỹ sư Lab PTIT");
-  const [authorTitle, setAuthorTitle] = useState("Mentor Lab");
+  const [author, setAuthor] = useState(user?.name || "Kỹ sư Lab PTIT");
+  const [authorTitle, setAuthorTitle] = useState(user?.role === "superadmin" ? "Super Admin Lab" : "Mentor Lab");
+
+  useEffect(() => {
+    if (user?.name) {
+      setAuthor(user.name);
+    } else if (user?.email) {
+      setAuthor(user.email.split("@")[0]);
+    }
+    if (user?.role === "superadmin") {
+      setAuthorTitle("Super Admin Lab");
+    } else if (user?.bio) {
+      setAuthorTitle(user.bio);
+    }
+  }, [user]);
 
   const [firstPostTitle, setFirstPostTitle] = useState("Bài 1: Giới thiệu & Khởi tạo môi trường");
   const [firstPostReadTime, setFirstPostReadTime] = useState("10 phút");
@@ -260,6 +273,44 @@ void app_main(void) {
                 <option value="Intermediate">Intermediate (Trung cấp)</option>
                 <option value="Advanced">Advanced (Chuyên sâu)</option>
               </select>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-bold text-text-secondary">
+                  Tác giả chuyên đề *
+                </label>
+                {user?.name && author !== user.name && (
+                  <button
+                    type="button"
+                    onClick={() => setAuthor(user.name)}
+                    className="text-[10px] text-accent hover:underline font-bold"
+                  >
+                    Dùng tên tôi ({user.name})
+                  </button>
+                )}
+              </div>
+              <input
+                type="text"
+                value={author}
+                onChange={(e) => setAuthor(e.target.value)}
+                placeholder="Tên tác giả chuyên đề..."
+                required
+                className="w-full px-3.5 py-2.5 rounded-xl bg-bg-elevated border border-border text-xs text-text-primary focus:outline-none focus:border-accent font-semibold"
+              />
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-bold text-text-secondary mb-1.5">
+                Chức danh / Vai trò tác giả
+              </label>
+              <input
+                type="text"
+                value={authorTitle}
+                onChange={(e) => setAuthorTitle(e.target.value)}
+                placeholder="VD: Quản trị viên Lab / Giảng viên / Mentor..."
+                className="w-full px-3.5 py-2.5 rounded-xl bg-bg-elevated border border-border text-xs text-text-primary focus:outline-none focus:border-accent"
+              />
             </div>
 
             <div className="sm:col-span-3">

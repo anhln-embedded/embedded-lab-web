@@ -13,7 +13,8 @@ import {
   FileText,
   Bookmark,
   ExternalLink,
-  Upload
+  Upload,
+  User
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { LAB_PRESET_IMAGES } from "@/components/editor/EditorModals";
@@ -26,6 +27,8 @@ export interface PostSettingsData {
   coverImage: string;
   series: string;
   readingTime: number;
+  authorName?: string;
+  authorTitle?: string;
 }
 
 interface PostSettingsDrawerProps {
@@ -311,6 +314,36 @@ export function PostSettingsDrawer({
                 onChange={(e) => onChange({ readingTime: Number(e.target.value) || 5 })}
                 className="w-full px-2.5 py-1.5 bg-bg-elevated border border-border rounded-xl text-xs font-mono text-text-primary focus:outline-none focus:border-accent"
               />
+            </div>
+          </div>
+
+          {/* 6. TÁC GIẢ BẢN TIN */}
+          <div className="space-y-2 pt-2 border-t border-border">
+            <label className="font-bold text-text-primary flex items-center gap-1.5">
+              <User className="w-3.5 h-3.5 text-accent" />
+              <span>Tác giả & Chức danh hiển thị</span>
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div>
+                <span className="text-[10px] text-text-muted block mb-1">Tên tác giả</span>
+                <input
+                  type="text"
+                  value={data.authorName || ""}
+                  onChange={(e) => onChange({ authorName: e.target.value })}
+                  placeholder="Họ và tên tác giả..."
+                  className="w-full px-2.5 py-1.5 bg-bg-elevated border border-border rounded-xl text-xs text-text-primary focus:outline-none focus:border-accent font-semibold"
+                />
+              </div>
+              <div>
+                <span className="text-[10px] text-text-muted block mb-1">Chức danh / Vai trò</span>
+                <input
+                  type="text"
+                  value={data.authorTitle || ""}
+                  onChange={(e) => onChange({ authorTitle: e.target.value })}
+                  placeholder="VD: Super Admin Lab..."
+                  className="w-full px-2.5 py-1.5 bg-bg-elevated border border-border rounded-xl text-xs text-text-primary focus:outline-none focus:border-accent"
+                />
+              </div>
             </div>
           </div>
         </div>

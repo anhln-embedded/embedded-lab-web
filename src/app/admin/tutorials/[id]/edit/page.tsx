@@ -356,9 +356,26 @@ export default function EditTutorialTopicPage({ params }: PageProps) {
                 <h1 className="text-sm sm:text-base font-bold text-text-primary truncate max-w-[200px] sm:max-w-md">
                   {title || "Chỉnh Sửa Chuyên Đề"}
                 </h1>
-                <p className="text-[11px] text-text-muted hidden sm:block">
-                  {categoryName} • {posts.length} bài học • Cấp độ {level}
-                </p>
+                <div className="text-[11px] text-text-muted hidden sm:flex items-center gap-2 flex-wrap">
+                  <span>{categoryName} • {posts.length} bài học • Cấp độ {level}</span>
+                  <span>•</span>
+                  <span>Tác giả: <strong className="text-text-primary">{author}</strong></span>
+                  {user?.name && author !== user.name && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthor(user.name);
+                        if (user.bio) setAuthorTitle(user.bio);
+                        setToastMessage(`Đã chuyển tác giả sang "${user.name}". Vui lòng bấm "Lưu Toàn Bộ" để xác nhận.`);
+                        setTimeout(() => setToastMessage(null), 3500);
+                      }}
+                      className="text-[10px] text-accent hover:underline font-bold bg-accent/10 px-2 py-0.5 rounded-full border border-accent/25 transition-all hover:bg-accent/20"
+                      title={`Bấm để đổi tác giả chuyên đề từ "${author}" sang "${user.name}"`}
+                    >
+                      👤 Đổi sang tên tôi ({user.name})
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -815,32 +832,59 @@ export default function EditTutorialTopicPage({ params }: PageProps) {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-text-secondary mb-1">
-                    Tác giả / Giảng viên
-                  </label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="sm:col-span-2">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block font-bold text-text-secondary text-xs">
+                      Tác giả / Giảng viên *
+                    </label>
+                    {user?.name && author !== user.name && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAuthor(user.name);
+                          if (user.bio) setAuthorTitle(user.bio);
+                        }}
+                        className="text-[10px] text-accent hover:underline font-bold"
+                      >
+                        Dùng tên tôi ({user.name})
+                      </button>
+                    )}
+                  </div>
                   <input
                     type="text"
                     value={author}
                     onChange={(e) => setAuthor(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-bg-elevated border border-border text-text-primary"
+                    className="w-full px-3 py-2 rounded-xl bg-bg-elevated border border-border text-text-primary text-xs font-semibold"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-text-secondary mb-1">
-                    Cấp độ (Level)
+                  <label className="block font-bold text-text-secondary text-xs mb-1">
+                    Chức danh tác giả
                   </label>
-                  <select
-                    value={level}
-                    onChange={(e) => setLevel(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-bg-elevated border border-border text-text-primary"
-                  >
-                    <option value="Beginner">Beginner (Cơ bản)</option>
-                    <option value="Intermediate">Intermediate (Trung cấp)</option>
-                    <option value="Advanced">Advanced (Chuyên sâu)</option>
-                  </select>
+                  <input
+                    type="text"
+                    value={authorTitle}
+                    onChange={(e) => setAuthorTitle(e.target.value)}
+                    placeholder="VD: Giảng viên / Mentor..."
+                    className="w-full px-3 py-2 rounded-xl bg-bg-elevated border border-border text-text-primary text-xs"
+                  />
                 </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-text-secondary text-xs mb-1">
+                  Cấp độ chuyên môn (Level)
+                </label>
+                <select
+                  value={level}
+                  onChange={(e) => setLevel(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-bg-elevated border border-border text-text-primary text-xs"
+                >
+                  <option value="Beginner">Beginner (Cơ bản)</option>
+                  <option value="Intermediate">Intermediate (Trung cấp)</option>
+                  <option value="Advanced">Advanced (Chuyên sâu)</option>
+                </select>
               </div>
             </div>
 
