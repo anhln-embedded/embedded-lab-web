@@ -17,10 +17,13 @@ import {
   Mail,
   Calendar,
   Search,
-  X
+  X,
+  Zap
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { UserAvatar } from "@/components/ui/UserAvatar";
+import { SuperAdminPointModal } from "@/components/admin/SuperAdminPointModal";
+import { User } from "@/context/AuthContext";
 
 export default function AdminUsersPage() {
   const { user, allUsers, updateUserRole, deleteUser, register, quickLogin } = useAuth();
@@ -32,6 +35,8 @@ export default function AdminUsersPage() {
   const [message, setMessage] = useState("");
   const [actionStatus, setActionStatus] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showPointModal, setShowPointModal] = useState(false);
+  const [selectedPointUser, setSelectedPointUser] = useState<User | null>(null);
 
   const filteredUsers = allUsers.filter((u) => {
     const q = searchQuery.trim().toLowerCase();
@@ -122,14 +127,28 @@ export default function AdminUsersPage() {
           </div>
         </div>
 
-        <Button
-          variant="primary"
-          onClick={() => setShowAddModal(true)}
-          className="bg-purple-600 hover:bg-purple-700 text-white font-medium text-xs"
-        >
-          <UserPlus className="w-4 h-4 mr-1.5" />
-          Thêm Thành Viên Mới
-        </Button>
+        <div className="flex items-center gap-2.5">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setSelectedPointUser(null);
+              setShowPointModal(true);
+            }}
+            className="border-purple-500/40 text-purple-300 hover:bg-purple-500/10 font-bold text-xs shadow-xs cursor-pointer"
+          >
+            <Zap className="w-4 h-4 mr-1.5 text-purple-400 animate-pulse" />
+            Phù Phép Điểm (God Mode)
+          </Button>
+
+          <Button
+            variant="primary"
+            onClick={() => setShowAddModal(true)}
+            className="bg-purple-600 hover:bg-purple-700 text-white font-medium text-xs cursor-pointer"
+          >
+            <UserPlus className="w-4 h-4 mr-1.5" />
+            Thêm Thành Viên Mới
+          </Button>
+        </div>
       </div>
 
       {/* Users Table */}
@@ -177,15 +196,16 @@ export default function AdminUsersPage() {
               <tr>
                 <th className="py-3 px-4">Thành viên</th>
                 <th className="py-3 px-4">Email</th>
-                <th className="py-3 px-4">Vai trò hiện tại</th>
-                <th className="py-3 px-4">Thay đổi quyền (Role)</th>
-                <th className="py-3 px-4 text-right">Xóa</th>
+                <th className="py-3 px-4">Vai trò</th>
+                <th className="py-3 px-4">Điểm & Cấp độ</th>
+                <th className="py-3 px-4">Thay đổi quyền</th>
+                <th className="py-3 px-4 text-right">Hành động</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60">
               {filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-xs text-text-muted">
+                  <td colSpan={6} className="py-12 text-center text-xs text-text-muted">
                     {searchQuery ? (
                       <div className="space-y-1">
                         <p className="font-semibold text-text-secondary">Không tìm thấy người dùng phù hợp</p>
@@ -250,11 +270,33 @@ export default function AdminUsersPage() {
                           {u.role === "lab_member" ? "LAB MEMBER" : u.role.toUpperCase()}
                         </span>
                       </td>
+                      <td className="py-3.5 px-4 font-mono">
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className="px-2 py-0.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 font-bold text-[11px]"
+                            title="Điểm EXP"
+                          >
+                            ⚡ {u.exp || 0}
+                          </span>
+                          <span
+                            className="px-2 py-0.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-300 font-bold text-[11px]"
+                            title="Cấp độ Level"
+                          >
+                            Lv.{u.level || 1}
+                          </span>
+                          <span
+                            className="px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 font-bold text-[11px]"
+                            title="Điểm cống hiến CP"
+                          >
+                            ⭐ {u.contributionPoints || 0}
+                          </span>
+                        </div>
+                      </td>
                       <td className="py-3.5 px-4">
                         <select
                           value={u.role}
                           onChange={(e) => handleRoleChange(u.id, e.target.value as UserRole, u.name)}
-                          className="px-2.5 py-1 rounded-lg bg-bg-elevated border border-border text-xs text-text-primary focus:outline-none focus:border-accent"
+                          className="px-2.5 py-1 rounded-lg bg-bg-elevated border border-border text-xs text-text-primary focus:outline-none focus:border-accent cursor-pointer"
                         >
                           <option value="user">User (Sinh viên)</option>
                           <option value="lab_member">Lab Member (Thành viên Lab)</option>
@@ -263,15 +305,27 @@ export default function AdminUsersPage() {
                         </select>
                       </td>
                       <td className="py-3.5 px-4 text-right">
-                        {!isCurrent && (
+                        <div className="flex items-center justify-end gap-1.5">
                           <button
-                            onClick={() => handleDeleteUser(u.id, u.name)}
-                            className="p-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-colors"
-                            title="Xóa thành viên"
+                            onClick={() => {
+                              setSelectedPointUser(u);
+                              setShowPointModal(true);
+                            }}
+                            className="p-1.5 rounded-lg bg-purple-500/15 border border-purple-500/30 text-purple-300 hover:bg-purple-500/30 transition-all cursor-pointer"
+                            title="Cộng / trừ điểm cho thành viên này (God Mode)"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Zap className="w-3.5 h-3.5 text-purple-400" />
                           </button>
-                        )}
+                          {!isCurrent && (
+                            <button
+                              onClick={() => handleDeleteUser(u.id, u.name)}
+                              className="p-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-colors cursor-pointer"
+                              title="Xóa thành viên"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -354,6 +408,13 @@ export default function AdminUsersPage() {
           </div>
         </div>
       )}
+
+      {/* Super Admin Secret Point Adjustment Modal */}
+      <SuperAdminPointModal
+        isOpen={showPointModal}
+        onClose={() => setShowPointModal(false)}
+        targetUser={selectedPointUser}
+      />
     </div>
   );
 }

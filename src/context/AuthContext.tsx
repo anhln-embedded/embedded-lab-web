@@ -17,12 +17,24 @@ export interface User {
   contributionPoints?: number;
   readArticlesCount?: number;
   streakDays?: number;
+  isStreakActive?: boolean;
+  lastActiveDate?: string;
   badges?: string[];
   createdAt: string;
 }
 
 export interface RoadmapProgress {
   [trackId: string]: string[]; // list of completed step IDs
+}
+
+export interface AdjustPointsParams {
+  userId: string;
+  type: "exp" | "cp" | "both";
+  mode?: "delta" | "set";
+  amount?: number;
+  expAmount?: number;
+  cpAmount?: number;
+  reason?: string;
 }
 
 interface AuthContextType {
@@ -36,6 +48,7 @@ interface AuthContextType {
   logout: () => void;
   updateUserRole: (userId: string, newRole: UserRole) => void;
   deleteUser: (userId: string) => void;
+  adjustUserPoints: (params: AdjustPointsParams) => Promise<{ success: boolean; message?: string; data?: any }>;
   // Roadmap Progress
   completedSteps: RoadmapProgress;
   toggleRoadmapStep: (trackId: string, stepId: string) => void;
@@ -170,7 +183,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 level: dbMatch.level ?? prevUser.level ?? 1,
                 contributionPoints: dbMatch.contributionPoints ?? prevUser.contributionPoints ?? 0,
                 readArticlesCount: dbMatch.readArticlesCount ?? prevUser.readArticlesCount ?? 0,
-                streakDays: dbMatch.streakDays ?? prevUser.streakDays ?? 1,
+                streakDays: dbMatch.streakDays ?? prevUser.streakDays ?? 0,
+                isStreakActive: dbMatch.isStreakActive ?? prevUser.isStreakActive,
+                lastActiveDate: dbMatch.lastActiveDate ?? prevUser.lastActiveDate,
                 badges: dbMatch.badges || prevUser.badges || [],
               };
               safeStorage.setItem(CURRENT_USER_KEY, JSON.stringify(merged));
@@ -474,6 +489,71 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const adjustUserPoints = async (params: AdjustPointsParams) => {
+    if (!user || user.role !== "superadmin") {
+      return { success: false, message: "Chỉ Super Admin mới có quyền thực hiện thao tác này." };
+    }
+
+    try {
+      const res = await fetch("/api/admin/points", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-email": user.email,
+          "x-user-role": user.role,
+        },
+        body: JSON.stringify({
+          ...params,
+          adminEmail: user.email,
+        }),
+      });
+
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        return { success: false, message: json.error || "Không thể cập nhật điểm số." };
+      }
+
+      const { exp, level, contributionPoints } = json.data;
+
+      // Cập nhật allUsers trong state và storage
+      setAllUsers((prevUsers) => {
+        const updated = prevUsers.map((u) => {
+          if (u.id === params.userId) {
+            return {
+              ...u,
+              exp,
+              level,
+              contributionPoints,
+            };
+          }
+          return u;
+        });
+        safeStorage.setItem(USERS_LIST_KEY, JSON.stringify(updated));
+        return updated;
+      });
+
+      // Cập nhật user hiện tại nếu chỉnh chính mình
+      if (user.id === params.userId) {
+        setUser((prev) => {
+          if (!prev) return null;
+          const updated: User = {
+            ...prev,
+            exp,
+            level,
+            contributionPoints,
+          };
+          safeStorage.setItem(CURRENT_USER_KEY, JSON.stringify(updated));
+          return updated;
+        });
+      }
+
+      return { success: true, message: json.message, data: json.data };
+    } catch (error: any) {
+      console.error("Lỗi khi điều chỉnh điểm:", error);
+      return { success: false, message: error.message || "Lỗi kết nối máy chủ." };
+    }
+  };
+
   const toggleRoadmapStep = (trackId: string, stepId: string) => {
     if (!user) return;
 
@@ -511,6 +591,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         logout,
         updateUserRole,
         deleteUser,
+        adjustUserPoints,
         completedSteps,
         toggleRoadmapStep,
         isStepCompleted,

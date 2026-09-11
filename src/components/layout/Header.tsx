@@ -26,10 +26,12 @@ import {
   Sparkles,
   Compass,
   Route,
-  Trophy
+  Trophy,
+  Zap
 } from "lucide-react";
 import { SearchModal } from "@/components/ui/SearchModal";
 import { UserAvatar } from "@/components/ui/UserAvatar";
+import { SuperAdminPointModal } from "@/components/admin/SuperAdminPointModal";
 
 export function Header() {
   const pathname = usePathname();
@@ -40,6 +42,7 @@ export function Header() {
   const [userMenuOpen, setUserMenuOpen] = React.useState(false);
   const [darkMode, setDarkMode] = React.useState(false);
   const [mounted, setMounted] = React.useState(false);
+  const [secretPointModalOpen, setSecretPointModalOpen] = React.useState(false);
 
   const userMenuRef = React.useRef<HTMLDivElement>(null);
   const studyMenuRef = React.useRef<HTMLDivElement>(null);
@@ -74,6 +77,20 @@ export function Header() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Phím tắt ẩn dành riêng cho Super Admin: Ctrl + Shift + P để mở bảng phù phép điểm
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === "P" || e.key === "p")) {
+        if (user && user.role === "superadmin") {
+          e.preventDefault();
+          setSecretPointModalOpen((prev) => !prev);
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [user]);
 
   React.useEffect(() => {
     if (!mounted) return;
@@ -344,9 +361,6 @@ export function Header() {
                           ? "Lab Member"
                           : "Sinh viên"}
                       </span>
-                      <span className="px-1.5 py-0.5 rounded-md text-[9px] font-black bg-accent/20 text-accent font-mono leading-none border border-accent/30">
-                        Lv.{user.level || 1}
-                      </span>
                     </div>
                     <ChevronDown className="w-3.5 h-3.5 text-text-muted" />
                   </button>
@@ -376,14 +390,32 @@ export function Header() {
                       )}
 
                       {user.role === "superadmin" && (
-                        <Link
-                          href="/admin/users"
-                          onClick={() => setUserMenuOpen(false)}
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors"
-                        >
-                          <ShieldCheck className="w-4 h-4 text-purple-400" />
-                          <span>Quản Lý Thành Viên</span>
-                        </Link>
+                        <>
+                          <Link
+                            href="/admin/users"
+                            onClick={() => setUserMenuOpen(false)}
+                            className="flex items-center gap-2 px-3 py-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors"
+                          >
+                            <ShieldCheck className="w-4 h-4 text-purple-400" />
+                            <span>Quản Lý Thành Viên</span>
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setUserMenuOpen(false);
+                              setSecretPointModalOpen(true);
+                            }}
+                            className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 transition-colors text-left font-semibold cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Zap className="w-4 h-4 text-purple-400 animate-pulse" />
+                              <span>Phù Phép Điểm Số</span>
+                            </div>
+                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 uppercase font-black">
+                              Ẩn
+                            </span>
+                          </button>
+                        </>
                       )}
 
                       <Link
@@ -450,6 +482,10 @@ export function Header() {
           </div>
 
           <SearchModal />
+          <SuperAdminPointModal
+            isOpen={secretPointModalOpen}
+            onClose={() => setSecretPointModalOpen(false)}
+          />
         </div>
 
         {/* Mobile Navigation Drawer */}
@@ -522,14 +558,32 @@ export function Header() {
                   )}
 
                   {user.role === "superadmin" && (
-                    <Link
-                      href="/admin/users"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center gap-2 p-2 rounded-xl text-text-secondary hover:text-accent hover:bg-bg-panel transition-colors font-semibold"
-                    >
-                      <ShieldCheck className="w-4 h-4 text-purple-400" />
-                      <span>Quản Lý Thành Viên</span>
-                    </Link>
+                    <>
+                      <Link
+                        href="/admin/users"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-2 p-2 rounded-xl text-text-secondary hover:text-accent hover:bg-bg-panel transition-colors font-semibold"
+                      >
+                        <ShieldCheck className="w-4 h-4 text-purple-400" />
+                        <span>Quản Lý Thành Viên</span>
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          setSecretPointModalOpen(true);
+                        }}
+                        className="w-full flex items-center justify-between p-2 rounded-xl text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 transition-colors font-semibold text-left cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Zap className="w-4 h-4 text-purple-400 animate-pulse" />
+                          <span>Phù Phép Điểm Số (God Mode)</span>
+                        </div>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 uppercase font-black">
+                          Ẩn
+                        </span>
+                      </button>
+                    </>
                   )}
 
                   <Link

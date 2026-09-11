@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { normalizeEmail, parseEmailList } from "@/lib/utils";
+import { getEffectiveStreak } from "@/lib/gamification";
 
 export const dynamic = "force-dynamic";
 
@@ -52,7 +53,8 @@ export async function GET(request: Request) {
     const formatted = users.map((u) => {
       let role = u.role;
       if (role === "student") role = "user";
-      if (role === "mentor") role = "admin";
+      const streakInfo = getEffectiveStreak(Number((u as any).streakDays || 0), (u as any).lastActiveDate);
+
       return {
         id: u.id,
         name: u.name,
@@ -66,7 +68,9 @@ export async function GET(request: Request) {
         level: (u as any).level ?? 1,
         contributionPoints: (u as any).contributionPoints ?? 0,
         readArticlesCount: (u as any).readArticlesCount ?? 0,
-        streakDays: (u as any).streakDays ?? 1,
+        streakDays: streakInfo.effectiveStreak,
+        isStreakActive: streakInfo.isStreakActive,
+        lastActiveDate: (u as any).lastActiveDate || null,
         badges: (u as any).badges ? JSON.parse((u as any).badges) : [],
         createdAt: u.createdAt.toISOString().split("T")[0],
       };

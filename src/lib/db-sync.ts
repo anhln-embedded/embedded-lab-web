@@ -127,7 +127,7 @@ export async function ensureGamificationSchema() {
       } catch {}
     }
 
-    // 2. Tạo bảng UserReadingLog
+    // 2. Tạo bảng UserReadingLog & Cột tiêu đề bài viết
     try {
       await prisma.$executeRawUnsafe(`
         CREATE TABLE IF NOT EXISTS "UserReadingLog" (
@@ -135,15 +135,45 @@ export async function ensureGamificationSchema() {
           "userId" TEXT NOT NULL,
           "articleId" TEXT NOT NULL,
           "articleType" TEXT NOT NULL DEFAULT 'post',
+          "title" TEXT,
           "earnedExp" INTEGER NOT NULL DEFAULT 15,
           "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
         )
       `);
+      try {
+        await prisma.$executeRawUnsafe(`ALTER TABLE "UserReadingLog" ADD COLUMN "title" TEXT`);
+      } catch {}
       await prisma.$executeRawUnsafe(`
         CREATE UNIQUE INDEX IF NOT EXISTS "UserReadingLog_userId_articleId_key" ON "UserReadingLog"("userId", "articleId")
       `);
       await prisma.$executeRawUnsafe(`
         CREATE INDEX IF NOT EXISTS "UserReadingLog_userId_idx" ON "UserReadingLog"("userId")
+      `);
+    } catch {}
+
+    // 2.1 Tạo bảng PointAuditLog (Nhật ký kiểm tra & thay đổi điểm số)
+    try {
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "PointAuditLog" (
+          "id" TEXT NOT NULL PRIMARY KEY,
+          "userId" TEXT NOT NULL,
+          "adminEmail" TEXT,
+          "actionType" TEXT NOT NULL, -- 'admin_adjust', 'read_reward', 'sync_recalculated'
+          "pointType" TEXT NOT NULL,  -- 'exp', 'cp', 'both'
+          "amount" INTEGER NOT NULL,
+          "oldExp" INTEGER,
+          "newExp" INTEGER,
+          "oldCP" INTEGER,
+          "newCP" INTEGER,
+          "reason" TEXT,
+          "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      await prisma.$executeRawUnsafe(`
+        CREATE INDEX IF NOT EXISTS "PointAuditLog_userId_idx" ON "PointAuditLog"("userId")
+      `);
+      await prisma.$executeRawUnsafe(`
+        CREATE INDEX IF NOT EXISTS "PointAuditLog_createdAt_idx" ON "PointAuditLog"("createdAt")
       `);
     } catch {}
 

@@ -200,7 +200,7 @@ export default function RankingPage() {
                   <span>·</span>
                   <span className="text-orange-400 font-semibold flex items-center gap-0.5">
                     <Flame className="w-3.5 h-3.5" />
-                    Chuỗi {user.streakDays || 1} ngày
+                    Chuỗi {user.streakDays ?? 0} ngày
                   </span>
                   <span>·</span>
                   <span className="text-accent font-bold">

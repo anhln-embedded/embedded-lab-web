@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { ensureGamificationSchema } from "@/lib/db-sync";
-import { calculateLevel, LAB_BADGES } from "@/lib/gamification";
+import { calculateLevel, LAB_BADGES, getVietnamDateString, getVietnamYesterdayString } from "@/lib/gamification";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     await ensureGamificationSchema();
 
     const body = await request.json();
-    const { userId, userEmail, articleId, articleType = "post" } = body;
+    const { userId, userEmail, articleId, articleType = "post", title = "" } = body;
 
     if (!articleId) {
       return NextResponse.json({ success: false, error: "articleId is required" }, { status: 400 });
@@ -52,22 +52,21 @@ export async function POST(request: Request) {
       });
     }
 
-    // Calculate Streak
-    const now = new Date();
-    const todayStr = now.toISOString().split("T")[0];
-    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    const yesterdayStr = yesterday.toISOString().split("T")[0];
+    // Tính toán chuỗi ngày đọc bài (Streak) chuẩn theo múi giờ Việt Nam (UTC+7)
+    const todayStr = getVietnamDateString();
+    const yesterdayStr = getVietnamYesterdayString();
 
-    let currentStreak = Number((user as any).streakDays || 1);
+    let currentStreak = Number((user as any).streakDays || 0);
     const lastActive = (user as any).lastActiveDate;
 
     if (lastActive === todayStr) {
-      // Already read something today, keep streak
+      // Đã đọc bài hôm nay rồi, giữ nguyên streak (tối thiểu là 1)
+      currentStreak = Math.max(1, currentStreak);
     } else if (lastActive === yesterdayStr) {
-      // Read yesterday, increment streak!
-      currentStreak += 1;
+      // Hôm qua có đọc, hôm nay tiếp tục đọc -> Tăng chuỗi +1
+      currentStreak = Math.max(1, currentStreak + 1);
     } else {
-      // Missed at least one day, reset to 1
+      // Bỏ lỡ ít nhất 1 ngày -> Khởi tạo chuỗi mới từ 1
       currentStreak = 1;
     }
 
@@ -115,14 +114,15 @@ export async function POST(request: Request) {
 
     const updatedBadges = Array.from(new Set([...currentBadges, ...newlyUnlockedBadges]));
 
-    // Record log in SQLite via raw query
+    // Record log in SQLite via raw query with article title
     const logId = `read_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     await prisma.$executeRawUnsafe(
-      `INSERT INTO "UserReadingLog" ("id", "userId", "articleId", "articleType", "earnedExp") VALUES (?, ?, ?, ?, ?)`,
+      `INSERT INTO "UserReadingLog" ("id", "userId", "articleId", "articleType", "title", "earnedExp") VALUES (?, ?, ?, ?, ?, ?)`,
       logId,
       user.id,
       String(articleId),
       articleType,
+      title || null,
       totalEarnedExp
     );
 

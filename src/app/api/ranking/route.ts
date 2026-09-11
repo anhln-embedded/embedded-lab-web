@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { ensureGamificationSchema } from "@/lib/db-sync";
-import { LAB_BADGES, getLevelInfo, getCreatorRankInfo } from "@/lib/gamification";
+import { LAB_BADGES, getLevelInfo, getCreatorRankInfo, getEffectiveStreak } from "@/lib/gamification";
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +40,13 @@ export async function GET() {
           });
         } catch {}
 
-        const cp = Number(u.contributionPoints || Math.max(80, postCount * 50 + tutorialCount * 80));
+        // Điểm CP cống hiến thực tế từ database (hoặc tính theo số bài đã xuất bản nếu CP chưa lưu)
+        const calculatedCP = postCount * 50 + tutorialCount * 80;
+        const cp = Number(
+          u.contributionPoints !== undefined && u.contributionPoints !== null && Number(u.contributionPoints) > 0
+            ? u.contributionPoints
+            : calculatedCP
+        );
         const rankInfo = getCreatorRankInfo(cp);
 
         let badges: string[] = [];
@@ -87,6 +93,9 @@ export async function GET() {
         badges = [];
       }
 
+      // Chuỗi đọc bài thực tế (tự động về 0 nếu đã bỏ lỡ quá 1 ngày)
+      const streakInfo = getEffectiveStreak(Number(u.streakDays || 0), (u as any).lastActiveDate);
+
       return {
         rank: index + 1,
         id: u.id,
@@ -100,7 +109,9 @@ export async function GET() {
         levelBadge: levelInfo.badge,
         levelColor: levelInfo.color,
         readArticlesCount: Number(u.readArticlesCount || 0),
-        streakDays: Number(u.streakDays || 1),
+        streakDays: streakInfo.effectiveStreak,
+        isStreakActive: streakInfo.isStreakActive,
+        lastActiveDate: (u as any).lastActiveDate || null,
         badges,
       };
     });

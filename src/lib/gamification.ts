@@ -168,3 +168,65 @@ export function getCreatorRankInfo(cp: number): { title: string; badge: string; 
   if (cp > 0) return { title: "Thành Viên Đóng Góp", badge: "🌱", color: "#10b981" };
   return { title: "Độc Giả Thân Thiết", badge: "📖", color: "#64748b" };
 }
+
+/**
+ * Lấy chuỗi ngày YYYY-MM-DD theo giờ chuẩn Việt Nam (UTC+7)
+ */
+export function getVietnamDateString(date: Date = new Date()): string {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  return formatter.format(date);
+}
+
+/**
+ * Lấy chuỗi ngày hôm qua YYYY-MM-DD theo giờ chuẩn Việt Nam (UTC+7)
+ */
+export function getVietnamYesterdayString(date: Date = new Date()): string {
+  // Lấy thời điểm hiện tại tại VN rồi trừ 24h
+  const vnTimeStr = date.toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" });
+  const vnDate = new Date(vnTimeStr);
+  vnDate.setDate(vnDate.getDate() - 1);
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  return formatter.format(vnDate);
+}
+
+/**
+ * Tính toán chuỗi ngày đọc bài thực tế còn hiệu lực (chống "Chuỗi ma" - Ghost Streak)
+ * - Nếu người dùng đọc hôm nay: Chuỗi còn nguyên vẹn, đã ghi nhận hôm nay.
+ * - Nếu người dùng đọc hôm qua: Chuỗi còn nguyên vẹn, chưa đọc hôm nay.
+ * - Nếu người dùng bỏ lỡ quá 1 ngày (trước hôm qua) hoặc chưa từng đọc: Chuỗi đã đứt (về 0).
+ */
+export function getEffectiveStreak(streakDays: number, lastActiveDate?: string | null): {
+  effectiveStreak: number;
+  isStreakActive: boolean;
+  isReadToday: boolean;
+} {
+  const s = Math.max(0, Number(streakDays) || 0);
+  if (s <= 0 || !lastActiveDate) {
+    return { effectiveStreak: 0, isStreakActive: false, isReadToday: false };
+  }
+
+  const today = getVietnamDateString();
+  const yesterday = getVietnamYesterdayString();
+
+  if (lastActiveDate === today) {
+    return { effectiveStreak: s, isStreakActive: true, isReadToday: true };
+  }
+
+  if (lastActiveDate === yesterday) {
+    return { effectiveStreak: s, isStreakActive: true, isReadToday: false };
+  }
+
+  // Đã bỏ lỡ từ 2 ngày trở lên -> Chuỗi thực tế đã đứt!
+  return { effectiveStreak: 0, isStreakActive: false, isReadToday: false };
+}
+

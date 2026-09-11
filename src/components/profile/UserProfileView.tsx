@@ -560,7 +560,7 @@ export function UserProfileView() {
             <div className="p-2 rounded-xl bg-bg-panel border border-border/60">
               <div className="text-xs font-black text-orange-400 font-mono flex items-center justify-center gap-0.5">
                 <Flame className="w-3 h-3 text-orange-400" />
-                <span>{user.streakDays || 1}</span>
+                <span>{user.streakDays ?? 0}</span>
               </div>
               <div className="text-[9px] text-text-muted font-bold uppercase tracking-wider">
                 Ngày streak
