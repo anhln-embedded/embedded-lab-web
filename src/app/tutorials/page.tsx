@@ -6,6 +6,7 @@ import { TUTORIAL_TOPICS, TutorialTopic, TutorialPost } from "@/lib/tutorials-da
 import { TutorialTopicCard } from "@/components/tutorials/TutorialTopicCard";
 import { CategoryManagerModal, TutorialCategoryItem } from "@/components/tutorials/CategoryManagerModal";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 import {
   BookOpen,
   Search,
@@ -42,6 +43,7 @@ const INITIAL_CATEGORIES = [
 
 export default function TutorialsPage() {
   const { user } = useAuth();
+  const { dict } = useLanguage();
   const isAuthorized = user && (user.role === "superadmin" || user.role === "admin");
 
   const [categories, setCategories] = useState<TutorialCategoryItem[]>(INITIAL_CATEGORIES);
@@ -100,31 +102,28 @@ export default function TutorialsPage() {
         topic.title.toLowerCase().includes(q) ||
         topic.description.toLowerCase().includes(q) ||
         topic.categoryName.toLowerCase().includes(q) ||
-        topic.posts.some(
+        (topic.posts || []).some(
           (p) =>
             p.title.toLowerCase().includes(q) ||
-            p.summary.toLowerCase().includes(q)
+            (p.summary && p.summary.toLowerCase().includes(q))
         );
 
       return matchCat && matchLevel && matchQuery;
     });
   }, [topics, selectedCategory, selectedLevel, searchQuery]);
 
-  // Thu thập tất cả các bài viết con khớp với từ khóa tìm kiếm (Deep Search)
+  // Tìm kiếm sâu vào từng bài viết (Deep Article Search)
   const matchedArticles = useMemo(() => {
     if (!searchQuery.trim()) return [];
     const q = searchQuery.toLowerCase().trim();
-    const results: Array<{
-      topic: TutorialTopic;
-      post: TutorialPost;
-    }> = [];
+    const results: { topic: TutorialTopic; post: TutorialPost }[] = [];
 
     topics.forEach((topic) => {
-      topic.posts?.forEach((post) => {
+      (topic.posts || []).forEach((post) => {
         if (
           post.title.toLowerCase().includes(q) ||
-          post.summary.toLowerCase().includes(q) ||
-          post.contentHtml.toLowerCase().includes(q)
+          (post.summary && post.summary.toLowerCase().includes(q)) ||
+          (post.contentHtml && post.contentHtml.toLowerCase().includes(q))
         ) {
           results.push({ topic, post });
         }
@@ -159,13 +158,13 @@ export default function TutorialsPage() {
           <div className="max-w-2xl space-y-2.5">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/15 border border-accent/30 text-accent text-xs font-bold uppercase tracking-wider">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Thư Viện Chuyên Đề Kỹ Thuật (Knowledge Base Hub)</span>
+              <span>{dict.tutorials.badge}</span>
             </div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-text-primary tracking-tight">
-              Chuyên Đề <span className="text-accent">Hệ Thống Nhúng</span> & AIoT
+              {dict.tutorials.title} <span className="text-accent">{dict.tutorials.titleHighlight}</span>
             </h1>
             <p className="text-xs sm:text-sm text-text-secondary leading-relaxed">
-              Tổng hợp {topics.length} chuyên đề lớn và {totalSystemArticles} bài giảng kỹ thuật chi tiết: Linux Device Driver, FreeRTOS, Automotive UDS/CAN Bus và Vi điều khiển Bare-Metal.
+              {dict.tutorials.descPrefix} {topics.length} {dict.tutorials.descMiddle} {totalSystemArticles} {dict.tutorials.descSuffix}
             </p>
           </div>
 
@@ -175,13 +174,13 @@ export default function TutorialsPage() {
               <div className="text-xl font-extrabold text-accent font-mono">
                 {topics.length}
               </div>
-              <div className="text-[10px] font-bold text-text-muted uppercase">Chủ đề</div>
+              <div className="text-[10px] font-bold text-text-muted uppercase">{dict.tutorials.topicsCount}</div>
             </div>
             <div className="text-center px-3">
               <div className="text-xl font-extrabold text-emerald-400 font-mono">
                 {totalSystemArticles}
               </div>
-              <div className="text-[10px] font-bold text-text-muted uppercase">Bài viết</div>
+              <div className="text-[10px] font-bold text-text-muted uppercase">{dict.tutorials.articlesCount}</div>
             </div>
           </div>
         </div>
@@ -197,7 +196,7 @@ export default function TutorialsPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Tìm kiếm chuyên đề, bài viết, thanh ghi, driver, RTOS (vd: Device Tree, Mutex, UDS, STM32)..."
+              placeholder={dict.tutorials.searchPlaceholder}
               className="w-full pl-11 pr-10 py-3 rounded-2xl bg-bg-elevated/70 dark:bg-bg-elevated border border-border text-xs sm:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent shadow-inner transition-colors"
             />
             {searchQuery && (
@@ -205,7 +204,7 @@ export default function TutorialsPage() {
                 type="button"
                 onClick={() => setSearchQuery("")}
                 className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-text-muted hover:text-text-primary hover:bg-bg-panel transition-colors"
-                title="Xóa tìm kiếm"
+                title={dict.tutorials.clearSearch}
               >
                 <X className="w-4 h-4" />
               </button>
@@ -216,16 +215,16 @@ export default function TutorialsPage() {
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-bg-elevated/70 border border-border text-xs text-text-secondary">
               <Filter className="w-3.5 h-3.5 text-text-muted" />
-              <span className="font-semibold text-text-muted">Cấp độ:</span>
+              <span className="font-semibold text-text-muted">{dict.tutorials.level}:</span>
               <select
                 value={selectedLevel}
                 onChange={(e) => setSelectedLevel(e.target.value)}
                 className="bg-transparent text-text-primary font-bold focus:outline-none cursor-pointer text-xs"
               >
-                <option value="all">Tất cả cấp độ</option>
-                <option value="beginner">Beginner (Cơ bản)</option>
-                <option value="intermediate">Intermediate (Trung cấp)</option>
-                <option value="advanced">Advanced (Nâng cao)</option>
+                <option value="all">{dict.tutorials.levelAll}</option>
+                <option value="beginner">{dict.tutorials.levelBeginner}</option>
+                <option value="intermediate">{dict.tutorials.levelIntermediate}</option>
+                <option value="advanced">{dict.tutorials.levelAdvanced}</option>
               </select>
             </div>
 
@@ -239,7 +238,7 @@ export default function TutorialsPage() {
                     ? "bg-accent text-white shadow-sm"
                     : "text-text-muted hover:text-text-primary"
                 }`}
-                title="Xem dạng Lưới Card"
+                title={dict.tutorials.viewGrid}
               >
                 <LayoutGrid className="w-3.5 h-3.5" />
               </button>
@@ -251,7 +250,7 @@ export default function TutorialsPage() {
                     ? "bg-accent text-white shadow-sm"
                     : "text-text-muted hover:text-text-primary"
                 }`}
-                title="Xem dạng Danh sách / Bảng mục lục"
+                title={dict.tutorials.viewList}
               >
                 <List className="w-3.5 h-3.5" />
               </button>
@@ -263,14 +262,14 @@ export default function TutorialsPage() {
         <div className="flex items-center gap-2 flex-wrap text-xs pt-1 border-t border-border/50">
           <span className="text-text-muted font-bold flex items-center gap-1">
             <Flame className="w-3.5 h-3.5 text-amber-500" />
-            <span>Tìm kiếm phổ biến:</span>
+            <span>{dict.tutorials.popularSearch}</span>
           </span>
           {POPULAR_KEYWORDS.map((kw) => (
             <button
               key={kw.query}
               type="button"
               onClick={() => setSearchQuery(kw.query)}
-              className="px-2.5 py-1 rounded-xl bg-bg-elevated hover:bg-accent/15 hover:text-accent border border-border/80 text-[11px] font-medium text-text-secondary transition-all cursor-pointer"
+              className="px-2.5 py-1 rounded-2xl bg-bg-elevated hover:bg-accent/15 hover:text-accent border border-border/80 text-[11px] font-medium text-text-secondary transition-all cursor-pointer"
             >
               #{kw.label}
             </button>
@@ -286,7 +285,7 @@ export default function TutorialsPage() {
               className="text-[11px] font-bold text-red-400 hover:underline ml-auto flex items-center gap-1 cursor-pointer"
             >
               <X className="w-3 h-3" />
-              <span>Xóa bộ lọc</span>
+              <span>{dict.tutorials.clearFilters}</span>
             </button>
           )}
         </div>
@@ -299,7 +298,7 @@ export default function TutorialsPage() {
           <div className="flex items-center justify-between pb-3 border-b border-border">
             <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
               <Layers className="w-4 h-4 text-accent" />
-              <span>Danh Mục Chuyên Sâu</span>
+              <span>{dict.tutorials.sidebarTitle}</span>
             </h2>
             {isAuthorized && (
               <button
@@ -326,7 +325,7 @@ export default function TutorialsPage() {
             >
               <div className="flex items-center gap-2.5 truncate">
                 <span className="text-base flex-shrink-0">📚</span>
-                <span className="truncate">Tất cả chuyên đề</span>
+                <span className="truncate">{dict.tutorials.allTopics}</span>
               </div>
               <span
                 className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${
@@ -391,12 +390,12 @@ export default function TutorialsPage() {
           <div className="p-3.5 rounded-2xl bg-bg-elevated/50 border border-border/80 text-[11px] text-text-muted space-y-1.5 pt-3">
             <div className="font-bold text-text-primary flex items-center gap-1 text-xs">
               <GraduationCap className="w-3.5 h-3.5 text-accent" />
-              <span>Lab Learning Path</span>
+              <span>{dict.tutorials.learningPathCalloutTitle}</span>
             </div>
             <p className="leading-relaxed">
-              Bạn có thể học theo từng chuyên đề hoặc xem toàn bộ lộ trình kỹ sư tại trang{" "}
+              {dict.tutorials.learningPathCalloutDesc}{" "}
               <Link href="/roadmap" className="text-accent font-bold hover:underline">
-                Lộ trình học
+                {dict.tutorials.learningPathCalloutLink}
               </Link>
               .
             </p>
@@ -412,7 +411,7 @@ export default function TutorialsPage() {
                 <h3 className="text-xs sm:text-sm font-bold text-text-primary flex items-center gap-2">
                   <FileCode className="w-4 h-4 text-accent" />
                   <span>
-                    Tìm thấy <strong className="text-accent">{matchedArticles.length}</strong> bài viết khớp với &quot;{searchQuery}&quot;:
+                    {dict.tutorials.foundArticles} <strong className="text-accent">{matchedArticles.length}</strong> {dict.tutorials.articlesMatching} &quot;{searchQuery}&quot;:
                   </span>
                 </h3>
               </div>
@@ -444,7 +443,7 @@ export default function TutorialsPage() {
                         {post.readTime}
                       </span>
                       <span className="font-bold text-accent group-hover:translate-x-1 transition-transform flex items-center gap-0.5">
-                        <span>Đọc bài</span>
+                        <span>{dict.tutorials.readPost}</span>
                         <ArrowRight className="w-3 h-3" />
                       </span>
                     </div>
@@ -460,14 +459,14 @@ export default function TutorialsPage() {
               <BookOpen className="w-4 h-4 text-accent" />
               <span>
                 {selectedCategory === "all"
-                  ? "Tất Cả Chuyên Đề"
-                  : categories.find((c) => c.slug === selectedCategory)?.name || "Chuyên Đề"}{" "}
-                ({filteredTopics.length} chuyên đề)
+                  ? dict.tutorials.allTopicsTitle
+                  : categories.find((c) => c.slug === selectedCategory)?.name || dict.tutorials.title}{" "}
+                ({filteredTopics.length} {dict.tutorials.topics})
               </span>
             </h2>
 
             <span className="text-xs text-text-muted font-medium">
-              Hiển thị {filteredTopics.length} / {topics.length} chuyên đề
+              {dict.tutorials.showing} {filteredTopics.length} / {topics.length} {dict.tutorials.topics}
             </span>
           </div>
 
@@ -514,7 +513,7 @@ export default function TutorialsPage() {
                         href={`/tutorials/${topic.slug}`}
                         className="text-xs font-bold text-accent hover:underline flex items-center gap-1 self-end sm:self-center"
                       >
-                        <span>Xem toàn bộ chuỗi</span>
+                        <span>{dict.tutorials.viewFullSeries}</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </Link>
                     </div>
@@ -550,7 +549,7 @@ export default function TutorialsPage() {
             <div className="p-12 text-center rounded-3xl bg-bg-panel border border-dashed border-border space-y-3">
               <Compass className="w-10 h-10 text-text-muted mx-auto" />
               <p className="text-sm font-semibold text-text-secondary">
-                Không tìm thấy chuyên đề nào phù hợp với bộ lọc hiện tại.
+                {dict.tutorials.emptyStateTitle}
               </p>
               <button
                 type="button"
@@ -561,7 +560,7 @@ export default function TutorialsPage() {
                 }}
                 className="text-xs text-accent font-bold hover:underline cursor-pointer"
               >
-                Xóa bộ lọc & xem tất cả ({topics.length} chuyên đề)
+                {dict.tutorials.clearFiltersAndShowAll} ({topics.length} {dict.tutorials.topics})
               </button>
             </div>
           )}

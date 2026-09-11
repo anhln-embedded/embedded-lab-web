@@ -19,9 +19,11 @@ import {
   Route
 } from "lucide-react";
 import { FacebookIcon } from "@/components/ui/FacebookIcon";
+import { useLanguage } from "@/context/LanguageContext";
 
 export function Footer() {
   const pathname = usePathname();
+  const { dict, locale } = useLanguage();
   const footerRef = React.useRef<HTMLElement | null>(null);
   const [isVisible, setIsVisible] = React.useState(false);
   const isLoginPage = pathname === "/login" || pathname?.startsWith("/login");
@@ -80,18 +82,18 @@ export function Footer() {
                   EMBEDDED<span className="text-accent">-AIOT LAB</span>
                 </span>
                 <span className="text-[11px] text-slate-600 dark:text-slate-400 font-semibold tracking-wide uppercase">
-                  Khoa Điện Tử 1 · Học Viện CN Bưu Chính Viễn Thông
+                  {dict.footer.brandSubtitle}
                 </span>
               </div>
             </Link>
 
             <p className="text-slate-600 dark:text-slate-400 text-xs leading-relaxed max-w-md">
-              Phòng nghiên cứu & đào tạo chuyên sâu về <strong>Hệ thống Nhúng, AIoT, Firmware Kiến trúc Vi xử lý & Thiết kế Vi mạch</strong>.
+              {dict.footer.labBio}
             </p>
 
             <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400">
               <MapPin className="h-3.5 w-3.5 text-accent flex-shrink-0" />
-              <span>Phòng Lab Sân B9 — Học viện Công nghệ Bưu chính Viễn thông (Hà Nội)</span>
+              <span>{dict.footer.address}</span>
             </div>
 
             {/* Cụm icon mạng xã hội tròn gọn gàng đồng nhất */}
@@ -132,7 +134,7 @@ export function Footer() {
           {/* Cột 2: Đào Tạo & Học Tập (Chiếm 3/12) */}
           <div className="md:col-span-3 space-y-3">
             <h3 className="font-bold text-slate-900 dark:text-slate-100 text-xs uppercase tracking-wider">
-              Đào Tạo & Học Tập
+              {dict.footer.colTraining}
             </h3>
             <ul className="space-y-2 text-xs">
               <li>
@@ -142,10 +144,10 @@ export function Footer() {
                 >
                   <span className="flex items-center gap-2 font-medium">
                     <Compass className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-accent transition-colors" />
-                    <span>Chuyên đề Kỹ thuật</span>
+                    <span>{dict.footer.techTopics}</span>
                   </span>
                   <span className="px-1.5 py-0.2 rounded text-[10px] bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold">
-                    Mới
+                    {dict.footer.badgeNew}
                   </span>
                 </Link>
               </li>
@@ -155,7 +157,7 @@ export function Footer() {
                   className="group flex items-center gap-2 py-0.5 text-slate-600 dark:text-slate-400 hover:text-accent dark:hover:text-accent transition-colors"
                 >
                   <GraduationCap className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-accent transition-colors" />
-                  <span>Khóa học Thực hành</span>
+                  <span>{dict.footer.handsOnCourses}</span>
                 </Link>
               </li>
               <li>
@@ -164,7 +166,7 @@ export function Footer() {
                   className="group flex items-center gap-2 py-0.5 text-slate-600 dark:text-slate-400 hover:text-accent dark:hover:text-accent transition-colors"
                 >
                   <Route className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-accent transition-colors" />
-                  <span>Lộ trình Kỹ sư Nhúng</span>
+                  <span>{dict.footer.engineerRoadmap}</span>
                 </Link>
               </li>
               <li>
@@ -174,10 +176,10 @@ export function Footer() {
                 >
                   <span className="flex items-center gap-2 font-medium">
                     <Microscope className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-accent transition-colors" />
-                    <span>Nghiên cứu Khoa học</span>
+                    <span>{dict.footer.scientificResearch}</span>
                   </span>
                   <span className="px-1.5 py-0.2 rounded text-[10px] bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 font-bold">
-                    Công bố
+                    {dict.footer.badgePub}
                   </span>
                 </Link>
               </li>
@@ -187,7 +189,7 @@ export function Footer() {
                   className="group flex items-center gap-2 py-0.5 text-slate-600 dark:text-slate-400 hover:text-accent dark:hover:text-accent transition-colors"
                 >
                   <FileText className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-accent transition-colors" />
-                  <span>Bản tin & Nhật ký Lab</span>
+                  <span>{dict.footer.labBulletins}</span>
                 </Link>
               </li>
             </ul>
@@ -196,7 +198,7 @@ export function Footer() {
           {/* Cột 3: Tài Nguyên & Kết Nối (Chiếm 3/12) */}
           <div className="md:col-span-3 space-y-3">
             <h3 className="font-bold text-slate-900 dark:text-slate-100 text-xs uppercase tracking-wider">
-              Tài Nguyên & Kết Nối
+              {dict.footer.colResources}
             </h3>
             <ul className="space-y-2 text-xs">
               <li>
@@ -208,7 +210,7 @@ export function Footer() {
                 >
                   <span className="flex items-center gap-2 font-medium">
                     <GitBranch className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-accent transition-colors" />
-                    <span>Mã nguồn mở GitHub</span>
+                    <span>{dict.footer.openSourceGit}</span>
                   </span>
                   <ExternalLink className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </a>
@@ -222,7 +224,7 @@ export function Footer() {
                 >
                   <span className="flex items-center gap-2 font-medium">
                     <FacebookIcon className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-accent transition-colors" />
-                    <span>Cộng đồng Lab PTIT</span>
+                    <span>{dict.footer.communityPtit}</span>
                   </span>
                   <ExternalLink className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </a>
@@ -233,7 +235,7 @@ export function Footer() {
                   className="group flex items-center gap-2 py-0.5 text-slate-600 dark:text-slate-400 hover:text-accent dark:hover:text-accent transition-colors"
                 >
                   <Mail className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-accent transition-colors" />
-                  <span>Hợp tác & Tuyển thành viên</span>
+                  <span>{dict.footer.contactCollab}</span>
                 </a>
               </li>
             </ul>
@@ -242,7 +244,7 @@ export function Footer() {
 
         {/* Dải phân cách & Bản quyền dưới đáy */}
         <div className="mt-8 pt-4 border-t border-slate-200 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs text-slate-600 dark:text-slate-400">
-          <p>© 2026 Embedded-AIoT Lab · Khoa Điện Tử 1 — Học viện Công nghệ Bưu chính Viễn thông.</p>
+          <p>{dict.footer.copyright}</p>
           <div className="flex items-center gap-2 text-[11px] font-mono">
             <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-semibold">
               PTIT Electronics

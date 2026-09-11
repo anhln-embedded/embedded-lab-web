@@ -22,12 +22,8 @@ import {
   Send
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 import { Button } from "@/components/ui/Button";
-
-const SLIDES = [
-  { id: "hero", label: "Giới thiệu" },
-  { id: "posts", label: "Bản tin mới" },
-];
 
 interface SearchResult {
   type: "blog" | "course";
@@ -40,9 +36,18 @@ interface SearchResult {
 
 export default function HomePage() {
   const { user } = useAuth();
+  const { dict } = useLanguage();
   const [activeSlide, setActiveSlide] = useState("hero");
   const containerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const SLIDES = React.useMemo(
+    () => [
+      { id: "hero", label: dict.home.slideHero },
+      { id: "posts", label: dict.home.slidePosts },
+    ],
+    [dict]
+  );
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
@@ -210,15 +215,15 @@ export default function HomePage() {
           <div className="max-w-4xl mx-auto text-center space-y-6 my-auto relative z-10">
             {/* Headline - Pure High Contrast White on Dark, Dark on Light */}
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight text-text-primary">
-              <span className="inline-block">Lộ Trình Đào Tạo & Nghiên Cứu</span> <br />
+              <span className="inline-block">{dict.home.heroTitlePrefix}</span> <br />
               <span className="gradient-text-brand inline-block mt-1">
-                Hệ Thống Nhúng & AIoT
+                {dict.home.heroTitleHighlight}
               </span>
             </h1>
 
             {/* Subtitle - Crisp Slate Silver on Dark, Slate on Light */}
             <p className="text-sm sm:text-base md:text-lg text-text-secondary max-w-xl mx-auto leading-relaxed font-normal">
-              Nền tảng học chuyên sâu từ vi điều khiển Bare-metal, RTOS, Linux Kernel đến FPGA và TinyML
+              {dict.home.heroSubtitle}
             </p>
 
             {/* Adaptive High-End Search Bar */}
@@ -233,9 +238,9 @@ export default function HomePage() {
                     onFocus={() => {
                       if (searchQuery.trim()) setShowDropdown(true);
                     }}
-                    placeholder="Nhập từ khóa tìm kiếm bản tin, STM32, RTOS..."
+                    placeholder={dict.home.searchPlaceholder}
                     className="flex-1 h-full bg-transparent text-text-primary placeholder:text-text-muted text-xs sm:text-sm font-medium focus:outline-none"
-                    aria-label="Tìm kiếm bản tin"
+                    aria-label={dict.home.searchPlaceholder}
                   />
 
                   {/* Clear button when text exists */}
@@ -243,8 +248,8 @@ export default function HomePage() {
                     <button
                       type="button"
                       onClick={handleClearSearch}
-                      className="p-1.5 sm:p-2 rounded-full text-text-muted hover:text-text-primary hover:bg-bg-elevated transition-colors mr-1"
-                      title="Xóa từ khóa"
+                      className="p-1.5 sm:p-2 rounded-full text-text-muted hover:text-text-primary hover:bg-bg-elevated transition-colors mr-1 cursor-pointer"
+                      title={dict.home.clearSearch}
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -255,7 +260,7 @@ export default function HomePage() {
                     <button
                       type="submit"
                       className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-accent to-accent-amber hover:brightness-110 text-white flex items-center justify-center shadow-lg shadow-accent/30 hover:shadow-accent/50 transition-all cursor-pointer hover:scale-105 active:scale-95 flex-shrink-0 animate-fade-in"
-                      title="Tìm kiếm (Enter)"
+                      title={dict.home.searchSubmit}
                     >
                       {isSearching ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -275,9 +280,9 @@ export default function HomePage() {
               {showDropdown && searchQuery.trim() && (
                 <div className="absolute left-0 right-0 top-full mt-2 rounded-2xl bg-bg-panel border border-border shadow-2xl p-3 z-40 backdrop-blur-2xl animate-fade-in text-left max-h-[340px] overflow-y-auto">
                   <div className="flex items-center justify-between px-2 py-1.5 border-b border-border mb-2 text-[11px] font-mono text-text-muted">
-                    <span>Kết quả tìm kiếm cho: &quot;{searchQuery}&quot;</span>
+                    <span>{dict.home.searchResultsFor} &quot;{searchQuery}&quot;</span>
                     {searchResults.length > 0 && (
-                      <span className="text-accent font-semibold">{searchResults.length} kết quả</span>
+                      <span className="text-accent font-semibold">{searchResults.length} {dict.searchModal.resultsCount}</span>
                     )}
                   </div>
 
@@ -286,12 +291,12 @@ export default function HomePage() {
                       {isSearching ? (
                         <div className="flex items-center justify-center gap-2">
                           <Loader2 className="w-4 h-4 animate-spin text-accent" />
-                          <span>Đang tìm kiếm...</span>
+                          <span>{dict.home.searching}</span>
                         </div>
                       ) : (
                         <>
-                          <p className="font-semibold text-text-primary">Không tìm thấy bản tin phù hợp</p>
-                          <p className="text-[11px] text-text-muted">Thử tìm với từ khóa khác như STM32, RTOS, FPGA, AIoT...</p>
+                          <p className="font-semibold text-text-primary">{dict.home.noPostsFound}</p>
+                          <p className="text-[11px] text-text-muted">{dict.home.tryOtherKeywords}</p>
                         </>
                       )}
                     </div>
@@ -328,12 +333,12 @@ export default function HomePage() {
                         setShowDropdown(false);
                         scrollToSlide("posts");
                       }}
-                      className="text-accent hover:underline font-semibold flex items-center gap-1"
+                      className="text-accent hover:underline font-semibold flex items-center gap-1 cursor-pointer"
                     >
-                      <span>Xem toàn bộ kết quả bên dưới</span>
+                      <span>{dict.home.viewAllResultsBelow}</span>
                       <ArrowRight className="w-3 h-3" />
                     </button>
-                    <span className="font-mono text-[10px]">Nhấn ESC để đóng</span>
+                    <span className="font-mono text-[10px]">{dict.home.pressEscToClose}</span>
                   </div>
                 </div>
               )}
@@ -348,7 +353,7 @@ export default function HomePage() {
               >
                 <Link href="/roadmap">
                   <GraduationCap className="w-4 h-4 mr-1.5" />
-                  Khám Phá Lộ Trình
+                  {dict.home.btnExploreRoadmap}
                   <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
                 </Link>
               </Button>
@@ -359,7 +364,7 @@ export default function HomePage() {
                 className="h-11 px-6 text-xs sm:text-sm font-medium border border-border bg-bg-elevated text-text-primary hover:border-accent/60 hover:text-accent transition-all inline-flex items-center justify-center backdrop-blur-sm cursor-pointer shadow-sm"
               >
                 <Sparkles className="w-3.5 h-3.5 mr-1.5 text-accent" />
-                Đọc Bản Tin
+                {dict.home.btnReadPosts}
               </Button>
             </div>
           </div>
@@ -369,7 +374,7 @@ export default function HomePage() {
             onClick={() => scrollToSlide("posts")}
             className="mt-auto pt-4 flex flex-col items-center gap-1.5 text-text-muted hover:text-accent transition-colors cursor-pointer text-xs font-mono font-medium"
           >
-            <span>Cuộn để xem bản tin</span>
+            <span>{dict.home.scrollHint}</span>
             <ChevronDown className="w-4 h-4 animate-bounce text-accent" />
           </button>
         </section>
@@ -385,13 +390,13 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
               <div>
                 <span className="text-xs uppercase tracking-wider font-mono text-cyan-400 font-semibold block mb-1">
-                  Ghi Chép & Nghiên Cứu
+                  {dict.home.latestPostsKicker}
                 </span>
                 <h2 className="text-2xl md:text-3xl font-extrabold text-text-primary tracking-tight">
                   {searchQuery.trim() ? (
-                    <span>Kết quả tìm kiếm: &quot;{searchQuery}&quot;</span>
+                    <span>{dict.home.searchResultsFor} &quot;{searchQuery}&quot;</span>
                   ) : (
-                    <span>Bản Tin Kỹ Thuật Mới Nhất</span>
+                    <span>{dict.home.latestPostsTitle}</span>
                   )}
                 </h2>
               </div>
@@ -402,10 +407,10 @@ export default function HomePage() {
                     variant="outline"
                     size="sm"
                     onClick={handleClearSearch}
-                    className="text-xs border-accent/40 text-accent hover:bg-accent/10"
+                    className="text-xs border-accent/40 text-accent hover:bg-accent/10 cursor-pointer"
                   >
                     <X className="w-3.5 h-3.5 mr-1" />
-                    Bỏ tìm kiếm
+                    {dict.home.clearFilter}
                   </Button>
                 )}
 
@@ -413,13 +418,13 @@ export default function HomePage() {
                   <Button variant="primary" size="sm" asChild className="bg-accent text-white text-xs">
                     <Link href="/admin">
                       <PlusCircle className="w-3.5 h-3.5 mr-1.5" />
-                      Đăng bản tin mới
+                      {dict.home.createNewPost}
                     </Link>
                   </Button>
                 )}
 
                 <Button variant="outline" size="sm" asChild className="text-xs border-border hover:border-accent/40 text-text-secondary">
-                  <Link href="/blog">Xem tất cả bản tin &rarr;</Link>
+                  <Link href="/blog">{dict.home.viewAllPosts}</Link>
                 </Button>
               </div>
             </div>

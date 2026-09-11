@@ -1,8 +1,7 @@
-"use client";
-
 import React from "react";
 import Link from "next/link";
 import { TutorialTopic } from "@/lib/tutorials-data";
+import { useLanguage } from "@/context/LanguageContext";
 import {
   BookOpen,
   ArrowRight,
@@ -19,6 +18,8 @@ interface TutorialTopicCardProps {
 }
 
 export function TutorialTopicCard({ topic }: TutorialTopicCardProps) {
+  const { dict } = useLanguage();
+
   return (
     <div className="group relative rounded-3xl bg-bg-panel border border-border/80 hover:border-accent/50 p-4 sm:p-6 shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col justify-between overflow-hidden">
       {/* Background Accent Glow */}
@@ -36,7 +37,7 @@ export function TutorialTopicCard({ topic }: TutorialTopicCardProps) {
                 {topic.categoryName}
               </span>
               <span className="text-xs font-semibold text-text-muted">
-                {(topic.posts || []).length} bài viết chi tiết
+                {(topic.posts || []).length} {dict.tutorials.detailedArticles}
               </span>
             </div>
           </div>
@@ -62,7 +63,7 @@ export function TutorialTopicCard({ topic }: TutorialTopicCardProps) {
         {(topic.posts || []).length > 0 && (
           <div className="space-y-1.5 pt-3 border-t border-border/60 mb-4">
             <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block">
-              Bài viết nổi bật trong chuỗi:
+              {dict.tutorials.featuredArticles}
             </span>
             {(topic.posts || []).slice(0, 2).map((post) => (
               <Link
@@ -97,7 +98,7 @@ export function TutorialTopicCard({ topic }: TutorialTopicCardProps) {
           href={`/tutorials/${topic.slug}`}
           className="inline-flex items-center gap-1 text-xs font-bold text-accent group-hover:translate-x-1 transition-transform flex-shrink-0"
         >
-          <span>Khám phá chuỗi</span>
+          <span>{dict.tutorials.exploreSeries}</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       </div>

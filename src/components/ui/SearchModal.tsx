@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Search, X, Command, ArrowUp, ArrowDown, ArrowRight, FileText, GraduationCap, Loader2, Send, Microscope } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface SearchResult {
   type: "blog" | "course" | "research";
@@ -15,6 +16,7 @@ interface SearchResult {
 }
 
 export function SearchModal() {
+  const { dict } = useLanguage();
   const [isOpen, setIsOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
   const [results, setResults] = React.useState<SearchResult[]>([]);
@@ -163,9 +165,9 @@ export function SearchModal() {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Nhập từ khóa tìm kiếm bản tin, STM32, RTOS..."
+              placeholder={dict.searchModal.placeholder}
               className="flex-1 h-full bg-transparent text-text-primary placeholder:text-text-muted text-xs sm:text-sm font-medium focus:outline-none"
-              aria-label="Tìm kiếm bản tin"
+              aria-label={dict.searchModal.title}
               autoComplete="off"
               spellCheck={false}
             />
@@ -179,8 +181,8 @@ export function SearchModal() {
                   setResults([]);
                   inputRef.current?.focus();
                 }}
-                className="p-1.5 sm:p-2 rounded-full text-text-muted hover:text-text-primary hover:bg-bg-elevated transition-colors mr-1"
-                title="Xóa từ khóa"
+                className="p-1.5 sm:p-2 rounded-full text-text-muted hover:text-text-primary hover:bg-bg-elevated transition-colors mr-1 cursor-pointer"
+                title={dict.home.clearSearch}
               >
                 <X className="w-4 h-4" />
               </button>
@@ -191,7 +193,7 @@ export function SearchModal() {
               <button
                 type="submit"
                 className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-accent to-accent-amber hover:brightness-110 text-white flex items-center justify-center shadow-lg shadow-accent/30 hover:shadow-accent/50 transition-all cursor-pointer hover:scale-105 active:scale-95 flex-shrink-0 animate-fade-in"
-                title="Tìm kiếm (Enter)"
+                title={dict.home.searchSubmit}
               >
                 {loading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -212,10 +214,10 @@ export function SearchModal() {
           {/* Header Info */}
           <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-border/80 mb-2 text-[11px] font-mono text-text-muted">
             <span>
-              {query.trim() ? `Kết quả cho: "${query}"` : "Tìm kiếm nhanh trong hệ thống"}
+              {query.trim() ? `${dict.searchModal.resultsFor} "${query}"` : dict.searchModal.title}
             </span>
             {results.length > 0 && (
-              <span className="text-accent font-semibold">{results.length} kết quả</span>
+              <span className="text-accent font-semibold">{results.length} {dict.searchModal.resultsCount}</span>
             )}
           </div>
 
@@ -224,23 +226,23 @@ export function SearchModal() {
             {loading && (
               <div className="py-10 text-center text-text-muted space-y-2">
                 <Loader2 className="h-6 w-6 animate-spin mx-auto text-accent" />
-                <p className="text-xs">Đang tìm kiếm trong hệ thống...</p>
+                <p className="text-xs">{dict.home.searching}</p>
               </div>
             )}
 
             {!loading && results.length === 0 && query.trim() && (
               <div className="py-10 text-center text-text-muted space-y-1">
                 <Search className="h-10 w-10 mx-auto opacity-20 text-accent" />
-                <p className="text-sm font-semibold text-text-primary">Không tìm thấy kết quả phù hợp</p>
-                <p className="text-xs">Hãy thử từ khóa khác như STM32, RTOS, FPGA, AIoT...</p>
+                <p className="text-sm font-semibold text-text-primary">{dict.searchModal.noResultsTitle}</p>
+                <p className="text-xs">{dict.searchModal.noResultsDesc}</p>
               </div>
             )}
 
             {!loading && results.length === 0 && !query.trim() && (
               <div className="py-8 text-center text-text-muted space-y-1">
                 <Search className="h-9 w-9 mx-auto opacity-20 text-accent" />
-                <p className="text-sm font-medium text-text-primary">Gõ từ khóa để tìm kiếm</p>
-                <p className="text-xs">Tìm kiếm nhanh bản tin kỹ thuật, đề tài NCKH và khóa học</p>
+                <p className="text-sm font-medium text-text-primary">{dict.searchModal.emptyPromptTitle}</p>
+                <p className="text-xs">{dict.searchModal.emptyPromptDesc}</p>
               </div>
             )}
 
@@ -287,7 +289,7 @@ export function SearchModal() {
                             {result.title}
                           </h4>
                           <span className="px-2 py-0.2 text-[10px] font-semibold bg-accent/15 text-accent rounded-full flex-shrink-0">
-                            {result.type === "course" ? "Khóa học" : result.type === "research" ? "Nghiên cứu" : "Bản tin"}
+                            {result.type === "course" ? dict.searchModal.typeCourse : result.type === "research" ? dict.searchModal.typeResearch : dict.searchModal.typeBlog}
                           </span>
                         </div>
                         <p className="text-[11px] text-text-muted line-clamp-1">
@@ -315,18 +317,18 @@ export function SearchModal() {
               <kbd className="px-1.5 py-0.5 bg-bg-elevated border border-border rounded text-text-primary">
                 <ArrowDown className="h-2.5 w-2.5 inline" />
               </kbd>
-              <span>chọn</span>
+              <span>{dict.searchModal.shortcutSelect}</span>
               <span className="mx-1">·</span>
               <kbd className="px-1.5 py-0.5 bg-bg-elevated border border-border rounded text-text-primary">
                 Enter
               </kbd>
-              <span>mở</span>
+              <span>{dict.searchModal.shortcutOpen}</span>
             </div>
             <div>
               <kbd className="px-1.5 py-0.5 bg-bg-elevated border border-border rounded text-text-primary">
                 ESC
               </kbd>
-              <span> đóng</span>
+              <span> {dict.searchModal.shortcutClose}</span>
             </div>
           </div>
         </div>

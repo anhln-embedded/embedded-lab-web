@@ -26,6 +26,7 @@ import {
   ArrowRight
 } from "lucide-react";
 import { getLevelColor, getLevelLabel } from "@/lib/utils";
+import { useLanguage } from "@/context/LanguageContext";
 
 const ICON_MAP: Record<string, React.ReactNode> = {
   Cpu: <Cpu className="w-4 h-4" />,
@@ -40,6 +41,7 @@ interface CourseCardProps {
 }
 
 export function CourseCard({ course }: CourseCardProps) {
+  const { dict, locale } = useLanguage();
   const categoryMeta = COURSE_CATEGORIES.find((c) => c.id === course.category);
 
   return (
@@ -65,13 +67,13 @@ export function CourseCard({ course }: CourseCardProps) {
             </span>
           )}
           <Badge variant={course.price === "free" ? "success" : "warning"} size="sm">
-            {course.price === "free" ? "Miễn phí" : "Chuyên sâu"}
+            {course.price === "free" ? dict.courses.free : dict.courses.advanced}
           </Badge>
         </div>
 
         <div className="absolute top-3 right-3">
           <Badge variant="default" size="sm" className={getLevelColor(course.level)}>
-            {getLevelLabel(course.level)}
+            {getLevelLabel(course.level, locale)}
           </Badge>
         </div>
       </div>
@@ -107,14 +109,14 @@ export function CourseCard({ course }: CourseCardProps) {
           </span>
           <span className="flex items-center gap-1">
             <BookOpen className="h-3.5 w-3.5 text-accent" />
-            {course.lessons} bài giảng
+            {course.lessons} {dict.courses.lessons}
           </span>
         </div>
 
         <div className="flex items-center justify-between mt-auto pt-3 border-t border-border">
           <Button variant={course.price === "free" ? "pill" : "primary"} size="sm" asChild className="text-xs">
             <Link href={course.url}>
-              {course.price === "free" ? "Vào Học Miễn Phí" : "Đăng Ký Khóa Học"}
+              {course.price === "free" ? dict.courses.startFree : dict.courses.enroll}
               <ArrowRight className="w-3 h-3 ml-1" />
             </Link>
           </Button>
@@ -141,6 +143,7 @@ interface CourseListProps {
 
 export function CourseList({ courses: initialCourses }: CourseListProps) {
   const { user } = useAuth();
+  const { dict } = useLanguage();
   const [displayCourses, setDisplayCourses] = React.useState<CourseData[]>(initialCourses || []);
   const [selectedCategory, setSelectedCategory] = React.useState<string>("all");
 
@@ -232,7 +235,7 @@ export function CourseList({ courses: initialCourses }: CourseListProps) {
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            Tất cả ({displayCourses.length})
+            {dict.courses.tabAll} ({displayCourses.length})
           </button>
 
           {availableCategories.map((cat) => {
@@ -267,18 +270,18 @@ export function CourseList({ courses: initialCourses }: CourseListProps) {
           </div>
           <h3 className="text-xl font-bold text-text-primary">
             {selectedCategory === "all"
-              ? "Khóa học thực hành đang được cập nhật"
-              : `Chưa có khóa học cho mảng ${COURSE_CATEGORIES.find(c => c.id === selectedCategory)?.name || selectedCategory}`}
+              ? dict.courses.emptyTitle
+              : `${dict.courses.emptyCategoryTitle} ${COURSE_CATEGORIES.find(c => c.id === selectedCategory)?.name || selectedCategory}`}
           </h3>
           <p className="text-xs md:text-sm text-text-secondary leading-relaxed max-w-lg mx-auto">
-            Nội dung bài giảng và tài liệu thực nghiệm đang được chuẩn bị. Bạn có thể theo dõi Lộ trình học tập hoặc đọc các bài viết chia sẻ kỹ thuật mới nhất từ phòng Lab.
+            {dict.courses.emptyDesc}
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
             <Button variant="primary" asChild className="bg-gradient-to-r from-accent to-accent-amber hover:brightness-110 text-white text-xs sm:text-sm font-bold px-5 py-2.5 rounded-xl shadow-md">
               <Link href="/roadmap">
                 <Sparkles className="w-4 h-4 mr-1.5" />
-                Xem Lộ Trình Học Tập
+                {dict.courses.viewRoadmap}
                 <ArrowRight className="w-4 h-4 ml-1.5" />
               </Link>
             </Button>
@@ -286,7 +289,7 @@ export function CourseList({ courses: initialCourses }: CourseListProps) {
             <Button variant="outline" asChild className="text-xs sm:text-sm font-semibold rounded-xl">
               <Link href="/blog">
                 <BookOpen className="w-4 h-4 mr-1.5 text-accent" />
-                Đọc Bản Tin Kỹ Thuật
+                {dict.courses.readBulletins}
               </Link>
             </Button>
 
@@ -294,7 +297,7 @@ export function CourseList({ courses: initialCourses }: CourseListProps) {
               <Button variant="ghost" asChild className="text-xs text-text-muted hover:text-accent">
                 <Link href="/admin/courses/new">
                   <PlusCircle className="w-3.5 h-3.5 mr-1" />
-                  Tạo khóa học mới (Admin)
+                  {dict.courses.createNewCourse}
                 </Link>
               </Button>
             )}

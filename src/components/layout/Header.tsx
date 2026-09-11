@@ -35,14 +35,17 @@ import {
 import { SearchModal } from "@/components/ui/SearchModal";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 import { SuperAdminPointModal } from "@/components/admin/SuperAdminPointModal";
+import { useLanguage } from "@/context/LanguageContext";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 
 export function Header() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const { dict, locale } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [mobileDropdownsOpen, setMobileDropdownsOpen] = React.useState<Record<string, boolean>>({
-    "Học tập": true,
-    "Khác": true,
+    "/tutorials": true,
+    "/discuss": true,
   });
   const [desktopDropdownOpen, setDesktopDropdownOpen] = React.useState<string | null>(null);
   const [userMenuOpen, setUserMenuOpen] = React.useState(false);
@@ -110,7 +113,61 @@ export function Header() {
     }
   }, [darkMode, mounted]);
 
-  const navItems = siteConfig.navItems;
+  const navItems = React.useMemo(
+    () => [
+      { label: dict.nav.home, href: "/" },
+      {
+        label: dict.nav.learning,
+        href: "/tutorials",
+        items: [
+          {
+            label: dict.nav.tutorials,
+            href: "/tutorials",
+            description: dict.nav.tutorialsDesc,
+            icon: "BookOpen",
+            badge: locale === "vi" ? "24+ bài" : "24+ posts",
+          },
+          {
+            label: dict.nav.courses,
+            href: "/courses",
+            description: dict.nav.coursesDesc,
+            icon: "GraduationCap",
+            badge: locale === "vi" ? "Thực hành" : "Hands-on",
+          },
+          {
+            label: dict.nav.roadmap,
+            href: "/roadmap",
+            description: dict.nav.roadmapDesc,
+            icon: "Route",
+            badge: locale === "vi" ? "Chuẩn R&D" : "R&D Track",
+          },
+        ],
+      },
+      { label: dict.nav.research, href: "/research" },
+      { label: dict.nav.blog, href: "/blog" },
+      {
+        label: dict.nav.more,
+        href: "/discuss",
+        items: [
+          {
+            label: dict.nav.discuss,
+            href: "/discuss",
+            description: dict.nav.discussDesc,
+            icon: "MessageSquare",
+            badge: locale === "vi" ? "Mới" : "New",
+          },
+          {
+            label: dict.nav.simulator,
+            href: "/tools/stm32-simulator",
+            description: dict.nav.simulatorDesc,
+            icon: "Cpu",
+            badge: "STM32",
+          },
+        ],
+      },
+    ],
+    [dict, locale]
+  );
 
   return (
     <header className="relative lg:sticky lg:top-0 z-50 bg-bg-panel/95 lg:backdrop-blur-md border-b border-border/80 transition-colors">
@@ -300,19 +357,23 @@ export function Header() {
                 onClick={() => {
                   window.dispatchEvent(new CustomEvent("open-search-modal"));
                 }}
-                className="w-9 h-9 rounded-full flex items-center justify-center border border-border bg-white dark:bg-bg-elevated/80 text-text-muted hover:text-accent hover:border-accent/50 transition-all shadow-sm"
-                aria-label="Tìm kiếm (Ctrl+K)"
-                title="Tìm kiếm (Ctrl+K)"
+                className="w-9 h-9 rounded-full flex items-center justify-center border border-border bg-white dark:bg-bg-elevated/80 text-text-muted hover:text-accent hover:border-accent/50 transition-all shadow-sm cursor-pointer"
+                aria-label={dict.header.searchButton}
+                title={dict.header.searchButton}
               >
                 <Search className="h-4 w-4 text-accent" />
               </button>
             )}
 
+            {/* Language Switcher - Segmented Pill */}
+            <LanguageSwitcher variant="pill" />
+
             {/* Theme Toggle */}
             <button
               onClick={() => setDarkMode(!darkMode)}
-              className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors border border-transparent hover:border-border"
-              aria-label={darkMode ? "Chuyển sang giao diện sáng" : "Chuyển sang giao diện tối"}
+              className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors border border-transparent hover:border-border cursor-pointer"
+              aria-label={darkMode ? dict.header.themeLight : dict.header.themeDark}
+              title={darkMode ? dict.header.themeLight : dict.header.themeDark}
             >
               {mounted ? (
                 darkMode ? (
@@ -330,10 +391,10 @@ export function Header() {
               <Link
                 href="/admin"
                 className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold shadow-sm shadow-accent/20 transition-all hover:scale-102"
-                title="Bảng quản trị Lab"
+                title={dict.header.adminDashboard}
               >
                 <Edit3 className="w-3.5 h-3.5" />
-                <span>Đăng tin</span>
+                <span>{dict.header.publishPost}</span>
               </Link>
             )}
 
@@ -371,12 +432,12 @@ export function Header() {
                         }}
                       >
                         {user.role === "superadmin"
-                          ? "Superadmin"
+                          ? dict.common.roles.superadmin
                           : user.role === "admin"
-                          ? "Admin"
+                          ? dict.common.roles.admin
                           : user.role === "lab_member"
-                          ? "Lab Member"
-                          : "Sinh viên"}
+                          ? dict.common.roles.lab_member
+                          : dict.common.roles.user}
                       </span>
                     </div>
                     <ChevronDown className="w-3.5 h-3.5 text-text-muted" />
@@ -402,7 +463,7 @@ export function Header() {
                           className="flex items-center gap-2 px-3 py-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors"
                         >
                           <LayoutDashboard className="w-4 h-4 text-accent" />
-                          <span>Bảng Quản Trị Admin</span>
+                          <span>{dict.header.adminDashboard}</span>
                         </Link>
                       )}
 
@@ -414,7 +475,7 @@ export function Header() {
                             className="flex items-center gap-2 px-3 py-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors"
                           >
                             <ShieldCheck className="w-4 h-4 text-purple-400" />
-                            <span>Quản Lý Thành Viên</span>
+                            <span>{dict.header.memberManagement}</span>
                           </Link>
                           <button
                             type="button"
@@ -426,10 +487,10 @@ export function Header() {
                           >
                             <div className="flex items-center gap-2">
                               <Zap className="w-4 h-4 text-purple-400 animate-pulse" />
-                              <span>Phù Phép Điểm Số</span>
+                              <span>{dict.header.secretPoints}</span>
                             </div>
                             <span className="text-[9px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 uppercase font-black">
-                              Ẩn
+                              {dict.header.hidden}
                             </span>
                           </button>
                         </>
@@ -441,7 +502,7 @@ export function Header() {
                         className="flex items-center gap-2 px-3 py-2 rounded-lg text-text-secondary hover:text-amber-400 hover:bg-bg-elevated transition-colors"
                       >
                         <Trophy className="w-4 h-4 text-amber-400" />
-                        <span>Bảng Xếp Hạng & Thưởng</span>
+                        <span>{dict.header.leaderboard}</span>
                       </Link>
 
                       <Link
@@ -450,7 +511,7 @@ export function Header() {
                         className="flex items-center gap-2 px-3 py-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors"
                       >
                         <Award className="w-4 h-4 text-emerald-400" />
-                        <span>Lộ Trình Của Tôi</span>
+                        <span>{dict.header.myRoadmap}</span>
                       </Link>
 
                       <Link
@@ -459,7 +520,7 @@ export function Header() {
                         className="flex items-center gap-2 px-3 py-2 rounded-lg text-text-secondary hover:text-accent hover:bg-bg-elevated transition-colors border-t border-border/60 mt-1 font-medium"
                       >
                         <UserCheck className="w-4 h-4 text-accent" />
-                        <span>Hồ Sơ & Tài Khoản</span>
+                        <span>{dict.header.profile}</span>
                       </Link>
 
                       <button
@@ -467,7 +528,7 @@ export function Header() {
                         className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors mt-1 cursor-pointer"
                       >
                         <LogOut className="w-4 h-4" />
-                        <span>Đăng xuất</span>
+                        <span>{dict.header.signOut}</span>
                       </button>
                     </div>
                   )}
@@ -481,7 +542,7 @@ export function Header() {
                 >
                   <Link href="/login">
                     <LogIn className="w-3.5 h-3.5 mr-1" />
-                    Đăng nhập
+                    {dict.header.signIn}
                   </Link>
                 </Button>
               )}
@@ -492,7 +553,7 @@ export function Header() {
               className="lg:hidden p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated border border-border/60 cursor-pointer"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-expanded={mobileMenuOpen}
-              aria-label="Mở menu"
+              aria-label={mobileMenuOpen ? dict.header.closeMenu : dict.header.openMenu}
             >
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -508,6 +569,9 @@ export function Header() {
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
           <div className="lg:hidden py-4 border-t border-border bg-bg-panel/95 animate-slide-up space-y-4">
+            {/* Language Switcher on Mobile */}
+            <LanguageSwitcher variant="mobile" />
+
             {/* User Profile Card inside Mobile Drawer */}
             {user ? (
               <div className="p-3.5 rounded-2xl bg-bg-elevated/70 border border-border space-y-3">
@@ -547,12 +611,12 @@ export function Header() {
                         }}
                       >
                         {user.role === "superadmin"
-                          ? "Superadmin"
+                          ? dict.common.roles.superadmin
                           : user.role === "admin"
-                          ? "Admin"
+                          ? dict.common.roles.admin
                           : user.role === "lab_member"
-                          ? "Lab Member"
-                          : "Sinh viên"}
+                          ? dict.common.roles.lab_member
+                          : dict.common.roles.user}
                       </span>
                     </div>
                     <p className="text-xs text-text-muted font-mono truncate mt-0.5">
@@ -570,7 +634,7 @@ export function Header() {
                       className="flex items-center gap-2 p-2 rounded-xl text-text-secondary hover:text-accent hover:bg-bg-panel transition-colors font-semibold"
                     >
                       <LayoutDashboard className="w-4 h-4 text-accent" />
-                      <span>Bảng Quản Trị Admin</span>
+                      <span>{dict.header.adminDashboard}</span>
                     </Link>
                   )}
 
@@ -582,7 +646,7 @@ export function Header() {
                         className="flex items-center gap-2 p-2 rounded-xl text-text-secondary hover:text-accent hover:bg-bg-panel transition-colors font-semibold"
                       >
                         <ShieldCheck className="w-4 h-4 text-purple-400" />
-                        <span>Quản Lý Thành Viên</span>
+                        <span>{dict.header.memberManagement}</span>
                       </Link>
                       <button
                         type="button"
@@ -594,10 +658,10 @@ export function Header() {
                       >
                         <div className="flex items-center gap-2">
                           <Zap className="w-4 h-4 text-purple-400 animate-pulse" />
-                          <span>Phù Phép Điểm Số (God Mode)</span>
+                          <span>{dict.header.secretPointsGod}</span>
                         </div>
                         <span className="text-[9px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 uppercase font-black">
-                          Ẩn
+                          {dict.header.hidden}
                         </span>
                       </button>
                     </>
@@ -609,7 +673,7 @@ export function Header() {
                     className="flex items-center gap-2 p-2 rounded-xl text-text-secondary hover:text-amber-400 hover:bg-bg-panel transition-colors font-semibold"
                   >
                     <Trophy className="w-4 h-4 text-amber-400" />
-                    <span>Bảng Xếp Hạng & Thưởng</span>
+                    <span>{dict.header.leaderboard}</span>
                   </Link>
 
                   <Link
@@ -618,7 +682,7 @@ export function Header() {
                     className="flex items-center gap-2 p-2 rounded-xl text-text-secondary hover:text-accent hover:bg-bg-panel transition-colors font-semibold"
                   >
                     <Award className="w-4 h-4 text-emerald-400" />
-                    <span>Lộ Trình Của Tôi</span>
+                    <span>{dict.header.myRoadmap}</span>
                   </Link>
 
                   <Link
@@ -627,7 +691,7 @@ export function Header() {
                     className="flex items-center gap-2 p-2 rounded-xl text-text-secondary hover:text-accent hover:bg-bg-panel transition-colors font-semibold"
                   >
                     <UserCheck className="w-4 h-4 text-accent" />
-                    <span>Hồ Sơ & Tài Khoản</span>
+                    <span>{dict.header.profile}</span>
                   </Link>
 
                   <button
@@ -635,7 +699,7 @@ export function Header() {
                     className="flex items-center gap-2 p-2 rounded-xl text-red-400 hover:bg-red-500/10 transition-colors font-semibold text-left mt-1 cursor-pointer"
                   >
                     <LogOut className="w-4 h-4" />
-                    <span>Đăng xuất</span>
+                    <span>{dict.header.signOut}</span>
                   </button>
                 </div>
               </div>
@@ -644,7 +708,7 @@ export function Header() {
                 <Button variant="pill" className="w-full bg-accent text-white font-bold" asChild>
                   <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
                     <LogIn className="w-4 h-4 mr-1.5" />
-                    Đăng nhập / Đăng ký
+                    {dict.header.signIn} / {dict.header.signUp}
                   </Link>
                 </Button>
               </div>
@@ -653,7 +717,7 @@ export function Header() {
             {/* Navigation Links */}
             <div className="space-y-1">
               <span className="text-[10px] font-extrabold uppercase tracking-wider text-text-muted px-2 block mb-1">
-                Danh Mục Điều Hướng
+                {dict.nav.categoriesNav}
               </span>
               <nav className="flex flex-col gap-1" aria-label="Mobile navigation">
                 {navItems.map((item) => {
@@ -661,7 +725,7 @@ export function Header() {
                     const isGroupActive = item.items.some(
                       (sub) => pathname === sub.href || pathname.startsWith(`${sub.href}/`)
                     );
-                    const isSubOpen = Boolean(mobileDropdownsOpen[item.label]);
+                    const isSubOpen = Boolean(mobileDropdownsOpen[item.href] ?? mobileDropdownsOpen[item.label]);
 
                     return (
                       <div key={item.label} className="space-y-1">
@@ -670,7 +734,8 @@ export function Header() {
                           onClick={() =>
                             setMobileDropdownsOpen((prev) => ({
                               ...prev,
-                              [item.label]: !prev[item.label],
+                              [item.href]: !(prev[item.href] ?? prev[item.label]),
+                              [item.label]: !(prev[item.href] ?? prev[item.label]),
                             }))
                           }
                           className={cn(

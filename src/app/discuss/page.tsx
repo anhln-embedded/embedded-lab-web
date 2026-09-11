@@ -10,6 +10,7 @@ import {
   resetDiscussionData,
 } from "@/lib/discussion-store";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 import { DiscussionThreadCard } from "@/components/discuss/DiscussionThreadCard";
 import { DiscussionCreateModal } from "@/components/discuss/DiscussionCreateModal";
 import { DiscussionDetailView } from "@/components/discuss/DiscussionDetailView";
@@ -40,6 +41,7 @@ function DiscussContent() {
   const initialThreadId = searchParams?.get("t") || null;
 
   const { user, quickLogin } = useAuth();
+  const { dict } = useLanguage();
 
   const [threads, setThreads] = useState<DiscussionThread[]>([]);
   const [sortTab, setSortTab] = useState<SortTab>("hot");
@@ -147,13 +149,13 @@ function DiscussContent() {
           <div className="space-y-2.5 sm:space-y-3 max-w-2xl">
             <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full bg-accent/15 border border-accent/30 text-accent text-[11px] sm:text-xs font-bold uppercase tracking-wider">
               <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
-              <span className="truncate">Diễn Đàn Công Nghệ Mở • Chuyện Nghề & Kỹ Thuật</span>
+              <span className="truncate">{dict.discuss.bannerBadge}</span>
             </div>
 
             <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-text-primary tracking-tight leading-tight">
-              Thảo Luận Kỹ Thuật &{" "}
+              {dict.discuss.bannerTitle}{" "}
               <span className="bg-gradient-to-r from-accent to-amber-500 bg-clip-text text-transparent">
-                Góc Khuất Nghề Nghiệp
+                {dict.discuss.bannerTitleHighlight}
               </span>
             </h1>
 
@@ -162,19 +164,19 @@ function DiscussContent() {
               <div className="flex items-center gap-1.5">
                 <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent" />
                 <span>
-                  <strong className="text-text-primary font-bold">{threads.length}</strong> Chủ đề
+                  <strong className="text-text-primary font-bold">{threads.length}</strong> {dict.discuss.statTopics}
                 </span>
               </div>
               <div className="flex items-center gap-1.5">
                 <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400" />
                 <span>
-                  <strong className="text-text-primary font-bold">{totalReplies}</strong> Bình luận
+                  <strong className="text-text-primary font-bold">{totalReplies}</strong> {dict.discuss.statReplies}
                 </span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-400" />
                 <span>
-                  <strong className="text-text-primary font-bold">{totalVotes}</strong> Điểm Upvote
+                  <strong className="text-text-primary font-bold">{totalVotes}</strong> {dict.discuss.statUpvotes}
                 </span>
               </div>
             </div>
@@ -195,12 +197,12 @@ function DiscussContent() {
               className="shadow-xl shadow-accent/25 w-full sm:w-auto"
             >
               <PlusCircle className="w-5 h-5 mr-2" />
-              Tạo Chủ Đề Mới
+              {dict.discuss.btnCreateThread}
             </Button>
 
             {!user && (
               <span className="text-[11px] text-text-muted text-center">
-                Cần đăng nhập để gửi bài
+                {dict.discuss.needLoginNotice}
               </span>
             )}
           </div>
@@ -214,16 +216,16 @@ function DiscussContent() {
             <span className="text-2xl">🔒</span>
             <div>
               <strong className="text-text-primary block font-bold">
-                Yêu cầu đăng nhập để tạo chủ đề và tương tác
+                {dict.discuss.loginRequiredTitle}
               </strong>
               <span className="text-text-muted">
-                Bạn có thể đăng nhập bằng tài khoản hoặc dùng nút Demo Đăng Nhập Nhanh.
+                {dict.discuss.loginRequiredDesc}
               </span>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <Button asChild variant="primary" size="sm">
-              <Link href="/login?redirect=/discuss">Đăng Nhập</Link>
+              <Link href="/login?redirect=/discuss">{dict.header.signIn}</Link>
             </Button>
             <Button
               variant="outline"
@@ -238,7 +240,7 @@ function DiscussContent() {
             </Button>
             <button
               onClick={() => setShowLoginPrompt(false)}
-              className="p-1 text-text-muted hover:text-text-primary"
+              className="p-1 text-text-muted hover:text-text-primary cursor-pointer"
             >
               ✕
             </button>
@@ -264,53 +266,53 @@ function DiscussContent() {
               <button
                 onClick={() => setSortTab("hot")}
                 className={cn(
-                  "flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex-shrink-0",
+                  "flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex-shrink-0 cursor-pointer",
                   sortTab === "hot"
                     ? "bg-accent text-white shadow-sm"
                     : "text-text-muted hover:text-text-primary"
                 )}
               >
                 <Flame className="w-3.5 h-3.5" />
-                <span><span className="sm:hidden">Hot</span><span className="hidden sm:inline">Đang sốt (Hot)</span></span>
+                <span>{dict.discuss.tabHot}</span>
               </button>
 
               <button
                 onClick={() => setSortTab("new")}
                 className={cn(
-                  "flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex-shrink-0",
+                  "flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex-shrink-0 cursor-pointer",
                   sortTab === "new"
                     ? "bg-accent text-white shadow-sm"
                     : "text-text-muted hover:text-text-primary"
                 )}
               >
                 <Clock className="w-3.5 h-3.5" />
-                <span><span className="sm:hidden">Mới</span><span className="hidden sm:inline">Mới nhất (New)</span></span>
+                <span>{dict.discuss.tabNew}</span>
               </button>
 
               <button
                 onClick={() => setSortTab("top")}
                 className={cn(
-                  "flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex-shrink-0",
+                  "flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex-shrink-0 cursor-pointer",
                   sortTab === "top"
                     ? "bg-accent text-white shadow-sm"
                     : "text-text-muted hover:text-text-primary"
                 )}
               >
                 <Trophy className="w-3.5 h-3.5" />
-                <span><span className="sm:hidden">Top</span><span className="hidden sm:inline">Nhiều Vote (Top)</span></span>
+                <span>{dict.discuss.tabTop}</span>
               </button>
 
               <button
                 onClick={() => setSortTab("pinned")}
                 className={cn(
-                  "flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex-shrink-0",
+                  "flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex-shrink-0 cursor-pointer",
                   sortTab === "pinned"
                     ? "bg-accent text-white shadow-sm"
                     : "text-text-muted hover:text-text-primary"
                 )}
               >
                 <Pin className="w-3.5 h-3.5" />
-                <span>Đã ghim</span>
+                <span>{dict.discuss.tabPinned}</span>
               </button>
             </div>
 
@@ -319,7 +321,7 @@ function DiscussContent() {
               <Search className="w-4 h-4 absolute left-3 top-2.5 text-text-muted" />
               <input
                 type="text"
-                placeholder="Tìm chủ đề, từ khóa, tag..."
+                placeholder={dict.discuss.searchPlaceholder}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-bg-elevated border border-border text-xs text-text-primary focus:outline-none focus:border-accent"

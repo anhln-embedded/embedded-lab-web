@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 import { getAllRoadmapTracks, RoadmapTrack, DEFAULT_5_ROADMAP_TRACKS } from "@/lib/roadmap-store";
 import {
   Cpu,
@@ -40,6 +41,7 @@ const ICON_MAP: Record<string, React.ReactNode> = {
 
 export default function RoadmapPage() {
   const { user, completedSteps, toggleRoadmapStep, isStepCompleted } = useAuth();
+  const { dict, locale } = useLanguage();
   const [tracks, setTracks] = useState<RoadmapTrack[]>(DEFAULT_5_ROADMAP_TRACKS);
   const [activeTrack, setActiveTrack] = useState<string>("all");
   const [expandedTrack, setExpandedTrack] = useState<string | null>("track-embedded-rtos");
@@ -79,13 +81,13 @@ export default function RoadmapPage() {
       <div className="max-w-3xl mx-auto text-center mb-12">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-pill bg-accent-muted text-accent text-xs font-semibold border border-accent/20 mb-4 shadow-sm">
           <Route className="w-4 h-4" />
-          Lộ trình Đào tạo & Nghiên cứu Kỹ sư Nhúng
+          {dict.roadmap.badge}
         </div>
         <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-text-primary mb-4">
-          Lộ Trình Học Tập <span className="text-accent">Embedded-AIoT</span>
+          {dict.roadmap.title} <span className="text-accent">Embedded-AIoT</span>
         </h1>
         <p className="text-text-secondary text-sm md:text-base leading-relaxed">
-          Được thiết kế bài bản theo từng cấp độ, giúp sinh viên và người học định hướng lộ trình rõ ràng từ nền tảng căn bản đến mức độ chuyên gia thực chiến.
+          {dict.roadmap.desc}
         </p>
 
         {/* Progress Tracker Overview */}
@@ -94,18 +96,18 @@ export default function RoadmapPage() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3">
               <div>
                 <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">
-                  Tiến độ của bạn ({user ? user.name : "Khách vãng lai"}):
+                  {dict.roadmap.yourProgress} ({user ? user.name : dict.roadmap.guest}):
                 </span>
                 <div className="text-base sm:text-lg font-bold text-text-primary flex flex-wrap items-center gap-2 mt-0.5">
                   <Award className="w-5 h-5 text-accent flex-shrink-0" />
-                  <span>{totalCompleted} / {allStepsCount} mốc kỹ năng đã hoàn thành</span>
+                  <span>{totalCompleted} / {allStepsCount} {dict.roadmap.milestonesCompleted}</span>
                   <span className="text-accent text-sm sm:text-base">({overallPercentage}%)</span>
                 </div>
               </div>
               {!user && (
                 <Button variant="outline" size="sm" asChild className="text-xs w-full sm:w-auto mt-2 sm:mt-0">
                   <Link href="/login?redirect=/roadmap">
-                    Đăng nhập để lưu tiến độ
+                    {dict.roadmap.loginToSave}
                     <ArrowRight className="w-3.5 h-3.5 ml-1" />
                   </Link>
                 </Button>
@@ -120,7 +122,7 @@ export default function RoadmapPage() {
               />
             </div>
             <p className="text-[11px] text-text-muted mt-2">
-              💡 <em>Mẹo:</em> Bấm vào ô tròn trước mỗi mốc bài học bên dưới để đánh dấu hoàn thành kỹ năng.
+              {dict.roadmap.progressHint}
             </p>
           </div>
         )}
@@ -133,17 +135,17 @@ export default function RoadmapPage() {
             🗺️
           </div>
           <h3 className="text-xl font-bold text-text-primary">
-            Lộ trình học tập đang được cập nhật
+            {dict.roadmap.emptyTitle}
           </h3>
           <p className="text-xs md:text-sm text-text-secondary leading-relaxed max-w-lg mx-auto">
-            Nội dung các mốc kỹ năng và bài tập thực hành đang được chuẩn hóa chi tiết. Trong thời gian này, bạn có thể tham gia các khóa học thực nghiệm hoặc đọc bài viết chia sẻ kỹ thuật của Lab.
+            {dict.roadmap.emptyDesc}
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
             <Button variant="primary" asChild className="bg-gradient-to-r from-accent to-accent-amber hover:brightness-110 text-white text-xs sm:text-sm font-bold px-5 py-2.5 rounded-xl shadow-md">
               <Link href="/courses">
                 <BookOpen className="w-4 h-4 mr-1.5" />
-                Khám Phá Khóa Học Lab
+                {dict.roadmap.exploreCourses}
                 <ArrowRight className="w-4 h-4 ml-1.5" />
               </Link>
             </Button>
@@ -151,7 +153,7 @@ export default function RoadmapPage() {
             <Button variant="outline" asChild className="text-xs sm:text-sm font-semibold rounded-xl">
               <Link href="/blog">
                 <Sparkles className="w-4 h-4 mr-1.5 text-accent" />
-                Đọc Bản Tin Kỹ Thuật
+                {dict.roadmap.readBulletins}
               </Link>
             </Button>
 
@@ -159,7 +161,7 @@ export default function RoadmapPage() {
               <Button variant="ghost" asChild className="text-xs text-text-muted hover:text-accent">
                 <Link href="/admin/roadmap">
                   <PlusCircle className="w-3.5 h-3.5 mr-1" />
-                  Quản trị Lộ trình (Admin)
+                  {dict.roadmap.manageRoadmap}
                 </Link>
               </Button>
             )}
@@ -177,7 +179,7 @@ export default function RoadmapPage() {
                   : "bg-bg-panel border-border text-text-secondary hover:text-text-primary hover:bg-bg-elevated"
               }`}
             >
-              Tất cả ({tracks.length})
+              {dict.roadmap.tabAll} ({tracks.length})
             </button>
             {tracks.map((t) => (
               <button
@@ -231,7 +233,7 @@ export default function RoadmapPage() {
                             </h2>
                           </div>
                           <p className="text-xs text-text-muted mb-1.5">
-                            🎯 <strong>Mục tiêu:</strong> {track.targetRole}
+                            🎯 <strong>{dict.roadmap.targetRoleLabel}</strong> {track.targetRole}
                           </p>
                           <p className="text-xs text-text-secondary line-clamp-2 max-w-2xl">
                             {track.description}
@@ -242,7 +244,7 @@ export default function RoadmapPage() {
                       <div className="flex items-center gap-4 flex-shrink-0 self-end md:self-center">
                         <div className="text-right">
                           <span className="text-xs font-bold text-text-primary block">
-                            {trackCompleted}/{track.steps.length} Hoàn thành
+                            {trackCompleted}/{track.steps.length} {dict.roadmap.completedCount}
                           </span>
                           <span className="text-[11px] text-accent font-semibold">
                             {trackPercent}%
@@ -263,7 +265,7 @@ export default function RoadmapPage() {
                       <div className="p-6 md:p-8 space-y-6 bg-bg-panel/40">
                         {track.steps.length === 0 ? (
                           <p className="text-xs text-text-muted italic text-center py-4">
-                            Lộ trình này chưa có mốc kỹ năng nào.
+                            {dict.roadmap.noSteps}
                           </p>
                         ) : (
                           <div className="relative pl-6 md:pl-8 border-l-2 border-border/80 space-y-8">
@@ -283,8 +285,8 @@ export default function RoadmapPage() {
                                     }`}
                                     title={
                                       completed
-                                        ? "Bấm để bỏ đánh dấu"
-                                        : "Bấm để đánh dấu đã hoàn thành"
+                                        ? dict.roadmap.markIncomplete
+                                        : dict.roadmap.markCompleted
                                     }
                                   >
                                     {completed ? (
@@ -332,7 +334,15 @@ export default function RoadmapPage() {
                                               : "bg-rose-500/10 text-rose-400 border border-rose-500/20"
                                           }`}
                                         >
-                                          {step.level}
+                                          {locale === "en"
+                                            ? step.level === "Cơ bản"
+                                              ? "Beginner"
+                                              : step.level === "Trung cấp"
+                                              ? "Intermediate"
+                                              : step.level === "Nâng cao"
+                                              ? "Advanced"
+                                              : "Practical"
+                                            : step.level}
                                         </span>
                                       </div>
                                     </div>
@@ -344,7 +354,7 @@ export default function RoadmapPage() {
                                     {/* Skills tags */}
                                     <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-border/40">
                                       <span className="text-[11px] font-semibold text-text-muted mr-1">
-                                        Kỹ năng:
+                                        {dict.roadmap.skillsLabel}
                                       </span>
                                       {step.skills.map((skill) => (
                                         <span

@@ -41,9 +41,11 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 
 export function ResearchPaperList() {
   const { user } = useAuth();
+  const { dict, locale } = useLanguage();
   const isAdmin = Boolean(user && (user.role === "admin" || user.role === "superadmin"));
 
   const [papers, setPapers] = React.useState<ResearchPaper[]>([]);
@@ -234,6 +236,22 @@ export function ResearchPaperList() {
     showToast("Đã xóa bài báo nghiên cứu thành công!");
   };
 
+  const getPubTypeLabel = (type: PublicationType, isShort = false) => {
+    if (locale === "en") {
+      switch (type) {
+        case "journal":
+          return isShort ? "ISI/Scopus Journal" : "International Journals (ISI / Scopus)";
+        case "conference":
+          return isShort ? "IEEE/ACM Conference" : "International Conferences (IEEE / ACM / Springer)";
+        case "project":
+          return isShort ? "R&D Project" : "Research Projects & Tech Transfer";
+        case "patent":
+          return isShort ? "Patent" : "Patents & Practical Solutions";
+      }
+    }
+    return isShort ? PUBLICATION_TYPES[type].shortLabel : PUBLICATION_TYPES[type].label;
+  };
+
   return (
     <div className="space-y-8">
       {/* Toast Notification */}
@@ -249,7 +267,7 @@ export function ResearchPaperList() {
         <div className="p-5 rounded-2xl bg-bg-panel border border-border/80 shadow-sm relative overflow-hidden group hover:border-accent/40 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">
-              Tổng Công Bố
+              {dict.research.totalPublications}
             </span>
             <div className="p-2 rounded-xl bg-accent/10 text-accent group-hover:scale-110 transition-transform">
               <BookOpen className="w-4 h-4" />
@@ -257,15 +275,15 @@ export function ResearchPaperList() {
           </div>
           <div className="mt-3 flex items-baseline gap-2">
             <span className="text-3xl font-extrabold text-text-primary">{stats.total}</span>
-            <span className="text-xs text-text-muted">công trình</span>
+            <span className="text-xs text-text-muted">{dict.research.worksCount}</span>
           </div>
-          <p className="text-[11px] text-text-muted mt-1">Đã công bố & nghiệm thu</p>
+          <p className="text-[11px] text-text-muted mt-1">{dict.research.publishedAndAccepted}</p>
         </div>
 
         <div className="p-5 rounded-2xl bg-bg-panel border border-border/80 shadow-sm relative overflow-hidden group hover:border-blue-500/40 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">
-              Tạp Chí ISI/Scopus
+              {dict.research.isiScopusJournals}
             </span>
             <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400 group-hover:scale-110 transition-transform">
               <FileText className="w-4 h-4" />
@@ -281,7 +299,7 @@ export function ResearchPaperList() {
         <div className="p-5 rounded-2xl bg-bg-panel border border-border/80 shadow-sm relative overflow-hidden group hover:border-purple-500/40 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">
-              Hội Nghị IEEE/ACM
+              {dict.research.ieeeAcmConferences}
             </span>
             <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400 group-hover:scale-110 transition-transform">
               <Award className="w-4 h-4" />
@@ -289,7 +307,7 @@ export function ResearchPaperList() {
           </div>
           <div className="mt-3 flex items-baseline gap-2">
             <span className="text-3xl font-extrabold text-text-primary">{stats.conferences}</span>
-            <span className="text-xs text-purple-400 font-semibold">Kỷ yếu quốc tế</span>
+            <span className="text-xs text-purple-400 font-semibold">{dict.research.intlProceedings}</span>
           </div>
           <p className="text-[11px] text-text-muted mt-1">IEEE ATC, SOCC, RIVF...</p>
         </div>
@@ -297,7 +315,7 @@ export function ResearchPaperList() {
         <div className="p-5 rounded-2xl bg-bg-panel border border-border/80 shadow-sm relative overflow-hidden group hover:border-emerald-500/40 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">
-              Đề Tài & Sáng Chế
+              {dict.research.projectsAndPatents}
             </span>
             <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition-transform">
               <Compass className="w-4 h-4" />
@@ -309,7 +327,7 @@ export function ResearchPaperList() {
             </span>
             <span className="text-xs text-emerald-400 font-semibold">R&D & Patent</span>
           </div>
-          <p className="text-[11px] text-text-muted mt-1">Đề tài Bộ TT&TT & Cục SHTT</p>
+          <p className="text-[11px] text-text-muted mt-1">{dict.research.ministryAndIpDesc}</p>
         </div>
       </div>
 
@@ -323,7 +341,7 @@ export function ResearchPaperList() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Tìm theo tên bài báo, tác giả, DOI, hội nghị, từ khóa (vd: TinyML, FreeRTOS, LoRaWAN)..."
+              placeholder={dict.research.searchPlaceholder}
               className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-bg-elevated/70 border border-border/80 text-xs text-text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent font-medium transition-all"
             />
             {searchQuery && (
@@ -331,7 +349,7 @@ export function ResearchPaperList() {
                 onClick={() => setSearchQuery("")}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-muted hover:text-text-primary"
               >
-                Xóa
+                {dict.research.clear}
               </button>
             )}
           </div>
@@ -343,7 +361,7 @@ export function ResearchPaperList() {
               className="px-5 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold transition-all shadow-md hover:shadow-accent/20 flex items-center justify-center gap-2 cursor-pointer flex-shrink-0"
             >
               <Plus className="w-4 h-4" />
-              <span>Đăng Bài Nghiên Cứu</span>
+              <span>{dict.research.addPaper}</span>
             </button>
           )}
         </div>
@@ -361,11 +379,10 @@ export function ResearchPaperList() {
                   : "bg-bg-elevated text-text-secondary hover:text-text-primary hover:bg-bg-elevated/80"
               )}
             >
-              Tất cả ({papers.length})
+              {dict.research.tabAll} ({papers.length})
             </button>
 
             {(Object.keys(PUBLICATION_TYPES) as PublicationType[]).map((type) => {
-              const meta = PUBLICATION_TYPES[type];
               const count = papers.filter((p) => p.publicationType === type).length;
               return (
                 <button
@@ -378,7 +395,7 @@ export function ResearchPaperList() {
                       : "bg-bg-elevated text-text-secondary hover:text-text-primary hover:bg-bg-elevated/80"
                   )}
                 >
-                  {meta.shortLabel} ({count})
+                  {getPubTypeLabel(type, true)} ({count})
                 </button>
               );
             })}
@@ -390,13 +407,13 @@ export function ResearchPaperList() {
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(e.target.value)}
-              aria-label="Lọc theo năm xuất bản"
+              aria-label={dict.research.filterByYear}
               className="w-full sm:w-auto px-3 py-1.5 rounded-xl bg-bg-elevated border border-border/80 text-text-primary text-xs font-medium focus:outline-none focus:border-accent cursor-pointer truncate"
             >
-              <option value="all">Tất cả các năm</option>
+              <option value="all">{dict.research.allYears}</option>
               {availableYears.map((yr) => (
                 <option key={yr} value={yr.toString()}>
-                  Năm {yr}
+                  {dict.research.yearPrefix} {yr}
                 </option>
               ))}
             </select>
@@ -405,10 +422,10 @@ export function ResearchPaperList() {
             <select
               value={selectedField}
               onChange={(e) => setSelectedField(e.target.value)}
-              aria-label="Lọc theo lĩnh vực chuyên môn"
+              aria-label={dict.research.filterByField}
               className="w-full sm:w-auto px-3 py-1.5 rounded-xl bg-bg-elevated border border-border/80 text-text-primary text-xs font-medium focus:outline-none focus:border-accent cursor-pointer max-w-full truncate"
             >
-              <option value="all">Tất cả lĩnh vực</option>
+              <option value="all">{dict.research.allFields}</option>
               {RESEARCH_FIELDS.filter((f) => f !== "Tất cả lĩnh vực").map((field) => (
                 <option key={field} value={field}>
                   {field}
@@ -427,10 +444,10 @@ export function ResearchPaperList() {
               <Search className="w-6 h-6" />
             </div>
             <h3 className="text-sm font-bold text-text-primary">
-              Không tìm thấy bài báo nghiên cứu nào
+              {dict.research.noPapersTitle}
             </h3>
             <p className="text-xs text-text-muted max-w-md mx-auto">
-              Không có công bố nào khớp với từ khóa tìm kiếm hoặc bộ lọc hiện tại. Vui lòng điều chỉnh tiêu chí lọc.
+              {dict.research.noPapersDesc}
             </p>
             <button
               onClick={() => {
@@ -441,7 +458,7 @@ export function ResearchPaperList() {
               }}
               className="px-4 py-2 rounded-xl bg-bg-elevated border border-border text-xs font-semibold text-text-primary hover:bg-bg-panel cursor-pointer"
             >
-              Xóa bộ lọc & xem tất cả
+              {dict.research.clearFilters}
             </button>
           </div>
         ) : (
@@ -468,7 +485,7 @@ export function ResearchPaperList() {
                         typeMeta.badgeColor
                       )}
                     >
-                      {typeMeta.shortLabel}
+                      {getPubTypeLabel(paper.publicationType, true)}
                     </span>
 
                     {paper.badge && (
@@ -484,7 +501,7 @@ export function ResearchPaperList() {
 
                     {paper.citationCount !== undefined && paper.citationCount > 0 && (
                       <span className="text-[11px] font-semibold text-emerald-500 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                        {paper.citationCount} trích dẫn
+                        {paper.citationCount} {dict.research.citations}
                       </span>
                     )}
                   </div>
@@ -514,7 +531,7 @@ export function ResearchPaperList() {
 
                 {/* Authors */}
                 <div className="text-xs text-text-secondary leading-relaxed">
-                  <span className="font-semibold text-text-primary">Tác giả: </span>
+                  <span className="font-semibold text-text-primary">{dict.research.authors}: </span>
                   {paper.authors}
                 </div>
 
@@ -546,7 +563,7 @@ export function ResearchPaperList() {
                         !isAbstractExpanded && "line-clamp-2"
                       )}
                     >
-                      <strong className="text-text-primary not-italic">Tóm tắt (Abstract): </strong>
+                      <strong className="text-text-primary not-italic">{dict.research.abstract}: </strong>
                       {paper.abstract}
                     </p>
 
@@ -557,12 +574,12 @@ export function ResearchPaperList() {
                       {isAbstractExpanded ? (
                         <>
                           <ChevronUp className="w-3.5 h-3.5" />
-                          <span>Thu gọn</span>
+                          <span>{dict.research.hideAbstract}</span>
                         </>
                       ) : (
                         <>
                           <ChevronDown className="w-3.5 h-3.5" />
-                          <span>Xem toàn bộ tóm tắt</span>
+                          <span>{dict.research.viewAbstract}</span>
                         </>
                       )}
                     </button>
@@ -594,7 +611,7 @@ export function ResearchPaperList() {
                         className="px-3 py-1.5 rounded-xl bg-accent/10 hover:bg-accent hover:text-white text-accent border border-accent/30 text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs"
                       >
                         <Download className="w-3.5 h-3.5" />
-                        <span>Xem PDF</span>
+                        <span>{dict.research.downloadPdf}</span>
                       </a>
                     )}
 
@@ -606,7 +623,7 @@ export function ResearchPaperList() {
                         className="px-3 py-1.5 rounded-xl bg-bg-elevated hover:bg-bg-panel border border-border text-xs font-semibold text-text-secondary hover:text-text-primary transition-all flex items-center gap-1.5"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
-                        <span>Bản Gốc (DOI)</span>
+                        <span>{dict.research.originalDoi}</span>
                       </a>
                     )}
 
@@ -618,7 +635,7 @@ export function ResearchPaperList() {
                         className="px-3 py-1.5 rounded-xl bg-bg-elevated hover:bg-bg-panel border border-border text-xs font-semibold text-text-secondary hover:text-text-primary transition-all flex items-center gap-1.5"
                       >
                         <GitBranch className="w-3.5 h-3.5" />
-                        <span>Source Code</span>
+                        <span>{dict.research.sourceCode}</span>
                       </a>
                     )}
 
@@ -627,7 +644,7 @@ export function ResearchPaperList() {
                       className="px-3 py-1.5 rounded-xl bg-bg-elevated hover:bg-bg-panel border border-border text-xs font-semibold text-text-secondary hover:text-text-primary transition-all flex items-center gap-1.5 cursor-pointer"
                     >
                       <Quote className="w-3.5 h-3.5 text-accent" />
-                      <span>Trích Dẫn BibTeX</span>
+                      <span>{dict.research.exportBibtex}</span>
                     </button>
                   </div>
 

@@ -75,7 +75,19 @@ export function getLevelColor(level: string): string {
   }
 }
 
-export function getLevelLabel(level: string): string {
+export function getLevelLabel(level: string, locale?: string): string {
+  if (locale === "en") {
+    switch (level) {
+      case "beginner":
+        return "Beginner";
+      case "intermediate":
+        return "Intermediate";
+      case "advanced":
+        return "Advanced";
+      default:
+        return level;
+    }
+  }
   switch (level) {
     case "beginner":
       return "Cơ bản";
