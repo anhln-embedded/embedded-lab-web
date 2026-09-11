@@ -198,7 +198,7 @@ export default function HomePage() {
         ========================================================================= */}
         <section
           id="hero"
-          className="min-h-[calc(100vh-4rem)] w-full snap-start snap-always flex flex-col justify-center items-center relative overflow-hidden px-4 py-8 border-b border-border/80 bg-grid-pattern"
+          className="min-h-[calc(100vh-4rem)] w-full snap-start snap-always flex flex-col justify-center items-center relative overflow-hidden px-4 py-8 border-b border-border/80"
         >
           {/* 3D Cyber Snake Background (Zero-Load Impact & Auto GPU-Pause) */}
           <CyberSnakeCanvas />
