@@ -8,9 +8,12 @@ import {
   DISCUSSION_FLAIRS,
   getDiscussionComments,
   createDiscussionComment,
+  createDiscussionCommentApi,
   deleteDiscussionComment,
   voteDiscussionThread,
   reactDiscussionThread,
+  voteDiscussionThreadApi,
+  reactDiscussionThreadApi,
   VozReactionType,
 } from "@/lib/discussion-store";
 import { useAuth } from "@/context/AuthContext";
@@ -70,6 +73,22 @@ export function DiscussionDetailView({
   const [copiedCode, setCopiedCode] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Tải bình luận mới nhất từ SQLite
+  React.useEffect(() => {
+    let isMounted = true;
+    fetch(`/api/discussions/${thread.id}/comments`, { cache: "no-store" })
+      .then((res) => res.json())
+      .then((json) => {
+        if (isMounted && json.success && Array.isArray(json.data)) {
+          setComments(json.data);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      isMounted = false;
+    };
+  }, [thread.id]);
+
   const category = DISCUSSION_CATEGORIES.find((c) => c.id === thread.category);
   const flair = DISCUSSION_FLAIRS[thread.flair] || DISCUSSION_FLAIRS["thao-luan"];
 
@@ -78,10 +97,17 @@ export function DiscussionDetailView({
       onRequestLogin();
       return;
     }
+    const currentVote = thread.userVote || 0;
+    let diff = 0;
+    if (currentVote === direction) diff = -direction;
+    else if (currentVote === 0) diff = direction;
+    else diff = direction * 2;
+
     const updated = voteDiscussionThread(thread.id, direction);
     if (updated) {
       onThreadUpdated(updated);
     }
+    voteDiscussionThreadApi(thread.id, diff);
   };
 
   const handleReact = (reaction: VozReactionType) => {
@@ -89,10 +115,14 @@ export function DiscussionDetailView({
       onRequestLogin();
       return;
     }
+    const userReactions = [...(thread.userReactions || [])];
+    const hasReacted = userReactions.includes(reaction);
+
     const updated = reactDiscussionThread(thread.id, reaction);
     if (updated) {
       onThreadUpdated(updated);
     }
+    reactDiscussionThreadApi(thread.id, reaction, hasReacted ? "remove" : "add");
   };
 
   const handleCopyCode = () => {
@@ -115,7 +145,7 @@ export function DiscussionDetailView({
     setQuoteTarget(null);
   };
 
-  const handleSendComment = (e: React.FormEvent) => {
+  const handleSendComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
       onRequestLogin();
@@ -125,7 +155,7 @@ export function DiscussionDetailView({
 
     setIsSubmitting(true);
     try {
-      const newCmt = createDiscussionComment({
+      const newCmt = await createDiscussionCommentApi({
         threadId: thread.id,
         content: commentText,
         quoteAuthor: quoteTarget?.author,

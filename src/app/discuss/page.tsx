@@ -7,7 +7,9 @@ import {
   getDiscussionThreads,
   incrementThreadViews,
   deleteDiscussionThread,
-  resetDiscussionData,
+  fetchDiscussionThreadsApi,
+  deleteDiscussionThreadApi,
+  incrementThreadViewsApi,
 } from "@/lib/discussion-store";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
@@ -44,25 +46,36 @@ function DiscussContent() {
   const { dict } = useLanguage();
 
   const [threads, setThreads] = useState<DiscussionThread[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [sortTab, setSortTab] = useState<SortTab>("hot");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedThread, setSelectedThread] = useState<DiscussionThread | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
-  // Tải danh sách threads từ storage
+  // Tải danh sách threads từ SQLite Database
   useEffect(() => {
-    const loaded = getDiscussionThreads();
-    setThreads(loaded);
+    let isMounted = true;
+    const loadThreads = async () => {
+      setIsLoading(true);
+      const loaded = await fetchDiscussionThreadsApi();
+      if (!isMounted) return;
+      setThreads(loaded);
+      setIsLoading(false);
 
-    // Nếu có query param ?t=id
-    if (initialThreadId) {
-      const found = loaded.find((t) => t.id === initialThreadId);
-      if (found) {
-        setSelectedThread(found);
-        incrementThreadViews(found.id);
+      // Nếu có query param ?t=id
+      if (initialThreadId) {
+        const found = loaded.find((t) => t.id === initialThreadId);
+        if (found) {
+          setSelectedThread(found);
+          incrementThreadViewsApi(found.id);
+        }
       }
-    }
+    };
+    loadThreads();
+    return () => {
+      isMounted = false;
+    };
   }, [initialThreadId]);
 
   // Bộ lọc và sắp xếp threads
@@ -106,7 +119,7 @@ function DiscussContent() {
 
   const handleSelectThread = (thread: DiscussionThread) => {
     setSelectedThread(thread);
-    incrementThreadViews(thread.id);
+    incrementThreadViewsApi(thread.id);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -123,12 +136,12 @@ function DiscussContent() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleDeleteThread = (threadId: string) => {
-    deleteDiscussionThread(threadId);
+  const handleDeleteThread = async (threadId: string) => {
     setThreads((prev) => prev.filter((t) => t.id !== threadId));
     if (selectedThread && selectedThread.id === threadId) {
       setSelectedThread(null);
     }
+    await deleteDiscussionThreadApi(threadId);
   };
 
   const totalVotes = useMemo(() => {
@@ -353,22 +366,6 @@ function DiscussContent() {
                 >
                   Đặt lại bộ lọc
                 </Button>
-
-                {threads.length === 0 && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      const restored = resetDiscussionData();
-                      setThreads(restored);
-                      setSearchQuery("");
-                      setSortTab("hot");
-                    }}
-                    className="border-accent/40 text-accent hover:bg-accent/10"
-                  >
-                    ⚡ Khôi phục bài viết mẫu
-                  </Button>
-                )}
 
                 <Button
                   variant="primary"

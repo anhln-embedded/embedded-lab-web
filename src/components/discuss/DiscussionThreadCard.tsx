@@ -7,6 +7,8 @@ import {
   DISCUSSION_FLAIRS,
   voteDiscussionThread,
   reactDiscussionThread,
+  voteDiscussionThreadApi,
+  reactDiscussionThreadApi,
   VozReactionType,
 } from "@/lib/discussion-store";
 import { useAuth } from "@/context/AuthContext";
@@ -54,10 +56,17 @@ export function DiscussionThreadCard({
       onRequestLogin();
       return;
     }
+    const currentVote = thread.userVote || 0;
+    let diff = 0;
+    if (currentVote === direction) diff = -direction;
+    else if (currentVote === 0) diff = direction;
+    else diff = direction * 2;
+
     const updated = voteDiscussionThread(thread.id, direction);
     if (updated) {
       onThreadUpdated(updated);
     }
+    voteDiscussionThreadApi(thread.id, diff);
   };
 
   const handleReact = (e: React.MouseEvent, reaction: VozReactionType) => {
@@ -66,10 +75,14 @@ export function DiscussionThreadCard({
       onRequestLogin();
       return;
     }
+    const userReactions = [...(thread.userReactions || [])];
+    const hasReacted = userReactions.includes(reaction);
+
     const updated = reactDiscussionThread(thread.id, reaction);
     if (updated) {
       onThreadUpdated(updated);
     }
+    reactDiscussionThreadApi(thread.id, reaction, hasReacted ? "remove" : "add");
   };
 
   const handleShare = (e: React.MouseEvent) => {

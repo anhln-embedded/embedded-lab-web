@@ -5,7 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import {
   FlairType,
   DISCUSSION_FLAIRS,
-  createDiscussionThread,
+  createDiscussionThreadApi,
   DiscussionThread,
   AttachedFile,
 } from "@/lib/discussion-store";
@@ -112,7 +112,7 @@ export function DiscussionCreateModal({
     return (bytes / (1024 * 1024)).toFixed(1) + " MB";
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
 
@@ -139,7 +139,7 @@ export function DiscussionCreateModal({
         .map((t) => t.trim().toLowerCase())
         .filter((t) => t.length > 0);
 
-      const newThread = createDiscussionThread({
+      const newThread = await createDiscussionThreadApi({
         title,
         flair,
         content,

@@ -5,6 +5,7 @@ datasource db {
 
 generator client {
   provider = "prisma-client-js"
+  output   = "../src/generated/client"
 }
 
 model Post {
@@ -267,5 +268,53 @@ model ResearchPaper {
   updatedAt       DateTime @updatedAt
 }
 
+model DiscussionThread {
+  id                  String              @id @default(cuid())
+  title               String
+  category            String              @default("embedded-mcu")
+  flair               String              @default("thao-luan")
+  author              String
+  authorId            String
+  authorRole          String?             @default("user")
+  authorAvatar        String?             @default("👤")
+  authorTitle         String?             @default("Thành viên")
+  content             String
+  codeSnippet         String?
+  attachedFiles       String?             // JSON string of AttachedFile[]
+  hasSimulatorPreview Boolean             @default(false)
+  simulatorCode       String?
+  votes               Int                 @default(1)
+  viewsCount          Int                 @default(0)
+  repliesCount        Int                 @default(0)
+  reactions           String?             @default("{\"ung\":0,\"gach\":0,\"ung_bung\":0,\"haha\":0,\"nguong_mo\":0}")
+  isPinned            Boolean             @default(false)
+  tags                String?             @default("[]") // JSON string of string[]
+  lastActivity        DateTime            @default(now())
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  comments            DiscussionComment[]
 
+  @@index([category])
+  @@index([createdAt])
+}
 
+model DiscussionComment {
+  id            String           @id @default(cuid())
+  threadId      String
+  thread        DiscussionThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  parentId      String?
+  author        String
+  authorId      String
+  authorRole    String?          @default("user")
+  authorAvatar  String?          @default("👤")
+  authorTitle   String?          @default("Thành viên")
+  content       String
+  quoteContent  String?
+  quoteAuthor   String?
+  attachedFiles String?          // JSON string of AttachedFile[]
+  votes         Int              @default(0)
+  reactions     String?          @default("{\"ung\":0,\"gach\":0,\"ung_bung\":0}")
+  createdAt     DateTime         @default(now())
+
+  @@index([threadId])
+}

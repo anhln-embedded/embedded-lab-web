@@ -17,6 +17,7 @@
 /out/
 /build/
 tsconfig.tsbuildinfo
+src/generated/
 
 # Environment Variables & Secrets
 .env

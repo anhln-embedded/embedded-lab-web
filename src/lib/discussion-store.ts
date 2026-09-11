@@ -170,304 +170,165 @@ export interface DiscussionThread {
   lastActivity: string;
   tags: string[];
 }
+const STORAGE_THREADS_KEY = "embedded_aiot_forum_threads_v4";
+const STORAGE_COMMENTS_KEY = "embedded_aiot_forum_comments_v4";
 
-const STORAGE_THREADS_KEY = "embedded_aiot_forum_threads_v3";
-const STORAGE_COMMENTS_KEY = "embedded_aiot_forum_comments_v3";
+// Database thật trống ban đầu - Không tự sinh bài viết giả lập
+export const DEFAULT_THREADS: DiscussionThread[] = [];
+export const DEFAULT_COMMENTS: DiscussionComment[] = [];
 
-const DEFAULT_THREADS: DiscussionThread[] = [
-  {
-    id: "thread-exti-stm32f4",
-    title: "Debug ngắt ngoài EXTI trên STM32F401 không nhảy vào hàm callback HAL_GPIO_EXTI_Callback?",
-    category: "embedded-mcu",
-    flair: "debug",
-    author: "Quang Cường",
-    authorId: "usr_cuong_d21",
-    authorRole: "user",
-    authorAvatar: "👨‍💻",
-    authorTitle: "Thành viên Cộng đồng",
-    content: `Chào mọi người trong cộng đồng, mình đang làm mạch đo tốc độ động cơ dùng cảm biến quang nối vào chân PB0 (EXTI0). 
-Mình đã cấu hình GPIO PB0 là \`GPIO_MODE_IT_FALLING\` và đã bật NVIC Interrupt trong CubeMX.
-Tuy nhiên khi dùng nút nhấn thử nghiệm thì vi điều khiển không bao giờ nhảy vào hàm \`HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)\`. 
+// ============================================
+// API CLIENT FUNCTIONS (Đồng bộ trực tiếp SQLite Database)
+// ============================================
 
-Đo xung trên chân PB0 bằng dao động ký vẫn thấy mức logic rớt xuống 0V chuẩn xác. Bạn nào từng gặp lỗi này trên dòng STM32F4 BlackPill xin chia sẻ hướng xử lý với ạ!`,
-    codeSnippet: `// Cấu hình trong main.c
-static void MX_GPIO_Init(void) {
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-  
-  GPIO_InitStruct.Pin = GPIO_PIN_0;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+export async function fetchDiscussionThreadsApi(params?: {
+  category?: string;
+  flair?: string;
+  search?: string;
+  sort?: string;
+}): Promise<DiscussionThread[]> {
+  try {
+    const searchParams = new URLSearchParams();
+    if (params?.category && params.category !== "all") searchParams.set("category", params.category);
+    if (params?.flair && params.flair !== "all") searchParams.set("flair", params.flair);
+    if (params?.search) searchParams.set("search", params.search);
+    if (params?.sort) searchParams.set("sort", params.sort);
 
-  HAL_NVIC_SetPriority(EXTI0_IRQn, 2, 0);
-  HAL_NVIC_EnableIRQ(EXTI0_IRQn);
-}
-
-// Callback trong stm32f4xx_it.c
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-  if (GPIO_Pin == GPIO_PIN_0) {
-    // Không bao giờ nhảy vào đây!
-    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-  }
-}`,
-    hasSimulatorPreview: true,
-    simulatorCode: `// Thử nghiệm mô phỏng GPIO Interrupt trên STM32F4
-void setup() {
-  pinMode(PC13, OUTPUT);
-  pinMode(PB0, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(PB0), isrHandler, FALLING);
-}
-
-void loop() {
-  delay(10);
-}`,
-    votes: 42,
-    userVote: 0,
-    viewsCount: 520,
-    repliesCount: 4,
-    reactions: {
-      ung: 31,
-      gach: 1,
-      ung_bung: 12,
-      haha: 0,
-      nguong_mo: 8,
-    },
-    userReactions: [],
-    isPinned: false,
-    createdAt: "2026-09-08T09:15:00Z",
-    lastActivity: "2026-09-10T14:20:00Z",
-    tags: ["stm32", "exti", "hal-driver", "interrupt", "f401"],
-  },
-  {
-    id: "thread-zephyr-roadmap",
-    title: "Kinh nghiệm chuyển dịch từ FreeRTOS sang Zephyr RTOS cho các dự án IoT Công Nghiệp",
-    category: "embedded-mcu",
-    flair: "chia-se",
-    author: "Hoàng Nam",
-    authorId: "usr_superadmin",
-    authorRole: "superadmin",
-    authorAvatar: "🛡️",
-    authorTitle: "Kỹ sư Firmware",
-    content: `Sau thời gian dài triển khai các Gateway quan trắc môi trường và thiết bị truyền tin LoRaWAN, mình đã quyết định chuyển dần codebase từ FreeRTOS sang **Zephyr RTOS**.
-Dưới đây là một số đúc kết quan trọng dành cho các bạn quan tâm đến kiến trúc firmware hiện đại:
-
-1. **Device Tree (DTS)**: Giúp tách rời hoàn toàn mã nguồn driver khỏi phần cứng vật lý. Khi đổi chân vi điều khiển, chỉ sửa file DTS mà không cần chạm vào logic nghiệp vụ C.
-2. **Kconfig**: Cấu hình tính năng như Linux Kernel, tối ưu bộ nhớ Flash/RAM đến từng byte.
-3. **BLE Subsystem & Networking Stack**: Zephyr có stack Bluetooth Mesh và TCP/IP native cực kỳ mạnh mẽ, ổn định hơn nhiều so với việc ghép LwIP thủ công vào FreeRTOS.
-4. **Hệ sinh thái West Tool**: Quản lý đa repository tương tự Repo tool của Android.
-
-Anh em quan tâm cùng thảo luận và chia sẻ thêm kinh nghiệm thực tế bên dưới nhé!`,
-    codeSnippet: `// Đoạn mẫu tạo Thread trên Zephyr RTOS
-#include <zephyr/kernel.h>
-#include <zephyr/drivers/gpio.h>
-
-#define STACK_SIZE 1024
-#define PRIORITY 7
-
-void sensor_thread(void *dummy1, void *dummy2, void *dummy3) {
-  while (1) {
-    printk("[Zephyr Community] Reading sensors...\\n");
-    k_msleep(1000);
+    const query = searchParams.toString();
+    const url = `/api/discussions${query ? `?${query}` : ""}`;
+    const res = await fetch(url, { cache: "no-store" });
+    const json = await res.json();
+    if (json.success && Array.isArray(json.data)) {
+      saveDiscussionThreads(json.data);
+      return json.data;
+    }
+    return [];
+  } catch (error) {
+    console.error("Lỗi khi tải danh sách thảo luận từ API:", error);
+    return getDiscussionThreads();
   }
 }
 
-K_THREAD_DEFINE(sensor_tid, STACK_SIZE, sensor_thread, NULL, NULL, NULL, PRIORITY, 0, 0);`,
-    hasSimulatorPreview: true,
-    votes: 98,
-    userVote: 1,
-    viewsCount: 1420,
-    repliesCount: 7,
-    reactions: {
-      ung: 78,
-      gach: 0,
-      ung_bung: 45,
-      haha: 2,
-      nguong_mo: 36,
-    },
-    userReactions: ["ung", "ung_bung"],
-    isPinned: true,
-    createdAt: "2026-09-02T10:00:00Z",
-    lastActivity: "2026-09-11T08:30:00Z",
-    tags: ["zephyr-rtos", "freertos", "iot", "firmware-architecture"],
-  },
-  {
-    id: "thread-tinyml-cam",
-    title: "Triển khai mô hình TinyML phân loại khuyết tật bề mặt sản phẩm chạy trên ESP32-S3 Eye",
-    category: "aiot-edge",
-    flair: "do-an",
-    author: "Trần Minh Quang",
-    authorId: "usr_labmember",
-    authorRole: "lab_member",
-    authorAvatar: "🔬",
-    authorTitle: "Kỹ sư AIoT",
-    content: `Chào mọi người! Mình vừa hoàn thành module nhận diện lỗi cơ khí tự động trên băng chuyền thu nhỏ:
-- **Hardware**: ESP32-S3 (8MB PSRAM, camera OV2640).
-- **Mô hình**: MobileNetV2 thu gọn (Quantized INT8), huấn luyện bằng Edge Impulse Studio và xuất file C++ library.
-- **Tốc độ suy luận (Inference Time)**: ~85ms/frame (tương đương 11 FPS) nhờ tập lệnh tăng tốc SIMD Vector Instructions của ESP32-S3!
-- **Độ chính xác**: 94.6% trên tập dữ liệu 1500 mẫu chi tiết cơ khí.`,
-    codeSnippet: `// Gọi suy luận INT8 trực tiếp trên ESP32-S3
-signal_t signal;
-signal.total_length = EI_CLASSIFIER_INPUT_FRAMES;
-signal.get_data = &raw_feature_get_data;
+export async function fetchDiscussionThreadDetailApi(id: string): Promise<DiscussionThread | null> {
+  try {
+    const res = await fetch(`/api/discussions/${id}`, { cache: "no-store" });
+    const json = await res.json();
+    if (json.success && json.data) {
+      return json.data;
+    }
+    return null;
+  } catch (error) {
+    console.error("Lỗi khi tải chi tiết bài viết từ API:", error);
+    return getThreadById(id);
+  }
+}
 
-ei_impulse_result_t result = { 0 };
-EI_IMPULSE_ERROR r = run_classifier(&signal, &result, false);
-if (r == EI_IMPULSE_OK) {
-  printf("Defect Class: %s (Confidence: %.2f%%)\\n", 
-         result.classification[1].label, 
-         result.classification[1].value * 100.0f);
-}`,
-    hasSimulatorPreview: false,
-    votes: 65,
-    userVote: 0,
-    viewsCount: 890,
-    repliesCount: 5,
-    reactions: {
-      ung: 48,
-      gach: 0,
-      ung_bung: 29,
-      haha: 1,
-      nguong_mo: 22,
-    },
-    userReactions: [],
-    isPinned: false,
-    createdAt: "2026-09-05T14:40:00Z",
-    lastActivity: "2026-09-10T16:15:00Z",
-    tags: ["tinyml", "esp32-s3", "edge-impulse", "computer-vision", "aiot"],
-  },
-  {
-    id: "thread-pcb-emc",
-    title: "Bẫy thiết kế PCB nguồn xung DC-DC Buck Converter khiến mạch bị nhiễu EMI nặng",
-    category: "hardware-pcb",
-    flair: "chia-se",
-    author: "Hoàng Đức Anh",
-    authorId: "usr_hardware",
-    authorRole: "user",
-    authorAvatar: "⚡",
-    authorTitle: "Kỹ sư Thiết kế Phần cứng",
-    content: `Chào các bạn đam mê layout mạch phần cứng!
-Vừa rồi mình đo kiểm một bo mạch STM32 dùng IC nguồn Buck MP2307 hạ từ 12V xuống 3.3V. Vi điều khiển cứ thỉnh thoảng bị reset ngẫu nhiên khi cắm tải RF.
-Sau khi soi kính lúp và quét quang phổ thì phát hiện 3 lỗi kinh điển:
-1. **Vòng lặp High di/dt Loop (Vòng lặp dòng xung) quá rộng**: Tụ lọc đầu vào Cin đặt quá xa IC, tạo thành ăng-ten bức xạ sóng nhiễu sang đường SW.
-2. **Đường hồi tiếp Feedback (FB) đi qua dưới cuộn cảm**: Cuộn cảm tạo từ trường biến thiên cảm ứng nhiễu trực tiếp vào chân FB cực kỳ nhạy cảm.
-3. **Mặt đất (GND) bị chia cắt nham nhở**: Không có đường dẫn dòng về liên tục (Solid Return Path).
+export async function createDiscussionThreadApi(params: CreateThreadParams): Promise<DiscussionThread> {
+  const res = await fetch("/api/discussions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+  });
+  const json = await res.json();
+  if (!json.success) {
+    throw new Error(json.error || "Không thể tạo bài viết");
+  }
+  return json.data;
+}
 
-Khắc phục: Thu nhỏ tối đa vòng lặp Cin - Top FET - Inductor, bọc đường FB bằng Ground Shielding. Bo mạch sau khi redesign chạy êm ru không một gợn sóng!`,
-    hasSimulatorPreview: false,
-    votes: 82,
-    userVote: 0,
-    viewsCount: 1120,
-    repliesCount: 6,
-    reactions: {
-      ung: 70,
-      gach: 0,
-      ung_bung: 34,
-      haha: 0,
-      nguong_mo: 25,
-    },
-    userReactions: [],
-    isPinned: false,
-    createdAt: "2026-09-04T08:20:00Z",
-    lastActivity: "2026-09-09T11:05:00Z",
-    tags: ["altium", "pcb-design", "emc-emi", "buck-converter", "hardware"],
-  },
-  {
-    id: "thread-interview-experience",
-    title: "Tổng hợp kinh nghiệm phỏng vấn Embedded Firmware Engineer tại các công ty công nghệ",
-    category: "f17-b9",
-    flair: "thao-luan",
-    author: "Vũ Hải Đăng",
-    authorId: "usr_alumni",
-    authorRole: "user",
-    authorAvatar: "💼",
-    authorTitle: "Senior Firmware Developer",
-    content: `Chào các bạn đam mê lập trình nhúng!
-Hôm nay rảnh rỗi mình viết một bài tổng hợp lại các câu hỏi phỏng vấn vị trí Firmware / Embedded C mà anh em trong ngành thường gặp:
+export async function deleteDiscussionThreadApi(threadId: string): Promise<boolean> {
+  try {
+    const res = await fetch(`/api/discussions/${threadId}`, {
+      method: "DELETE",
+    });
+    const json = await res.json();
+    if (json.success) {
+      deleteDiscussionThread(threadId);
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error("Lỗi khi xóa bài viết:", error);
+    return false;
+  }
+}
 
-**Vòng 1: Kiến thức C cốt lõi (C Core)**
-- Con trỏ hàm (Function Pointer) và cách cài đặt State Machine hoặc Callback Driver.
-- Từ khóa \`volatile\`: Bản chất ngăn compiler optimize thanh ghi phần cứng và biến chia sẻ giữa Interrupt & Main loop.
-- Memory Layout: Stack, Heap, BSS, Data, Text segment và hiện tượng tràn Stack (Stack Overflow).
-- Thao tác Bitwise: Bật, tắt, toggle và đọc trạng thái bit trên thanh ghi SFR mà không làm ảnh hưởng các bit khác.
+export async function voteDiscussionThreadApi(threadId: string, diff: number): Promise<{ votes: number } | null> {
+  try {
+    const res = await fetch(`/api/discussions/${threadId}/vote`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ diff }),
+    });
+    const json = await res.json();
+    if (json.success && json.data) {
+      return json.data;
+    }
+    return null;
+  } catch (error) {
+    console.error("Lỗi khi vote bài viết:", error);
+    return null;
+  }
+}
 
-**Vòng 2: Kiến trúc Vi điều khiển & RTOS**
-- Phân biệt Semaphore nhị phân vs Mutex (Hiện tượng Đảo ngược mức ưu tiên - Priority Inversion & Priority Inheritance).
-- Cơ chế DMA (Direct Memory Access) và xử lý ngắt Half-Transfer / Transfer-Complete.
-- Trình bày một sự cố khó nhất từng debug bằng Logic Analyzer hoặc J-Link Ozone.
+export async function reactDiscussionThreadApi(
+  threadId: string,
+  reaction: VozReactionType,
+  action: "add" | "remove"
+): Promise<{ reactions: any } | null> {
+  try {
+    const res = await fetch(`/api/discussions/${threadId}/react`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reaction, action }),
+    });
+    const json = await res.json();
+    if (json.success && json.data) {
+      return json.data;
+    }
+    return null;
+  } catch (error) {
+    console.error("Lỗi khi react bài viết:", error);
+    return null;
+  }
+}
 
-Các bạn có câu hỏi nào cứ bình luận bên dưới chúng ta cùng thảo luận nhé!`,
-    hasSimulatorPreview: false,
-    votes: 115,
-    userVote: 1,
-    viewsCount: 2350,
-    repliesCount: 12,
-    reactions: {
-      ung: 95,
-      gach: 0,
-      ung_bung: 62,
-      haha: 5,
-      nguong_mo: 58,
-    },
-    userReactions: ["ung", "nguong_mo"],
-    isPinned: false,
-    createdAt: "2026-09-01T20:00:00Z",
-    lastActivity: "2026-09-11T12:00:00Z",
-    tags: ["phong-van", "kinh-nghiem", "embedded-c", "rtos", "career"],
-  },
-];
+export async function incrementThreadViewsApi(threadId: string): Promise<void> {
+  try {
+    await fetch(`/api/discussions/${threadId}/view`, {
+      method: "POST",
+    });
+  } catch (error) {
+    // Silent fail
+  }
+}
 
-const DEFAULT_COMMENTS: DiscussionComment[] = [
-  {
-    id: "comment-exti-1",
-    threadId: "thread-exti-stm32f4",
-    author: "Hoàng Nam",
-    authorId: "usr_superadmin",
-    authorRole: "superadmin",
-    authorAvatar: "🛡️",
-    authorTitle: "Kỹ sư Firmware",
-    content: `Chào Cường, khả năng rất cao là bạn quên bật Clock cho khối **SYSCFG** (System Configuration Controller).
-Trên STM32F4, để map chân PB0 vào EXTI0 Line, vi điều khiển sử dụng thanh ghi \`SYSCFG_EXTICR1\`. Nếu chưa gọi lệnh:
-\`\`\`c
-__HAL_RCC_SYSCFG_CLK_ENABLE();
-\`\`\`
-thì đường ngắt EXTI0 vẫn mặc định nối với chân PA0 chứ không phải PB0! Bạn kiểm tra lại xem trong hàm Init đã có macro này chưa nhé!`,
-    votes: 18,
-    userVote: 1,
-    reactions: { ung: 14, gach: 0, ung_bung: 8 },
-    createdAt: "2026-09-08T10:05:00Z",
-  },
-  {
-    id: "comment-exti-2",
-    threadId: "thread-exti-stm32f4",
-    author: "Quang Cường",
-    authorId: "usr_cuong_d21",
-    authorRole: "user",
-    authorAvatar: "👨‍💻",
-    authorTitle: "Thành viên Cộng đồng",
-    quoteAuthor: "Hoàng Nam",
-    quoteContent: "Chào Cường, khả năng rất cao là bạn quên bật Clock cho khối SYSCFG...",
-    content: `Mình đã thêm lệnh \`__HAL_RCC_SYSCFG_CLK_ENABLE()\` vào trước cấu hình và ngắt đã nhảy vào callback chính xác rồi bạn ơi! Cảm ơn bạn rất nhiều vì đã hỗ trợ kịp thời!`,
-    votes: 9,
-    userVote: 0,
-    reactions: { ung: 7, gach: 0, ung_bung: 5 },
-    createdAt: "2026-09-08T10:45:00Z",
-  },
-  {
-    id: "comment-zephyr-1",
-    threadId: "thread-zephyr-roadmap",
-    author: "Tuấn Anh",
-    authorId: "usr_student",
-    authorRole: "user",
-    authorAvatar: "🎓",
-    authorTitle: "Thành viên",
-    content: `Cảm ơn bạn vì bài viết rất tâm huyết! Bạn cho mình hỏi Zephyr có hỗ trợ tốt việc debug dòng tiêu thụ (Power Management / Low Power mode) trên các chip nRF52 hoặc STM32L4 không?`,
-    votes: 12,
-    userVote: 0,
-    reactions: { ung: 9, gach: 0, ung_bung: 4 },
-    createdAt: "2026-09-02T14:30:00Z",
-  },
-];
+export async function createDiscussionCommentApi(params: CreateCommentParams): Promise<DiscussionComment> {
+  const res = await fetch(`/api/discussions/${params.threadId}/comments`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+  });
+  const json = await res.json();
+  if (!json.success) {
+    throw new Error(json.error || "Không thể gửi bình luận");
+  }
+  return json.data;
+}
+
+export async function deleteDiscussionCommentApi(threadId: string, commentId: string): Promise<boolean> {
+  try {
+    const res = await fetch(`/api/discussions/${threadId}/comments/${commentId}`, {
+      method: "DELETE",
+    });
+    const json = await res.json();
+    return Boolean(json.success);
+  } catch (error) {
+    console.error("Lỗi khi xóa bình luận:", error);
+    return false;
+  }
+}
+
 
 export function getDiscussionThreads(): DiscussionThread[] {
   if (typeof window === "undefined") return DEFAULT_THREADS;
