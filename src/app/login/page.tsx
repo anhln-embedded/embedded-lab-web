@@ -259,7 +259,7 @@ function LoginFormContent() {
               <p className="text-[11px] font-bold text-amber-500 uppercase tracking-wider flex items-center gap-1">
                 <Zap className="w-3 h-3" /> [DEV MODE] Chuyển đổi quyền nhanh:
               </p>
-              <div className="grid grid-cols-3 gap-1.5">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
                 <button
                   onClick={() => quickDevLogin("superadmin", getSuperAdminEmails()[0] || "anhln.embedded@gmail.com")}
                   className="p-2 rounded-lg text-[11px] font-bold border border-purple-500/30 bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 transition-colors text-center"

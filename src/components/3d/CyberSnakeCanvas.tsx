@@ -31,7 +31,7 @@ export default function CyberSnakeCanvas({ className = "" }: CyberSnakeCanvasPro
     const height = container.clientHeight || window.innerHeight;
 
     const camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 100);
-    camera.position.set(0, 0, 14.5);
+    camera.position.set(0, 0, 16.5);
 
     const renderer = new THREE.WebGLRenderer({
       alpha: true,

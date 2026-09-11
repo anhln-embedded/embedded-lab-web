@@ -14,7 +14,9 @@ import {
   Compass,
   FileText,
   ExternalLink,
-  Code2
+  Code2,
+  Microscope,
+  Route
 } from "lucide-react";
 import { FacebookIcon } from "@/components/ui/FacebookIcon";
 
@@ -149,15 +151,6 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/roadmap"
-                  className="group flex items-center gap-2 py-0.5 text-slate-600 dark:text-slate-400 hover:text-accent dark:hover:text-accent transition-colors"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-accent transition-colors" />
-                  <span>Lộ trình Kỹ sư Nhúng</span>
-                </Link>
-              </li>
-              <li>
-                <Link
                   href="/courses"
                   className="group flex items-center gap-2 py-0.5 text-slate-600 dark:text-slate-400 hover:text-accent dark:hover:text-accent transition-colors"
                 >
@@ -167,11 +160,34 @@ export function Footer() {
               </li>
               <li>
                 <Link
+                  href="/roadmap"
+                  className="group flex items-center gap-2 py-0.5 text-slate-600 dark:text-slate-400 hover:text-accent dark:hover:text-accent transition-colors"
+                >
+                  <Route className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-accent transition-colors" />
+                  <span>Lộ trình Kỹ sư Nhúng</span>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/research"
+                  className="group flex items-center justify-between py-0.5 text-slate-600 dark:text-slate-400 hover:text-accent dark:hover:text-accent transition-colors"
+                >
+                  <span className="flex items-center gap-2 font-medium">
+                    <Microscope className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-accent transition-colors" />
+                    <span>Nghiên cứu Khoa học</span>
+                  </span>
+                  <span className="px-1.5 py-0.2 rounded text-[10px] bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 font-bold">
+                    Công bố
+                  </span>
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/blog"
                   className="group flex items-center gap-2 py-0.5 text-slate-600 dark:text-slate-400 hover:text-accent dark:hover:text-accent transition-colors"
                 >
                   <FileText className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-accent transition-colors" />
-                  <span>Bảng tin & Nghiên cứu</span>
+                  <span>Bản tin & Nhật ký Lab</span>
                 </Link>
               </li>
             </ul>

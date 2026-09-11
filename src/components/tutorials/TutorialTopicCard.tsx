@@ -19,7 +19,7 @@ interface TutorialTopicCardProps {
 
 export function TutorialTopicCard({ topic }: TutorialTopicCardProps) {
   return (
-    <div className="group relative rounded-3xl bg-bg-panel border border-border/80 hover:border-accent/50 p-6 shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col justify-between overflow-hidden">
+    <div className="group relative rounded-3xl bg-bg-panel border border-border/80 hover:border-accent/50 p-4 sm:p-6 shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col justify-between overflow-hidden">
       {/* Background Accent Glow */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full blur-2xl group-hover:bg-accent/15 transition-all pointer-events-none" />
 

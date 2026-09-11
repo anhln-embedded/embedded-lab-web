@@ -183,7 +183,7 @@ export function BentoPostGrid({ posts, onPostUpdated }: BentoPostGridProps) {
                 href={heroPost.url || `/blog/${heroPost.slug}`}
                 className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-accent text-white hover:bg-accent-hover transition-all"
               >
-                <span>Đọc bài</span>
+                <span>Đọc tin</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />
               </Link>
             </div>

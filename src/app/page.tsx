@@ -26,7 +26,7 @@ import { Button } from "@/components/ui/Button";
 
 const SLIDES = [
   { id: "hero", label: "Giới thiệu" },
-  { id: "posts", label: "Bài viết mới" },
+  { id: "posts", label: "Bản tin mới" },
 ];
 
 interface SearchResult {
@@ -159,7 +159,7 @@ export default function HomePage() {
   return (
     <div className="relative bg-bg-primary text-text-primary selection:bg-accent/30 selection:text-white">
       {/* Floating Slide Navigation Indicator (Right side) */}
-      <div className="fixed right-5 sm:right-7 top-1/2 -translate-y-1/2 z-40 hidden md:flex flex-col items-end gap-3.5 pointer-events-auto">
+      <div className="fixed right-3 sm:right-5 top-1/2 -translate-y-1/2 z-40 hidden md:flex flex-col items-end gap-3.5 pointer-events-auto">
         {SLIDES.map((slide) => {
           const isActive = activeSlide === slide.id;
           return (
@@ -170,7 +170,7 @@ export default function HomePage() {
               title={slide.label}
             >
               <span
-                className={`text-[11px] font-mono transition-all duration-300 opacity-0 group-hover:opacity-100 ${
+                className={`text-[11px] font-mono transition-all duration-300 hidden xl:inline opacity-0 group-hover:opacity-100 ${
                   isActive ? "text-accent font-semibold opacity-100" : "text-text-muted"
                 }`}
               >
@@ -233,9 +233,9 @@ export default function HomePage() {
                     onFocus={() => {
                       if (searchQuery.trim()) setShowDropdown(true);
                     }}
-                    placeholder="Nhập từ khóa tìm kiếm bài viết, STM32, RTOS..."
+                    placeholder="Nhập từ khóa tìm kiếm bản tin, STM32, RTOS..."
                     className="flex-1 h-full bg-transparent text-text-primary placeholder:text-text-muted text-xs sm:text-sm font-medium focus:outline-none"
-                    aria-label="Tìm kiếm bài viết"
+                    aria-label="Tìm kiếm bản tin"
                   />
 
                   {/* Clear button when text exists */}
@@ -290,7 +290,7 @@ export default function HomePage() {
                         </div>
                       ) : (
                         <>
-                          <p className="font-semibold text-text-primary">Không tìm thấy bài viết phù hợp</p>
+                          <p className="font-semibold text-text-primary">Không tìm thấy bản tin phù hợp</p>
                           <p className="text-[11px] text-text-muted">Thử tìm với từ khóa khác như STM32, RTOS, FPGA, AIoT...</p>
                         </>
                       )}
@@ -359,7 +359,7 @@ export default function HomePage() {
                 className="h-11 px-6 text-xs sm:text-sm font-medium border border-border bg-bg-elevated text-text-primary hover:border-accent/60 hover:text-accent transition-all inline-flex items-center justify-center backdrop-blur-sm cursor-pointer shadow-sm"
               >
                 <Sparkles className="w-3.5 h-3.5 mr-1.5 text-accent" />
-                Đọc Bài Viết
+                Đọc Bản Tin
               </Button>
             </div>
           </div>
@@ -369,13 +369,13 @@ export default function HomePage() {
             onClick={() => scrollToSlide("posts")}
             className="mt-auto pt-4 flex flex-col items-center gap-1.5 text-text-muted hover:text-accent transition-colors cursor-pointer text-xs font-mono font-medium"
           >
-            <span>Cuộn để xem bài viết</span>
+            <span>Cuộn để xem bản tin</span>
             <ChevronDown className="w-4 h-4 animate-bounce text-accent" />
           </button>
         </section>
 
         {/* =========================================================================
-            SLIDE 2: BÀI VIẾT MỚI NHẤT (FULLSCREEN SNAP & SEMANTIC THEME)
+            SLIDE 2: BẢN TIN MỚI NHẤT (FULLSCREEN SNAP & SEMANTIC THEME)
         ========================================================================= */}
         <section
           id="posts"
@@ -391,7 +391,7 @@ export default function HomePage() {
                   {searchQuery.trim() ? (
                     <span>Kết quả tìm kiếm: &quot;{searchQuery}&quot;</span>
                   ) : (
-                    <span>Bài Viết Kỹ Thuật Mới Nhất</span>
+                    <span>Bản Tin Kỹ Thuật Mới Nhất</span>
                   )}
                 </h2>
               </div>
@@ -411,15 +411,15 @@ export default function HomePage() {
 
                 {user && (user.role === "admin" || user.role === "superadmin") && (
                   <Button variant="primary" size="sm" asChild className="bg-accent text-white text-xs">
-                    <Link href="/admin/posts/new">
+                    <Link href="/admin">
                       <PlusCircle className="w-3.5 h-3.5 mr-1.5" />
-                      Đăng bài mới
+                      Đăng bản tin mới
                     </Link>
                   </Button>
                 )}
 
                 <Button variant="outline" size="sm" asChild className="text-xs border-border hover:border-accent/40 text-text-secondary">
-                  <Link href="/blog">Xem tất cả bài viết &rarr;</Link>
+                  <Link href="/blog">Xem tất cả bản tin &rarr;</Link>
                 </Button>
               </div>
             </div>

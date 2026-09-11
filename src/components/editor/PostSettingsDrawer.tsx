@@ -106,7 +106,7 @@ export function PostSettingsDrawer({
               <Sliders className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-text-primary">Cài Đặt Bài Viết (Settings)</h3>
+              <h3 className="text-sm font-bold text-text-primary">Cài Đặt Bản Tin (Settings)</h3>
               <p className="text-[11px] text-text-muted">Thể loại, thẻ tag, ảnh bìa & SEO</p>
             </div>
           </div>
@@ -122,10 +122,10 @@ export function PostSettingsDrawer({
 
         {/* Drawer Content */}
         <div className="p-5 overflow-y-auto flex-1 space-y-6 text-xs">
-          {/* 1. THỂ LOẠI BÀI VIẾT */}
+          {/* 1. THỂ LOẠI BẢN TIN */}
           <div className="space-y-2">
             <label className="font-bold text-text-primary flex items-center gap-1.5">
-              <span>Chuyên mục / Thể loại bài</span>
+              <span>Chuyên mục / Thể loại bản tin</span>
               <span className="text-accent">*</span>
             </label>
             <div className="grid grid-cols-1 gap-2">
@@ -266,7 +266,7 @@ export function PostSettingsDrawer({
           {/* 4. ĐƯỜNG DẪN TĨNH (SLUG) */}
           <div className="space-y-1.5">
             <label className="font-bold text-text-primary flex items-center gap-1.5">
-              <span>Đường dẫn bài viết (URL Slug)</span>
+              <span>Đường dẫn bản tin (URL Slug)</span>
             </label>
             <div className="flex items-center gap-1.5">
               <span className="text-text-muted text-[11px] font-mono select-none">/blog/</span>
@@ -279,7 +279,7 @@ export function PostSettingsDrawer({
               />
             </div>
             <p className="text-[10px] text-text-muted">
-              Tự động sinh từ tiêu đề bài viết. Chỉ sửa nếu bạn muốn tùy biến SEO URL.
+              Tự động sinh từ tiêu đề bản tin. Chỉ sửa nếu bạn muốn tùy biến SEO URL.
             </p>
           </div>
 

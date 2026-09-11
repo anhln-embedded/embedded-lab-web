@@ -3,10 +3,10 @@
 import * as React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { Search, X, Command, ArrowUp, ArrowDown, ArrowRight, FileText, GraduationCap, Loader2, Send } from "lucide-react";
+import { Search, X, Command, ArrowUp, ArrowDown, ArrowRight, FileText, GraduationCap, Loader2, Send, Microscope } from "lucide-react";
 
 interface SearchResult {
-  type: "blog" | "course";
+  type: "blog" | "course" | "research";
   title: string;
   description: string;
   url: string;
@@ -163,9 +163,9 @@ export function SearchModal() {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Nhập từ khóa tìm kiếm bài viết, STM32, RTOS..."
+              placeholder="Nhập từ khóa tìm kiếm bản tin, STM32, RTOS..."
               className="flex-1 h-full bg-transparent text-text-primary placeholder:text-text-muted text-xs sm:text-sm font-medium focus:outline-none"
-              aria-label="Tìm kiếm bài viết"
+              aria-label="Tìm kiếm bản tin"
               autoComplete="off"
               spellCheck={false}
             />
@@ -240,7 +240,7 @@ export function SearchModal() {
               <div className="py-8 text-center text-text-muted space-y-1">
                 <Search className="h-9 w-9 mx-auto opacity-20 text-accent" />
                 <p className="text-sm font-medium text-text-primary">Gõ từ khóa để tìm kiếm</p>
-                <p className="text-xs">Tìm kiếm nhanh bài viết kỹ thuật, đề tài NCKH và khóa học</p>
+                <p className="text-xs">Tìm kiếm nhanh bản tin kỹ thuật, đề tài NCKH và khóa học</p>
               </div>
             )}
 
@@ -274,6 +274,8 @@ export function SearchModal() {
                       )}>
                         {result.type === "course" ? (
                           <GraduationCap className="w-4 h-4" />
+                        ) : result.type === "research" ? (
+                          <Microscope className="w-4 h-4" />
                         ) : (
                           <FileText className="w-4 h-4" />
                         )}
@@ -285,7 +287,7 @@ export function SearchModal() {
                             {result.title}
                           </h4>
                           <span className="px-2 py-0.2 text-[10px] font-semibold bg-accent/15 text-accent rounded-full flex-shrink-0">
-                            {result.type === "course" ? "Khóa học" : "Bài viết"}
+                            {result.type === "course" ? "Khóa học" : result.type === "research" ? "Nghiên cứu" : "Bản tin"}
                           </span>
                         </div>
                         <p className="text-[11px] text-text-muted line-clamp-1">

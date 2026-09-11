@@ -112,6 +112,39 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // 3. Search research papers from Prisma SQLite Database
+    if (type === "all" || type === "research") {
+      try {
+        const dbPapers = await prisma.researchPaper.findMany({
+          where: {
+            OR: [
+              { title: { contains: query } },
+              { authors: { contains: query } },
+              { venue: { contains: query } },
+              { abstract: { contains: query } },
+              { keywords: { contains: query } },
+            ],
+          },
+          take: limit,
+          orderBy: { year: "desc" },
+        });
+
+        dbPapers.forEach((paper) => {
+          const tagsArray = typeof paper.keywords === "string" ? paper.keywords.split(",").map((t: string) => t.trim()) : [];
+          results.push({
+            type: "research" as any,
+            title: paper.title,
+            description: paper.abstract ? paper.abstract.slice(0, 150) + "..." : paper.venue,
+            url: `/research`,
+            tags: tagsArray,
+            date: paper.year.toString(),
+          });
+        });
+      } catch (err) {
+        console.warn("DB research paper search fallback:", err);
+      }
+    }
+
     // Sort by relevance
     results.sort((a, b) => {
       const aTitleMatch = a.title.toLowerCase().includes(query);

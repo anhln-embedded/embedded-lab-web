@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { getAllRoadmapTracks, RoadmapTrack } from "@/lib/roadmap-store";
+import { getAllRoadmapTracks, RoadmapTrack, DEFAULT_5_ROADMAP_TRACKS } from "@/lib/roadmap-store";
 import {
   Cpu,
   BrainCircuit,
@@ -20,47 +20,57 @@ import {
   ChevronDown,
   ChevronUp,
   PlusCircle,
-  BookOpen
+  BookOpen,
+  Terminal,
+  Zap,
+  Route
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 const ICON_MAP: Record<string, React.ReactNode> = {
   Cpu: <Cpu className="w-6 h-6 text-cyan-400" />,
-  BrainCircuit: <BrainCircuit className="w-6 h-6 text-amber-400" />,
+  Terminal: <Terminal className="w-6 h-6 text-amber-400" />,
+  Zap: <Zap className="w-6 h-6 text-emerald-400" />,
   Binary: <Binary className="w-6 h-6 text-purple-400" />,
-  Radio: <Radio className="w-6 h-6 text-rose-400" />,
   Layers: <Layers className="w-6 h-6 text-accent" />,
+  BrainCircuit: <BrainCircuit className="w-6 h-6 text-amber-400" />,
+  Radio: <Radio className="w-6 h-6 text-rose-400" />,
+  Route: <Route className="w-6 h-6 text-accent" />,
 };
 
 export default function RoadmapPage() {
   const { user, completedSteps, toggleRoadmapStep, isStepCompleted } = useAuth();
-  const [tracks, setTracks] = useState<RoadmapTrack[]>([]);
+  const [tracks, setTracks] = useState<RoadmapTrack[]>(DEFAULT_5_ROADMAP_TRACKS);
   const [activeTrack, setActiveTrack] = useState<string>("all");
-  const [expandedTrack, setExpandedTrack] = useState<string | null>(null);
+  const [expandedTrack, setExpandedTrack] = useState<string | null>("track-embedded-rtos");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     const loadedTracks = getAllRoadmapTracks();
-    setTracks(loadedTracks);
-    if (loadedTracks.length > 0) {
-      setExpandedTrack(loadedTracks[0].id);
+    if (loadedTracks && loadedTracks.length > 0) {
+      setTracks(loadedTracks);
+      if (!expandedTrack) {
+        setExpandedTrack(loadedTracks[0].id);
+      }
     }
 
     const handleUpdate = () => {
       const updated = getAllRoadmapTracks();
-      setTracks(updated);
+      if (updated && updated.length > 0) {
+        setTracks(updated);
+      }
     };
 
     window.addEventListener("embedded_roadmap_updated", handleUpdate);
     return () => window.removeEventListener("embedded_roadmap_updated", handleUpdate);
   }, []);
 
-  if (!mounted) return null;
-
   // Calculate total completed steps across all tracks
-  const allStepsCount = tracks.reduce((acc, t) => acc + t.steps.length, 0);
-  const totalCompleted = Object.values(completedSteps).reduce((acc, list) => acc + list.length, 0);
+  const allStepsCount = tracks.reduce((acc, t) => acc + (t.steps?.length || 0), 0);
+  const totalCompleted = mounted
+    ? Object.values(completedSteps || {}).reduce((acc, list) => acc + (list?.length || 0), 0)
+    : 0;
   const overallPercentage = allStepsCount > 0 ? Math.round((totalCompleted / allStepsCount) * 100) : 0;
 
   return (
@@ -68,7 +78,7 @@ export default function RoadmapPage() {
       {/* Hero Header */}
       <div className="max-w-3xl mx-auto text-center mb-12">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-pill bg-accent-muted text-accent text-xs font-semibold border border-accent/20 mb-4 shadow-sm">
-          <GraduationCap className="w-4 h-4" />
+          <Route className="w-4 h-4" />
           Lộ trình Đào tạo & Nghiên cứu Kỹ sư Nhúng
         </div>
         <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-text-primary mb-4">
@@ -86,14 +96,14 @@ export default function RoadmapPage() {
                 <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">
                   Tiến độ của bạn ({user ? user.name : "Khách vãng lai"}):
                 </span>
-                <div className="text-lg font-bold text-text-primary flex items-center gap-2 mt-0.5">
-                  <Award className="w-5 h-5 text-accent" />
+                <div className="text-base sm:text-lg font-bold text-text-primary flex flex-wrap items-center gap-2 mt-0.5">
+                  <Award className="w-5 h-5 text-accent flex-shrink-0" />
                   <span>{totalCompleted} / {allStepsCount} mốc kỹ năng đã hoàn thành</span>
-                  <span className="text-accent text-base">({overallPercentage}%)</span>
+                  <span className="text-accent text-sm sm:text-base">({overallPercentage}%)</span>
                 </div>
               </div>
               {!user && (
-                <Button variant="outline" size="sm" asChild className="text-xs">
+                <Button variant="outline" size="sm" asChild className="text-xs w-full sm:w-auto mt-2 sm:mt-0">
                   <Link href="/login?redirect=/roadmap">
                     Đăng nhập để lưu tiến độ
                     <ArrowRight className="w-3.5 h-3.5 ml-1" />
@@ -141,7 +151,7 @@ export default function RoadmapPage() {
             <Button variant="outline" asChild className="text-xs sm:text-sm font-semibold rounded-xl">
               <Link href="/blog">
                 <Sparkles className="w-4 h-4 mr-1.5 text-accent" />
-                Đọc Bảng Tin Kỹ Thuật
+                Đọc Bản Tin Kỹ Thuật
               </Link>
             </Button>
 
@@ -158,10 +168,10 @@ export default function RoadmapPage() {
       ) : (
         <>
           {/* Track Filter Buttons */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-10">
+          <div className="flex items-center gap-2 mb-10 overflow-x-auto no-scrollbar py-1 px-1 -mx-1 sm:flex-wrap sm:justify-center">
             <button
               onClick={() => setActiveTrack("all")}
-              className={`px-4 py-2 rounded-xl text-xs md:text-sm font-semibold transition-all border ${
+              className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs md:text-sm font-semibold transition-all border whitespace-nowrap flex-shrink-0 ${
                 activeTrack === "all"
                   ? "bg-accent text-white border-accent shadow-sm"
                   : "bg-bg-panel border-border text-text-secondary hover:text-text-primary hover:bg-bg-elevated"
@@ -173,7 +183,7 @@ export default function RoadmapPage() {
               <button
                 key={t.id}
                 onClick={() => setActiveTrack(t.id)}
-                className={`px-4 py-2 rounded-xl text-xs md:text-sm font-semibold transition-all border flex items-center gap-2 ${
+                className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs md:text-sm font-semibold transition-all border flex items-center gap-1.5 whitespace-nowrap flex-shrink-0 ${
                   activeTrack === t.id
                     ? "bg-accent text-white border-accent shadow-sm"
                     : "bg-bg-panel border-border text-text-secondary hover:text-text-primary hover:bg-bg-elevated"

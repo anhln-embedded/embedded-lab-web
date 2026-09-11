@@ -24,9 +24,9 @@ import {
 import { FacebookIcon } from "@/components/ui/FacebookIcon";
 
 export const metadata: Metadata = {
-  title: "Fanpage & Nhật Ký Hoạt Động | Embedded AIoT Laboratory",
+  title: "Bản Tin & Nhật Ký Hoạt Động | Embedded AIoT Laboratory",
   description:
-    "Trang tin tức, nhật ký thực nghiệm bàn đo và thông báo tuyển thành viên chính thức của Embedded AIoT Laboratory - Khoa Điện Tử 1 PTIT.",
+    "Trang bản tin kỹ thuật, nhật ký thực nghiệm bàn đo và thông báo tuyển thành viên chính thức của Embedded AIoT Laboratory - Khoa Điện Tử 1 PTIT.",
 };
 
 export default function BlogPage() {

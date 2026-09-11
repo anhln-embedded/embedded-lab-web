@@ -63,7 +63,7 @@ export function QuickStatusCreator({ onPostCreated }: QuickStatusCreatorProps) {
   const handleQuickSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !content.trim()) {
-      alert("Vui lòng điền tiêu đề và nội dung bài đăng.");
+      alert("Vui lòng điền tiêu đề và nội dung bản tin.");
       return;
     }
 
@@ -101,7 +101,7 @@ export function QuickStatusCreator({ onPostCreated }: QuickStatusCreatorProps) {
       });
 
       if (!res.ok) {
-        throw new Error("Lỗi khi lưu bài viết vào database");
+        throw new Error("Lỗi khi lưu bản tin vào database");
       }
 
       window.dispatchEvent(new CustomEvent("embedded_posts_updated"));
@@ -111,11 +111,11 @@ export function QuickStatusCreator({ onPostCreated }: QuickStatusCreatorProps) {
       setImageUrl("");
       setIsOpen(false);
       setIsSubmitting(false);
-      alert("🎉 Đã đăng bài viết lên Fanpage Lab thành công!");
+      alert("🎉 Đã đăng bản tin lên Fanpage Lab thành công!");
       if (onPostCreated) onPostCreated();
     } catch (err: any) {
       console.error(err);
-      alert(`Có lỗi khi đăng bài: ${err.message}`);
+      alert(`Có lỗi khi đăng bản tin: ${err.message}`);
       setIsSubmitting(false);
     }
   };
@@ -128,7 +128,7 @@ export function QuickStatusCreator({ onPostCreated }: QuickStatusCreatorProps) {
             📢
           </div>
           <div>
-            <h4 className="font-bold text-sm text-text-primary">Bảng Tin Hoạt Động & Tuyển Dụng Lab</h4>
+            <h4 className="font-bold text-sm text-text-primary">Bản Tin Hoạt Động & Tuyển Dụng Lab</h4>
             <p className="text-xs text-text-secondary">Cập nhật tin tức thường ngày, tuyển thành viên và chia sẻ nghiên cứu chuyên sâu.</p>
           </div>
         </div>
@@ -163,7 +163,7 @@ export function QuickStatusCreator({ onPostCreated }: QuickStatusCreatorProps) {
             onClick={() => openWithTemplate("daily")}
             className="flex-1 px-4 py-2.5 rounded-full bg-bg-elevated border border-border/80 text-left text-xs md:text-sm text-text-muted hover:border-accent hover:text-text-secondary transition-all shadow-inner"
           >
-            {user ? `${user.name} ơi, hôm nay Lab có hoạt động hay tin tức gì mới?` : "Đăng thông báo, hoạt động mới lên Fanpage..."}
+            {user ? `${user.name} ơi, hôm nay Lab có bản tin hay hoạt động gì mới?` : "Đăng bản tin, hoạt động mới lên Fanpage..."}
           </button>
         </div>
 
@@ -202,9 +202,9 @@ export function QuickStatusCreator({ onPostCreated }: QuickStatusCreatorProps) {
           </button>
 
           <Button variant="ghost" size="sm" asChild className="text-xs text-text-muted hover:text-accent">
-            <Link href="/admin/posts/new">
+            <Link href="/admin">
               <FileText className="w-3.5 h-3.5 mr-1" />
-              Soạn thảo Markdown
+              Bảng quản trị Lab
             </Link>
           </Button>
         </div>
@@ -220,7 +220,7 @@ export function QuickStatusCreator({ onPostCreated }: QuickStatusCreatorProps) {
                   ✍️
                 </div>
                 <div>
-                  <h3 className="font-bold text-base text-text-primary">Tạo Bài Đăng Fanpage Lab</h3>
+                  <h3 className="font-bold text-base text-text-primary">Tạo Bản Tin Fanpage Lab</h3>
                   <span className="text-[11px] text-text-muted">Đăng bởi: {user?.name}</span>
                 </div>
               </div>
@@ -235,7 +235,7 @@ export function QuickStatusCreator({ onPostCreated }: QuickStatusCreatorProps) {
             <form onSubmit={handleQuickSubmit} className="space-y-3.5">
               <div>
                 <label className="block text-xs font-semibold text-text-secondary mb-1">
-                  Chủ đề bài đăng *
+                  Chủ đề bản tin *
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <button
@@ -287,7 +287,7 @@ export function QuickStatusCreator({ onPostCreated }: QuickStatusCreatorProps) {
 
               <div>
                 <label className="block text-xs font-semibold text-text-secondary mb-1">
-                  Tiêu đề bài viết *
+                  Tiêu đề bản tin *
                 </label>
                 <input
                   type="text"
@@ -301,7 +301,7 @@ export function QuickStatusCreator({ onPostCreated }: QuickStatusCreatorProps) {
 
               <div>
                 <label className="block text-xs font-semibold text-text-secondary mb-1">
-                  Nội dung chi tiết (Status / Bài viết) *
+                  Nội dung chi tiết (Bản tin / Hoạt động) *
                 </label>
                 <textarea
                   rows={6}
@@ -351,7 +351,7 @@ export function QuickStatusCreator({ onPostCreated }: QuickStatusCreatorProps) {
                 />
                 <label htmlFor="pinned-post" className="text-xs text-text-secondary cursor-pointer flex items-center gap-1 font-medium">
                   <Pin className="w-3.5 h-3.5 text-amber-400" />
-                  Ghim bài viết này lên đầu trang Fanpage
+                  Ghim bản tin này lên đầu trang Fanpage
                 </label>
               </div>
 
@@ -366,7 +366,7 @@ export function QuickStatusCreator({ onPostCreated }: QuickStatusCreatorProps) {
                   className="bg-accent hover:bg-accent-hover text-white text-xs font-bold px-6"
                 >
                   <Send className="w-3.5 h-3.5 mr-1.5" />
-                  {isSubmitting ? "Đang đăng..." : "Đăng Lên Fanpage"}
+                  {isSubmitting ? "Đang đăng..." : "Đăng Bản Tin"}
                 </Button>
               </div>
             </form>

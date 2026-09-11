@@ -219,5 +219,33 @@ model CircuitPreset {
   updatedAt    DateTime @updatedAt
 }
 
+model ResearchPaper {
+  id              String   @id @default(cuid())
+  title           String
+  slug            String?  @unique
+  authors         String
+  labAuthors      String?
+  publicationType String   @default("journal") // journal, conference, project, patent
+  venue           String
+  year            Int      @default(2025)
+  month           String?
+  volume          String?
+  doi             String?
+  doiUrl          String?
+  pdfUrl          String?
+  codeUrl         String?
+  demoUrl         String?
+  abstract        String
+  keywords        String   @default("Embedded, AIoT")
+  field           String   @default("Edge AI & TinyML")
+  badge           String?  @default("Scopus Q1")
+  citationCount   Int      @default(0)
+  bibtex          String?
+  status          String   @default("published") // published, accepted, in_review
+  featured        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
 
 

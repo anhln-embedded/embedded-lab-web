@@ -154,7 +154,7 @@ export function BlogPostContent({ post }: BlogPostContentProps) {
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-text-muted hover:text-accent transition-colors group"
             >
               <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-              <span>Quay lại danh sách bài viết</span>
+              <span>Quay lại danh sách bản tin</span>
             </Link>
 
             <Link
@@ -162,7 +162,7 @@ export function BlogPostContent({ post }: BlogPostContentProps) {
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-bg-elevated text-xs font-semibold text-text-secondary hover:text-accent hover:border-accent transition-all"
             >
               <Edit3 className="w-3.5 h-3.5" />
-              Chỉnh sửa bài này
+              Chỉnh sửa bản tin này
             </Link>
           </div>
 
@@ -296,7 +296,7 @@ export function BlogPostContent({ post }: BlogPostContentProps) {
                   rows={3}
                   value={newCommentContent}
                   onChange={(e) => setNewCommentContent(e.target.value)}
-                  placeholder="Gửi câu hỏi hoặc ý kiến thảo luận về bài viết này..."
+                  placeholder="Gửi câu hỏi hoặc ý kiến thảo luận về bản tin này..."
                   required
                   className="w-full px-3.5 py-2 bg-bg-elevated border border-border rounded-xl text-xs text-text-primary focus:outline-none focus:border-accent"
                 />
@@ -367,7 +367,7 @@ export function BlogPostContent({ post }: BlogPostContentProps) {
               <div className="p-5 rounded-2xl bg-bg-panel border border-border/80 shadow-sm space-y-3">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-text-primary flex items-center gap-2">
                   <Sparkles className="h-3.5 w-3.5 text-accent" />
-                  Tương tác bài viết
+                  Tương tác bản tin
                 </h3>
                 <div className="flex gap-2">
                   <Button
@@ -391,7 +391,7 @@ export function BlogPostContent({ post }: BlogPostContentProps) {
                 <div className="p-5 rounded-2xl bg-bg-panel border border-border/80 shadow-sm">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-text-primary mb-3 flex items-center gap-2">
                     <BookOpen className="h-3.5 w-3.5 text-amber-400" />
-                    Bài viết liên quan
+                    Bản tin liên quan
                   </h3>
                   <div className="space-y-3">
                     {relatedPosts.map((rel) => (

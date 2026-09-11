@@ -87,7 +87,7 @@ export default function BlogPostPage({ params }: PageProps) {
     return (
       <div className="container py-24 text-center">
         <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-text-muted text-sm">Đang tải bài viết từ SQLite Database...</p>
+        <p className="text-text-muted text-sm">Đang tải bản tin từ SQLite Database...</p>
       </div>
     );
   }
@@ -100,16 +100,16 @@ export default function BlogPostPage({ params }: PageProps) {
             📄
           </div>
           <h1 className="text-2xl font-bold text-text-primary mb-2">
-            Không tìm thấy bài viết
+            Không tìm thấy bản tin
           </h1>
           <p className="text-text-secondary text-sm mb-6">
-            Bài viết với đường dẫn <code className="text-accent font-mono">/{resolvedParams.slug}</code> không tồn tại hoặc đã được chuyển dời.
+            Bản tin với đường dẫn <code className="text-accent font-mono">/{resolvedParams.slug}</code> không tồn tại hoặc đã được chuyển dời.
           </p>
           <div className="flex justify-center gap-3">
             <Button variant="primary" asChild className="bg-accent text-white">
               <Link href="/blog">
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Về danh sách bài viết
+                Về danh sách bản tin
               </Link>
             </Button>
             <Button variant="outline" asChild>

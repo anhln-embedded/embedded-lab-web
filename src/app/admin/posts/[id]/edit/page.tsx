@@ -117,13 +117,13 @@ export default function EditPostPage() {
 
   const handleUpdate = async () => {
     if (!title.trim()) {
-      alert("Vui lòng nhập tiêu đề bài viết.");
+      alert("Vui lòng nhập tiêu đề bản tin.");
       titleTextareaRef.current?.focus();
       return;
     }
 
     if (!content.trim()) {
-      alert("Vui lòng nhập nội dung bài viết.");
+      alert("Vui lòng nhập nội dung bản tin.");
       return;
     }
 
@@ -131,7 +131,7 @@ export default function EditPostPage() {
 
     try {
       const finalSlug = settings.slug.trim() || slugify(title);
-      const finalExcerpt = excerpt.trim() || settings.excerpt.trim() || "Bài viết kỹ thuật từ Lab PTIT.";
+      const finalExcerpt = excerpt.trim() || settings.excerpt.trim() || "Bản tin kỹ thuật từ Lab PTIT.";
 
       const payload = {
         title: title.trim(),
@@ -153,10 +153,10 @@ export default function EditPostPage() {
 
       const json = await res.json();
       if (!res.ok || !json.success) {
-        throw new Error(json.error || "Lỗi cập nhật bài viết");
+        throw new Error(json.error || "Lỗi cập nhật bản tin");
       }
 
-      alert("🎉 Cập nhật bài viết thành công!");
+      alert("🎉 Cập nhật bản tin thành công!");
       router.push(`/blog/${finalSlug}`);
     } catch (err: any) {
       console.error(err);
@@ -167,7 +167,7 @@ export default function EditPostPage() {
   };
 
   const handleDelete = async () => {
-    if (!confirm("Bạn có chắc chắn muốn xóa vĩnh viễn bài viết này?")) return;
+    if (!confirm("Bạn có chắc chắn muốn xóa vĩnh viễn bản tin này?")) return;
 
     setIsDeleting(true);
     try {
@@ -176,13 +176,13 @@ export default function EditPostPage() {
       });
       const json = await res.json();
       if (!res.ok || !json.success) {
-        throw new Error(json.error || "Lỗi xóa bài viết");
+        throw new Error(json.error || "Lỗi xóa bản tin");
       }
-      alert("Đã xóa bài viết thành công!");
+      alert("Đã xóa bản tin thành công!");
       router.push("/admin/posts");
     } catch (err: any) {
       console.error(err);
-      alert(`Lỗi khi xóa bài viết: ${err.message}`);
+      alert(`Lỗi khi xóa bản tin: ${err.message}`);
       setIsDeleting(false);
     }
   };
@@ -192,7 +192,7 @@ export default function EditPostPage() {
       <div className="min-h-screen flex items-center justify-center bg-bg-canvas">
         <div className="flex items-center gap-3 text-text-muted text-sm font-semibold">
           <span className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
-          <span>Đang tải bài viết...</span>
+          <span>Đang tải bản tin...</span>
         </div>
       </div>
     );
@@ -209,13 +209,13 @@ export default function EditPostPage() {
               className="flex items-center gap-1.5 text-xs font-semibold text-text-muted hover:text-text-primary transition-colors p-1.5 -ml-1.5 rounded-lg hover:bg-bg-elevated"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">Bài viết</span>
+              <span className="hidden sm:inline">Bản tin</span>
             </Link>
 
             <span className="text-border hidden sm:inline">/</span>
 
             <span className="text-xs font-bold text-text-primary truncate hidden md:inline max-w-[200px]">
-              Chỉnh sửa: {title.trim() || "Bài viết"}
+              Chỉnh sửa: {title.trim() || "Bản tin"}
             </span>
           </div>
 
@@ -281,7 +281,7 @@ export default function EditPostPage() {
               onClick={handleDelete}
               disabled={isDeleting}
               className="p-2 rounded-xl text-red-400 hover:bg-red-500/15 transition-colors cursor-pointer"
-              title="Xóa bài viết"
+              title="Xóa bản tin"
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -310,7 +310,7 @@ export default function EditPostPage() {
             rows={1}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Tiêu đề bài viết..."
+            placeholder="Tiêu đề bản tin..."
             className="w-full text-2xl sm:text-4xl md:text-5xl font-black text-text-primary bg-transparent border-none outline-none resize-none placeholder:text-text-muted/40 tracking-tight leading-[1.2] p-0"
           />
 
@@ -364,7 +364,7 @@ export default function EditPostPage() {
           <div className="flex items-center justify-between border-b border-border/80 pb-3">
             <span className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-accent" />
-              <span>Nội Dung Bài Viết</span>
+              <span>Nội Dung Bản Tin</span>
             </span>
 
             <div className="flex items-center bg-bg-panel p-1 rounded-xl border border-border gap-1">
@@ -423,8 +423,8 @@ export default function EditPostPage() {
       <PostLivePreviewModal
         isOpen={isPreviewOpen}
         onClose={() => setIsPreviewOpen(false)}
-        title={title || "Tiêu đề bài viết"}
-        excerpt={excerpt || settings.excerpt || "Bài viết kỹ thuật từ Lab PTIT."}
+        title={title || "Tiêu đề bản tin"}
+        excerpt={excerpt || settings.excerpt || "Bản tin kỹ thuật từ Lab PTIT."}
         content={content}
         coverImage={settings.coverImage}
         postType={settings.postType}

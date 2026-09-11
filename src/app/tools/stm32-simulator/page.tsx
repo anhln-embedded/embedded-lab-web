@@ -186,7 +186,7 @@ export default function Stm32SimulatorPage() {
   };
 
   return (
-    <div className="w-full max-w-[1700px] mx-auto px-2 sm:px-4 py-1.5 sm:py-2 flex flex-col h-[calc(100dvh-4.25rem)] lg:h-[calc(100vh-4.5rem)] gap-2 overflow-hidden animate-fade-in">
+    <div className="w-full max-w-[1700px] mx-auto px-2 sm:px-4 py-1.5 sm:py-2 flex flex-col min-h-[calc(100dvh-4.25rem)] lg:h-[calc(100vh-4.5rem)] gap-2 overflow-y-auto lg:overflow-hidden animate-fade-in">
       {/* Thanh công cụ mô phỏng chuẩn Studio chuyên nghiệp siêu gọn */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 bg-bg-panel border border-border px-3 py-1.5 rounded-xl shadow-xs transition-colors duration-200 shrink-0">
         {/* Khối bên trái: Dropdown Mạch mẫu MCU, Nút Nạp Firmware & Hộp hiển thị file */}
@@ -277,9 +277,9 @@ export default function Stm32SimulatorPage() {
       </div>
 
       {/* Main Workspace: Bố cục 2 Cột chiếm trọn chiều cao còn lại của màn hình */}
-      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-2 sm:gap-3 items-stretch h-full">
+      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-3 items-stretch h-full">
         {/* CỘT TRÁI (5 Cột): Bộ chuyển đổi Tab giữa Trợ lý AI và Code diagram.json */}
-        <div className="lg:col-span-5 flex flex-col h-full min-h-0 gap-1.5">
+        <div className="lg:col-span-5 flex flex-col h-full min-h-[480px] lg:min-h-0 gap-1.5">
           {/* Thanh chuyển đổi Tab trên đầu cột trái */}
           <div className="flex items-center p-0.5 bg-bg-panel border border-border rounded-xl shrink-0">
             <button
@@ -327,7 +327,7 @@ export default function Stm32SimulatorPage() {
         </div>
 
         {/* CỘT PHẢI (7 Cột): Canvas Mạch điện Wokwi Live Engine duy nhất chiếm trọn chiều cao */}
-        <div className="lg:col-span-7 flex flex-col h-full min-h-0 gap-1">
+        <div className="lg:col-span-7 flex flex-col h-full min-h-[480px] lg:min-h-0 gap-1">
           <div className="flex items-center justify-between px-1 text-xs font-semibold text-text-secondary shrink-0">
             <div className="flex items-center gap-1.5">
               <Layers className="w-3.5 h-3.5 text-accent" />

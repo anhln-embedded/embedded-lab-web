@@ -243,7 +243,7 @@ export function FanpagePostCard({ post, onPostUpdated }: FanpagePostCardProps) {
         <button
           onClick={handleShare}
           className="flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold text-text-secondary hover:bg-bg-elevated hover:text-text-primary transition-all"
-          title="Sao chép liên kết bài viết"
+          title="Sao chép liên kết bản tin"
         >
           <Share2 className="w-4 h-4" />
           <span>{copied ? "Đã sao chép!" : "Chia sẻ"}</span>

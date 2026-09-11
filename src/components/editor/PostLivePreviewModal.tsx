@@ -67,7 +67,7 @@ export function PostLivePreviewModal({
             </div>
             <div>
               <h3 className="text-xs sm:text-sm font-bold text-text-primary flex items-center gap-2">
-                <span>Xem Trước Trực Quan Bài Viết (Live Reader View)</span>
+                <span>Xem Trước Trực Quan Bản Tin (Live Reader View)</span>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-mono font-bold">
                   Mô phỏng 100% người đọc
                 </span>
@@ -163,7 +163,7 @@ export function PostLivePreviewModal({
 
               {/* Title */}
               <h1 className="text-2xl sm:text-4xl font-extrabold text-text-primary leading-tight tracking-tight">
-                {title || "Tiêu đề bài viết mẫu"}
+                {title || "Tiêu đề bản tin mẫu"}
               </h1>
 
               {/* Author info */}

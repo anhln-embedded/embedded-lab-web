@@ -314,11 +314,14 @@ export default function AdminDashboardPage() {
             </Button>
           )}
 
-          <Button variant="primary" size="sm" asChild className="bg-accent hover:bg-accent-hover text-white text-xs">
-            <Link href="/admin/posts/new">
-              <PlusCircle className="w-3.5 h-3.5 mr-1.5" />
-              Đăng Bài Viết
-            </Link>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => handleTabChange("posts")}
+            className="bg-accent hover:bg-accent-hover text-white text-xs cursor-pointer"
+          >
+            <FileText className="w-3.5 h-3.5 mr-1.5" />
+            Bản Tin ({posts.length})
           </Button>
 
           <Button variant="primary" size="sm" asChild className="bg-cyan-600 hover:bg-cyan-700 text-white text-xs">
@@ -367,7 +370,7 @@ export default function AdminDashboardPage() {
           }`}
         >
           <FileText className="w-4 h-4" />
-          Bài Viết ({posts.length})
+          Bản Tin ({posts.length})
         </button>
 
         <button
@@ -416,15 +419,15 @@ export default function AdminDashboardPage() {
               className="p-5 rounded-2xl bg-bg-panel border border-border/80 shadow-sm hover:border-accent/50 cursor-pointer transition-all group"
             >
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold uppercase text-text-muted group-hover:text-accent transition-colors">Tổng bài viết</span>
+                <span className="text-xs font-semibold uppercase text-text-muted group-hover:text-accent transition-colors">Tổng bản tin</span>
                 <FileText className="w-4 h-4 text-accent" />
               </div>
               <div className="text-2xl font-bold text-text-primary">{posts.length}</div>
               <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-border/40 text-[11px]">
                 <span className="text-accent font-medium group-hover:underline">Quản lý &rarr;</span>
-                <Link href="/admin/posts/new" onClick={(e) => e.stopPropagation()} className="text-text-muted hover:text-accent">
-                  + Thêm mới
-                </Link>
+                <span className="text-text-muted hover:text-accent font-medium">
+                  {posts.length} bản tin
+                </span>
               </div>
             </div>
 
@@ -493,15 +496,15 @@ export default function AdminDashboardPage() {
 
           {/* Quick Action Guides */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* 1. Quản lý Bài Viết */}
+            {/* 1. Quản lý Bản Tin */}
             <div className="p-6 rounded-2xl bg-bg-panel border border-border shadow-md flex flex-col justify-between">
               <div>
                 <h3 className="font-bold text-text-primary mb-2 flex items-center gap-2 text-sm">
                   <FileText className="w-4 h-4 text-accent" />
-                  1. Quản lý Bài Viết ({posts.length})
+                  1. Quản lý Bản Tin ({posts.length})
                 </h3>
                 <p className="text-xs text-text-secondary leading-relaxed mb-4">
-                  Soạn thảo bài viết kỹ thuật với trình biên soạn Markdown chuyên sâu, hỗ trợ chèn code C/C++, Python và xem trước Live Preview.
+                  Soạn thảo bản tin kỹ thuật với trình biên soạn Markdown chuyên sâu, hỗ trợ chèn code C/C++, Python và xem trước Live Preview.
                 </p>
               </div>
               <div className="flex flex-col gap-2 pt-2">
@@ -515,7 +518,7 @@ export default function AdminDashboardPage() {
                   Xem Danh Sách ({posts.length})
                 </Button>
                 <Button variant="outline" size="sm" asChild className="text-xs border-border hover:border-accent text-text-secondary w-full">
-                  <Link href="/admin/posts/new">+ Đăng bài viết mới</Link>
+                  <Link href="/blog">Đăng bản tin tại Fanpage Lab &rarr;</Link>
                 </Button>
               </div>
             </div>
@@ -622,23 +625,23 @@ export default function AdminDashboardPage() {
             <div>
               <h2 className="text-lg font-bold text-text-primary flex items-center gap-2">
                 <FileText className="w-5 h-5 text-accent" />
-                Danh Sách Bài Viết ({posts.length})
+                Danh Sách Bản Tin ({posts.length})
               </h2>
               <p className="text-xs text-text-muted mt-0.5">
-                Các bài viết hiển thị trực tiếp tại trang Blog và Trang chủ
+                Các bản tin hiển thị trực tiếp tại trang Bản Tin và Trang chủ
               </p>
             </div>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" asChild className="text-xs">
                 <Link href="/blog" target="_blank">
                   <Eye className="w-3.5 h-3.5 mr-1" />
-                  Xem Blog
+                  Xem Bản Tin
                 </Link>
               </Button>
               <Button variant="primary" size="sm" asChild className="bg-accent text-white text-xs">
-                <Link href="/admin/posts/new">
+                <Link href="/blog">
                   <Plus className="w-3.5 h-3.5 mr-1" />
-                  Thêm Bài Viết Mới
+                  Đăng Bản Tin (Fanpage)
                 </Link>
               </Button>
             </div>
@@ -646,9 +649,9 @@ export default function AdminDashboardPage() {
 
           {posts.length === 0 ? (
             <div className="text-center py-12 px-4 border-2 border-dashed border-border rounded-xl bg-bg-elevated/30">
-              <p className="text-text-muted text-xs mb-4">Chưa có bài viết nào trong hệ thống.</p>
+              <p className="text-text-muted text-xs mb-4">Chưa có bản tin nào trong hệ thống.</p>
               <Button variant="primary" size="sm" asChild className="bg-accent text-white">
-                <Link href="/admin/posts/new">Tạo bài viết đầu tiên</Link>
+                <Link href="/blog">Đăng bản tin đầu tiên</Link>
               </Button>
             </div>
           ) : (

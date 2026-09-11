@@ -45,7 +45,7 @@ export default function TagPage({ params }: TagPageProps) {
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-text-muted hover:text-accent transition-colors group mb-2"
         >
           <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-          <span>Tất cả bài viết</span>
+          <span>Tất cả bản tin</span>
         </Link>
 
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-pill bg-accent-muted text-accent text-sm font-mono font-bold border border-accent/30 mx-auto">
@@ -58,7 +58,7 @@ export default function TagPage({ params }: TagPageProps) {
         </h1>
 
         <p className="text-text-secondary text-sm md:text-base">
-          Tìm thấy <span className="text-accent font-bold">{posts.length}</span> bài viết chuyên sâu về chủ đề này.
+          Tìm thấy <span className="text-accent font-bold">{posts.length}</span> bản tin về chủ đề này.
         </p>
       </div>
 

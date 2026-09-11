@@ -269,13 +269,13 @@ export function FanpageHeader() {
         </div>
 
         {/* 2. Profile Info Bar */}
-        <div className="p-6 md:p-8 pt-0 relative">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 -mt-14 md:-mt-20 mb-6">
+        <div className="p-4 sm:p-6 md:p-8 pt-0 relative">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6 -mt-12 sm:-mt-16 md:-mt-20 mb-6">
             {/* Avatar & Title */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3.5 sm:gap-4">
               {/* Avatar Container with Edit Overlay */}
               <div className="relative group/avatar">
-                <div className="w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 rounded-full bg-white dark:bg-bg-panel p-1 border-4 border-white dark:border-bg-panel shadow-2xl relative flex-shrink-0 overflow-hidden">
+                <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 rounded-full bg-white dark:bg-bg-panel p-1 border-4 border-white dark:border-bg-panel shadow-2xl relative flex-shrink-0 overflow-hidden">
                   <div className="w-full h-full rounded-full bg-gradient-to-tr from-accent to-amber-500 p-0.5 overflow-hidden">
                     <img
                       src={avatarUrl}
@@ -299,7 +299,7 @@ export function FanpageHeader() {
 
                 {/* Verified Check Badge */}
                 <div
-                  className="absolute bottom-1 right-1 w-7 h-7 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold shadow-md border-2 border-bg-panel"
+                  className="absolute bottom-1 right-1 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold shadow-md border-2 border-bg-panel"
                   title="Trang Fanpage Chính Thức"
                 >
                   ✓
@@ -309,7 +309,7 @@ export function FanpageHeader() {
                 {user && (user.role === "superadmin" || user.role === "admin") && (
                   <button
                     onClick={() => setShowAvatarModal(true)}
-                    className="absolute bottom-0 right-7 sm:hidden p-1.5 rounded-full bg-bg-elevated border border-border text-accent shadow"
+                    className="absolute bottom-0 right-6 sm:hidden p-1.5 rounded-full bg-bg-elevated border border-border text-accent shadow"
                   >
                     <Camera className="w-3.5 h-3.5" />
                   </button>
@@ -318,10 +318,10 @@ export function FanpageHeader() {
 
               <div className="space-y-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="text-2xl sm:text-3xl font-extrabold text-text-primary tracking-tight">
+                  <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-text-primary tracking-tight">
                     Embedded AIoT Laboratory
                   </h1>
-                  <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-500/15 text-blue-400 border border-blue-500/30">
+                  <span className="px-2 py-0.5 rounded text-[10px] sm:text-[11px] font-bold bg-blue-500/15 text-blue-400 border border-blue-500/30">
                     Fanpage Học Thuật
                   </span>
                 </div>
@@ -338,18 +338,18 @@ export function FanpageHeader() {
             </div>
 
             {/* Top Action CTA Buttons */}
-            <div className="flex flex-wrap items-center gap-2.5 self-start md:self-end">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 self-start md:self-end w-full sm:w-auto">
               <Button
                 variant="primary"
                 size="sm"
-                className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md"
+                className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md flex-1 sm:flex-initial"
                 asChild
               >
                 <a
                   href="https://www.facebook.com/EmbeddedAIoTLAB"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5"
+                  className="flex items-center justify-center gap-1.5"
                 >
                   <FacebookIcon className="w-3.5 h-3.5" />
                   <span>Ghé Fanpage Facebook</span>
@@ -359,10 +359,10 @@ export function FanpageHeader() {
               <Button
                 variant="outline"
                 size="sm"
-                className="text-xs border-accent/40 text-accent hover:bg-accent/10"
+                className="text-xs border-accent/40 text-accent hover:bg-accent/10 flex-1 sm:flex-initial"
                 asChild
               >
-                <Link href="/roadmap">
+                <Link href="/roadmap" className="flex items-center justify-center">
                   <GraduationCap className="w-3.5 h-3.5 mr-1" />
                   <span>Lộ trình đào tạo</span>
                 </Link>
@@ -372,7 +372,7 @@ export function FanpageHeader() {
 
           {/* Slogan description */}
           <p className="text-xs sm:text-sm text-text-secondary leading-relaxed border-t border-border/60 pt-4">
-            🔬 <strong>Bảng Tin Hoạt Động Chính Thức:</strong> Nơi cập nhật các thông báo tuyển thành viên, nhật ký nghiên cứu bàn đo, đề tài NCKH sinh viên và hướng dẫn kỹ thuật chuyên sâu về Hệ thống nhúng (Embedded RTOS, Linux), Trí tuệ nhân tạo biên (TinyML), Thiết kế vi mạch (FPGA RISC-V) và Mạch in cao tốc (PCB).
+            🔬 <strong>Bản Tin Hoạt Động Chính Thức:</strong> Nơi cập nhật các thông báo tuyển thành viên, nhật ký nghiên cứu bàn đo, đề tài NCKH sinh viên và hướng dẫn kỹ thuật chuyên sâu về Hệ thống nhúng (Embedded RTOS, Linux), Trí tuệ nhân tạo biên (TinyML), Thiết kế vi mạch (FPGA RISC-V) và Mạch in cao tốc (PCB).
           </p>
         </div>
       </div>

@@ -21,7 +21,11 @@ import {
   ChevronDown,
   LayoutDashboard,
   UserCheck,
-  Award
+  Award,
+  BookOpen,
+  Sparkles,
+  Compass,
+  Route
 } from "lucide-react";
 import { SearchModal } from "@/components/ui/SearchModal";
 import { UserAvatar } from "@/components/ui/UserAvatar";
@@ -30,11 +34,14 @@ export function Header() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [mobileStudyOpen, setMobileStudyOpen] = React.useState(true);
+  const [desktopStudyOpen, setDesktopStudyOpen] = React.useState(false);
   const [userMenuOpen, setUserMenuOpen] = React.useState(false);
   const [darkMode, setDarkMode] = React.useState(false);
   const [mounted, setMounted] = React.useState(false);
 
   const userMenuRef = React.useRef<HTMLDivElement>(null);
+  const studyMenuRef = React.useRef<HTMLDivElement>(null);
 
   const handleUserLogout = () => {
     logout();
@@ -57,6 +64,9 @@ export function Header() {
     const handleClickOutside = (event: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setUserMenuOpen(false);
+      }
+      if (studyMenuRef.current && !studyMenuRef.current.contains(event.target as Node)) {
+        setDesktopStudyOpen(false);
       }
     };
 
@@ -110,10 +120,120 @@ export function Header() {
 
           {/* Center: Desktop Navigation */}
           <nav
-            className="hidden lg:flex items-center justify-center gap-5 xl:gap-7 flex-1"
+            className="hidden lg:flex items-center justify-center gap-3.5 xl:gap-6 flex-1"
             aria-label="Main navigation"
           >
             {navItems.map((item) => {
+              if (item.items && item.items.length > 0) {
+                const isGroupActive = item.items.some(
+                  (sub) => pathname === sub.href || pathname.startsWith(`${sub.href}/`)
+                );
+                return (
+                  <div
+                    key={item.label}
+                    ref={studyMenuRef}
+                    className="relative group py-2"
+                    onMouseEnter={() => setDesktopStudyOpen(true)}
+                    onMouseLeave={() => setDesktopStudyOpen(false)}
+                  >
+                    <button
+                      onClick={() => setDesktopStudyOpen((prev) => !prev)}
+                      className={cn(
+                        "flex items-center gap-1.5 py-1 text-xs xl:text-sm font-medium transition-colors hover:text-accent focus:outline-none cursor-pointer",
+                        isGroupActive ? "text-accent font-semibold" : "text-text-secondary"
+                      )}
+                      aria-haspopup="true"
+                      aria-expanded={desktopStudyOpen}
+                    >
+                      <span>{item.label}</span>
+                      <ChevronDown
+                        className={cn(
+                          "w-3.5 h-3.5 transition-transform duration-200 text-text-muted group-hover:text-accent",
+                          desktopStudyOpen ? "rotate-180 text-accent" : "group-hover:rotate-180"
+                        )}
+                      />
+                      {isGroupActive && (
+                        <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-accent rounded-full animate-fade-in" />
+                      )}
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    <div
+                      className={cn(
+                        "absolute top-full left-1/2 -translate-x-1/2 pt-2 transition-all duration-200 ease-out z-50",
+                        desktopStudyOpen
+                          ? "opacity-100 visible pointer-events-auto"
+                          : "opacity-0 invisible pointer-events-none group-hover:opacity-100 group-hover:visible group-hover:pointer-events-auto"
+                      )}
+                    >
+                      <div className="w-[320px] p-2 bg-bg-panel/95 dark:bg-bg-panel/95 backdrop-blur-xl border border-border/90 rounded-2xl shadow-xl shadow-black/10 dark:shadow-black/50 space-y-1">
+                        {item.items.map((subItem) => {
+                          const isSubActive =
+                            pathname === subItem.href || pathname.startsWith(`${subItem.href}/`);
+                          const SubIcon =
+                            subItem.icon === "BookOpen"
+                              ? BookOpen
+                              : subItem.icon === "Route"
+                              ? Route
+                              : subItem.icon === "GraduationCap"
+                              ? GraduationCap
+                              : subItem.icon === "Sparkles"
+                              ? Sparkles
+                              : Compass;
+
+                          return (
+                            <Link
+                              key={subItem.href}
+                              href={subItem.href}
+                              onClick={() => setDesktopStudyOpen(false)}
+                              className={cn(
+                                "flex items-start gap-3 p-2.5 rounded-xl transition-all group/sub",
+                                isSubActive
+                                  ? "bg-accent/10 border border-accent/20"
+                                  : "hover:bg-bg-elevated/80 border border-transparent"
+                              )}
+                            >
+                              <div
+                                className={cn(
+                                  "p-2 rounded-lg mt-0.5 transition-colors flex-shrink-0",
+                                  isSubActive
+                                    ? "bg-accent text-white"
+                                    : "bg-bg-elevated text-accent group-hover/sub:bg-accent group-hover/sub:text-white"
+                                )}
+                              >
+                                <SubIcon className="w-4 h-4" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between gap-1.5">
+                                  <span
+                                    className={cn(
+                                      "text-xs font-semibold tracking-tight",
+                                      isSubActive ? "text-accent" : "text-text-primary group-hover/sub:text-accent"
+                                    )}
+                                  >
+                                    {subItem.label}
+                                  </span>
+                                  {subItem.badge && (
+                                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-accent-muted text-accent">
+                                      {subItem.badge}
+                                    </span>
+                                  )}
+                                </div>
+                                {subItem.description && (
+                                  <p className="text-[11px] text-text-muted mt-0.5 line-clamp-1 leading-normal">
+                                    {subItem.description}
+                                  </p>
+                                )}
+                              </div>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+
               const isActive =
                 item.href === "/"
                   ? pathname === "/"
@@ -170,15 +290,15 @@ export function Header() {
               )}
             </button>
 
-            {/* Nút Viết Bài Nhanh (Hiển thị khi là Admin / Mentor Lab) */}
+            {/* Nút Viết Bản Tin Nhanh (Hiển thị khi là Admin / Mentor Lab) -> Dẫn vào Bảng Quản Trị /admin */}
             {user && (user.role === "superadmin" || user.role === "admin") && (
               <Link
-                href="/admin/posts/new"
+                href="/admin"
                 className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold shadow-sm shadow-accent/20 transition-all hover:scale-102"
-                title="Tạo bài viết mới nhanh"
+                title="Bảng quản trị Lab"
               >
                 <Edit3 className="w-3.5 h-3.5" />
-                <span>Viết bài</span>
+                <span>Đăng tin</span>
               </Link>
             )}
 
@@ -199,7 +319,7 @@ export function Header() {
                       size={28}
                     />
                     <div className="flex flex-col text-left">
-                      <span className="font-semibold text-text-primary line-clamp-1 max-w-[110px]">
+                      <span className="font-semibold text-text-primary truncate max-w-[85px] xl:max-w-[130px]">
                         {user.name}
                       </span>
                       <span
@@ -243,17 +363,6 @@ export function Header() {
                         >
                           <LayoutDashboard className="w-4 h-4 text-accent" />
                           <span>Bảng Quản Trị Admin</span>
-                        </Link>
-                      )}
-
-                      {(user.role === "superadmin" || user.role === "admin") && (
-                        <Link
-                          href="/admin/posts/new"
-                          onClick={() => setUserMenuOpen(false)}
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors"
-                        >
-                          <Edit3 className="w-4 h-4 text-accent" />
-                          <span>Đăng Bài Viết Mới</span>
                         </Link>
                       )}
 
@@ -394,17 +503,6 @@ export function Header() {
                     </Link>
                   )}
 
-                  {(user.role === "superadmin" || user.role === "admin") && (
-                    <Link
-                      href="/admin/posts/new"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center gap-2 p-2 rounded-xl text-text-secondary hover:text-accent hover:bg-bg-panel transition-colors font-semibold"
-                    >
-                      <Edit3 className="w-4 h-4 text-accent" />
-                      <span>Đăng Bài Viết Mới</span>
-                    </Link>
-                  )}
-
                   {user.role === "superadmin" && (
                     <Link
                       href="/admin/users"
@@ -461,6 +559,79 @@ export function Header() {
               </span>
               <nav className="flex flex-col gap-1" aria-label="Mobile navigation">
                 {navItems.map((item) => {
+                  if (item.items && item.items.length > 0) {
+                    const isGroupActive = item.items.some(
+                      (sub) => pathname === sub.href || pathname.startsWith(`${sub.href}/`)
+                    );
+                    return (
+                      <div key={item.label} className="space-y-1">
+                        <button
+                          type="button"
+                          onClick={() => setMobileStudyOpen((prev) => !prev)}
+                          className={cn(
+                            "w-full px-3 py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center justify-between text-left cursor-pointer",
+                            isGroupActive
+                              ? "text-accent bg-accent-muted/40 font-bold border border-accent/30"
+                              : "text-text-secondary hover:text-text-primary hover:bg-bg-elevated"
+                          )}
+                        >
+                          <span className="flex items-center gap-2">
+                            <span>{item.label}</span>
+                            {isGroupActive && <span className="w-1.5 h-1.5 rounded-full bg-accent" />}
+                          </span>
+                          <ChevronDown
+                            className={cn(
+                              "w-4 h-4 text-text-muted transition-transform duration-200",
+                              mobileStudyOpen ? "rotate-180 text-accent" : ""
+                            )}
+                          />
+                        </button>
+                        {mobileStudyOpen && (
+                          <div className="pl-3 pr-1 py-1 space-y-1 border-l-2 border-accent/30 ml-3 animate-fade-in">
+                            {item.items.map((subItem) => {
+                              const isSubActive =
+                                pathname === subItem.href || pathname.startsWith(`${subItem.href}/`);
+                              const SubIcon =
+                                subItem.icon === "BookOpen"
+                                  ? BookOpen
+                                  : subItem.icon === "Route"
+                                  ? Route
+                                  : subItem.icon === "GraduationCap"
+                                  ? GraduationCap
+                                  : subItem.icon === "Sparkles"
+                                  ? Sparkles
+                                  : Compass;
+
+                              return (
+                                <Link
+                                  key={subItem.href}
+                                  href={subItem.href}
+                                  onClick={() => setMobileMenuOpen(false)}
+                                  className={cn(
+                                    "flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-colors",
+                                    isSubActive
+                                      ? "text-accent bg-accent-muted/30 font-bold border border-accent/20"
+                                      : "text-text-secondary hover:text-text-primary hover:bg-bg-elevated"
+                                  )}
+                                >
+                                  <span className="flex items-center gap-2.5">
+                                    <SubIcon className="w-3.5 h-3.5 text-accent flex-shrink-0" />
+                                    <span>{subItem.label}</span>
+                                  </span>
+                                  {subItem.badge && (
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent-muted text-accent font-semibold">
+                                      {subItem.badge}
+                                    </span>
+                                  )}
+                                </Link>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+
                   const isActive =
                     item.href === "/"
                       ? pathname === "/"

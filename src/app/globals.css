@@ -205,6 +205,15 @@ body {
   background: var(--accent);
 }
 
+/* Hide scrollbars for clean touch-friendly horizontal tab navigation */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Custom glow utility */
 .glow-accent {
   box-shadow: 0 0 30px rgba(240, 90, 40, 0.25);

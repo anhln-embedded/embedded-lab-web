@@ -19,12 +19,51 @@ export const siteConfig = {
   location: "Hà Nội, Việt Nam",
   navItems: [
     { label: "Trang chủ", href: "/" },
-    { label: "Chuyên đề", href: "/tutorials" },
-    { label: "Lộ trình học", href: "/roadmap" },
-    { label: "Khóa học", href: "/courses" },
+    {
+      label: "Học tập",
+      href: "/tutorials",
+      items: [
+        {
+          label: "Chuyên đề",
+          href: "/tutorials",
+          description: "Thư viện bài giảng & chuyên đề kỹ thuật chuyên sâu",
+          icon: "BookOpen",
+          badge: "24+ bài",
+        },
+        {
+          label: "Khóa học",
+          href: "/courses",
+          description: "Các khóa học thực hành và dự án thực tế",
+          icon: "GraduationCap",
+          badge: "Thực hành",
+        },
+        {
+          label: "Lộ trình học",
+          href: "/roadmap",
+          description: "Lộ trình phát triển kỹ sư Embedded & AIoT R&D",
+          icon: "Route",
+          badge: "Chuẩn R&D",
+        },
+      ],
+    },
+    { label: "Nghiên cứu", href: "/research" },
     { label: "Mô phỏng", href: "/tools/stm32-simulator" },
-    { label: "Bài viết", href: "/blog" },
+    { label: "Bản tin", href: "/blog" },
   ],
 };
+
+export interface NavSubItem {
+  label: string;
+  href: string;
+  description?: string;
+  icon?: string;
+  badge?: string;
+}
+
+export interface NavItem {
+  label: string;
+  href: string;
+  items?: NavSubItem[];
+}
 
 export type SiteConfig = typeof siteConfig;

@@ -95,7 +95,7 @@ export function BlogPostList({ posts: initialPosts, variant = "default", searchQ
   }, [loadFromApi]);
 
   const handleSeedFanpagePosts = async () => {
-    if (confirm("Nạp nhanh 4 bài viết mẫu chuẩn Fanpage vào Database SQLite?")) {
+    if (confirm("Nạp nhanh 4 bản tin mẫu chuẩn Fanpage vào Database SQLite?")) {
       try {
         for (const p of DEFAULT_LAB_FANPAGE_POSTS) {
           await fetch("/api/posts", {
@@ -117,7 +117,7 @@ export function BlogPostList({ posts: initialPosts, variant = "default", searchQ
           });
         }
         await loadFromApi();
-        alert("🎉 Đã nạp thành công các bài viết vào Database SQLite!");
+        alert("🎉 Đã nạp thành công các bản tin vào Database SQLite!");
       } catch (e) {
         console.error(e);
       }
@@ -269,8 +269,8 @@ export function BlogPostList({ posts: initialPosts, variant = "default", searchQ
           </div>
           <h3 className="text-lg font-bold text-text-primary">
             {selectedFilter === "all"
-              ? "Bảng tin đang được cập nhật"
-              : `Chưa có bài đăng nào trong mục này`}
+              ? "Bản tin đang được cập nhật"
+              : `Chưa có bản tin nào trong mục này`}
           </h3>
           <p className="text-xs md:text-sm text-text-secondary max-w-md mx-auto leading-relaxed">
             Các thông báo và ghi chép thực nghiệm mới nhất từ phòng Lab sẽ được đăng tải tại đây. Bạn cũng có thể theo dõi Fanpage Facebook của Lab.
@@ -289,9 +289,9 @@ export function BlogPostList({ posts: initialPosts, variant = "default", searchQ
 
             {user && (user.role === "admin" || user.role === "superadmin") && (
               <Button variant="primary" size="sm" asChild className="bg-accent text-white text-xs">
-                <Link href="/admin/posts/new">
+                <Link href="/admin">
                   <PlusCircle className="w-3.5 h-3.5 mr-1.5" />
-                  Đăng bài viết mới
+                  Đăng bản tin mới
                 </Link>
               </Button>
             )}

@@ -222,10 +222,10 @@ export function CourseList({ courses: initialCourses }: CourseListProps) {
     <div className="space-y-8">
       {/* Dynamic Category Filter Tabs (Only shown when there are courses with multiple categories) */}
       {displayCourses.length > 0 && availableCategories.length > 0 && (
-        <div className="flex flex-wrap items-center justify-center gap-2 p-1.5 bg-bg-panel border border-border rounded-2xl max-w-4xl mx-auto shadow-sm">
+        <div className="flex items-center gap-2 p-1.5 bg-bg-panel border border-border rounded-2xl max-w-4xl mx-auto shadow-sm overflow-x-auto no-scrollbar sm:flex-wrap sm:justify-center">
           <button
             onClick={() => setSelectedCategory("all")}
-            className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold transition-all flex items-center gap-1.5 ${
+            className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap flex-shrink-0 ${
               selectedCategory === "all"
                 ? "bg-accent text-white shadow-md shadow-accent/20"
                 : "text-text-secondary hover:text-text-primary hover:bg-bg-elevated"
@@ -242,7 +242,7 @@ export function CourseList({ courses: initialCourses }: CourseListProps) {
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold transition-all flex items-center gap-1.5 ${
+                className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap flex-shrink-0 ${
                   isSelected
                     ? "bg-accent text-white shadow-md shadow-accent/20"
                     : "text-text-secondary hover:text-text-primary hover:bg-bg-elevated"
@@ -286,7 +286,7 @@ export function CourseList({ courses: initialCourses }: CourseListProps) {
             <Button variant="outline" asChild className="text-xs sm:text-sm font-semibold rounded-xl">
               <Link href="/blog">
                 <BookOpen className="w-4 h-4 mr-1.5 text-accent" />
-                Đọc Bảng Tin Kỹ Thuật
+                Đọc Bản Tin Kỹ Thuật
               </Link>
             </Button>
 
