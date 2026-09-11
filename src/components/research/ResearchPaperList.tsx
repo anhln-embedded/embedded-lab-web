@@ -11,6 +11,8 @@ import {
   getAllResearchPapers,
   saveResearchPaper,
   deleteResearchPaper,
+  getDeletedPaperIds,
+  saveDeletedPaperId,
 } from "@/lib/research-store";
 import { BibtexModal } from "./BibtexModal";
 import { ResearchPaperModal } from "./ResearchPaperModal";
@@ -40,7 +42,7 @@ import {
 import { cn } from "@/lib/utils";
 
 export function ResearchPaperList() {
-  const [papers, setPapers] = React.useState<ResearchPaper[]>(DEFAULT_RESEARCH_PAPERS);
+  const [papers, setPapers] = React.useState<ResearchPaper[]>([]);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [selectedType, setSelectedType] = React.useState<string>("all");
   const [selectedYear, setSelectedYear] = React.useState<string>("all");
@@ -61,11 +63,15 @@ export function ResearchPaperList() {
   // Load papers on mount
   React.useEffect(() => {
     const loadData = async () => {
+      const deletedIds = getDeletedPaperIds();
       try {
         const res = await fetch("/api/research");
         const json = await res.json();
-        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-          setPapers(json.data);
+        if (json.success && Array.isArray(json.data)) {
+          const valid = (json.data as ResearchPaper[]).filter(
+            (p) => !deletedIds.includes(p.id) && (!p.slug || !deletedIds.includes(p.slug))
+          );
+          setPapers(valid);
           return;
         }
       } catch (err) {
@@ -142,18 +148,47 @@ export function ResearchPaperList() {
     setEditModalOpen(true);
   };
 
-  const handleSavePaper = (paper: ResearchPaper) => {
+  const handleSavePaper = async (paper: ResearchPaper) => {
+    // Lưu vào localStorage
     const updated = saveResearchPaper(paper);
     setPapers(updated);
+
+    // Đồng bộ với API server
+    try {
+      await fetch("/api/research", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(paper),
+      });
+    } catch (err) {
+      console.warn("Lỗi khi đồng bộ bài báo lên server:", err);
+    }
+
     showToast(editingPaper ? "Đã cập nhật bài báo thành công!" : "Đã đăng bài nghiên cứu mới thành công!");
   };
 
-  const handleDeletePaper = (id: string, title: string) => {
-    if (window.confirm(`Bạn có chắc chắn muốn xóa bài báo:\n"${title}"?`)) {
-      const updated = deleteResearchPaper(id);
-      setPapers(updated);
-      showToast("Đã xóa bài báo nghiên cứu thành công!");
+  const handleDeletePaper = async (id: string, title: string) => {
+    if (!window.confirm(`Bạn có chắc chắn muốn xóa bài báo:\n"${title}"?`)) {
+      return;
     }
+
+    // 1. Optimistic UI update ngay lập tức
+    setPapers((prev) => prev.filter((p) => p.id !== id && p.slug !== id));
+
+    // 2. Lưu vào local storage blacklist vĩnh viễn
+    deleteResearchPaper(id);
+    saveDeletedPaperId(id);
+
+    // 3. Gửi lệnh xóa lên Server API
+    try {
+      await fetch(`/api/research/${id}`, {
+        method: "DELETE",
+      });
+    } catch (err) {
+      console.warn("Lỗi khi gửi yêu cầu xóa bài lên server:", err);
+    }
+
+    showToast("Đã xóa bài báo nghiên cứu thành công!");
   };
 
   return (

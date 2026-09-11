@@ -267,6 +267,30 @@ export const DEFAULT_RESEARCH_PAPERS: ResearchPaper[] = [
 ];
 
 const STORAGE_KEY = "embedded_lab_research_papers";
+const DELETED_KEY = "embedded_lab_deleted_research_ids";
+
+export function getDeletedPaperIds(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = safeStorage.getItem(DELETED_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveDeletedPaperId(id: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    const current = getDeletedPaperIds();
+    if (!current.includes(id)) {
+      current.push(id);
+      safeStorage.setItem(DELETED_KEY, JSON.stringify(current));
+    }
+  } catch (err) {
+    console.warn("Lỗi lưu deleted paper id:", err);
+  }
+}
 
 export function generateBibtex(paper: Partial<ResearchPaper>): string {
   const authorLastName = (paper.authors || "Author")
@@ -318,16 +342,18 @@ export function getAllResearchPapers(): ResearchPaper[] {
   }
 
   try {
+    const deletedIds = getDeletedPaperIds();
     const raw = safeStorage.getItem(STORAGE_KEY);
     if (!raw) {
-      safeStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_RESEARCH_PAPERS));
-      return DEFAULT_RESEARCH_PAPERS;
+      const initial = DEFAULT_RESEARCH_PAPERS.filter((p) => !deletedIds.includes(p.id));
+      safeStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
+      return initial;
     }
     const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      return parsed;
+    if (Array.isArray(parsed)) {
+      return parsed.filter((p: ResearchPaper) => !deletedIds.includes(p.id) && !deletedIds.includes(p.slug || ""));
     }
-    return DEFAULT_RESEARCH_PAPERS;
+    return DEFAULT_RESEARCH_PAPERS.filter((p) => !deletedIds.includes(p.id));
   } catch (err) {
     console.error("Lỗi đọc research papers từ local storage:", err);
     return DEFAULT_RESEARCH_PAPERS;
@@ -379,8 +405,9 @@ export function deleteResearchPaper(id: string): ResearchPaper[] {
   if (typeof window === "undefined") return DEFAULT_RESEARCH_PAPERS;
 
   try {
+    saveDeletedPaperId(id);
     const current = getAllResearchPapers();
-    const updated = current.filter((p) => p.id !== id);
+    const updated = current.filter((p) => p.id !== id && p.slug !== id);
     safeStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
 
     // Đồng bộ API delete
@@ -394,3 +421,4 @@ export function deleteResearchPaper(id: string): ResearchPaper[] {
     return getAllResearchPapers();
   }
 }
+

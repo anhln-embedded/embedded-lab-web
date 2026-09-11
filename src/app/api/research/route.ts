@@ -43,43 +43,78 @@ export async function GET(request: Request) {
       orderBy: [{ year: "desc" }, { createdAt: "desc" }],
     });
 
-    // Nếu database chưa có bài nào, tự động seed từ DEFAULT_RESEARCH_PAPERS
-    if (papers.length === 0 && !type && !year && !field && !search) {
-      for (const item of DEFAULT_RESEARCH_PAPERS) {
-        await prisma.researchPaper.upsert({
-          where: { id: item.id },
-          update: {},
-          create: {
-            id: item.id,
-            title: item.title,
-            slug: item.slug || item.id,
-            authors: item.authors,
-            labAuthors: item.labAuthors ? JSON.stringify(item.labAuthors) : null,
-            publicationType: item.publicationType,
-            venue: item.venue,
-            year: item.year,
-            month: item.month,
-            volume: item.volume,
-            doi: item.doi,
-            doiUrl: item.doiUrl,
-            pdfUrl: item.pdfUrl,
-            codeUrl: item.codeUrl,
-            demoUrl: item.demoUrl,
-            abstract: item.abstract,
-            keywords: item.keywords.join(", "),
-            field: item.field,
-            badge: item.badge,
-            citationCount: item.citationCount || 0,
-            bibtex: item.bibtex,
-            status: item.status,
-            featured: item.featured || false,
-            createdAt: new Date(item.createdAt),
-          },
+    // 1. Kiểm tra danh sách các ID đã bị xóa
+    let deletedIds: string[] = [];
+    try {
+      const deletedSetting = await prisma.systemSetting.findUnique({
+        where: { key: "deleted_research_ids" },
+      });
+      if (deletedSetting) {
+        deletedIds = JSON.parse(deletedSetting.value);
+      }
+    } catch (e) {
+      // Bỏ qua nếu bảng chưa sẵn sàng
+    }
+
+    // 2. Chỉ seed một lần duy nhất khi hệ thống mới tinh (chưa từng seed)
+    try {
+      const isSeeded = await prisma.systemSetting.findUnique({
+        where: { key: "research_papers_seeded" },
+      });
+
+      if (!isSeeded && papers.length === 0 && !type && !year && !field && !search) {
+        for (const item of DEFAULT_RESEARCH_PAPERS) {
+          if (deletedIds.includes(item.id)) continue;
+          await prisma.researchPaper.upsert({
+            where: { id: item.id },
+            update: {},
+            create: {
+              id: item.id,
+              title: item.title,
+              slug: item.slug || item.id,
+              authors: item.authors,
+              labAuthors: item.labAuthors ? JSON.stringify(item.labAuthors) : null,
+              publicationType: item.publicationType,
+              venue: item.venue,
+              year: item.year,
+              month: item.month,
+              volume: item.volume,
+              doi: item.doi,
+              doiUrl: item.doiUrl,
+              pdfUrl: item.pdfUrl,
+              codeUrl: item.codeUrl,
+              demoUrl: item.demoUrl,
+              abstract: item.abstract,
+              keywords: item.keywords.join(", "),
+              field: item.field,
+              badge: item.badge,
+              citationCount: item.citationCount || 0,
+              bibtex: item.bibtex,
+              status: item.status,
+              featured: item.featured || false,
+              createdAt: new Date(item.createdAt),
+            },
+          });
+        }
+        await prisma.systemSetting.upsert({
+          where: { key: "research_papers_seeded" },
+          update: { value: "true" },
+          create: { key: "research_papers_seeded", value: "true" },
+        });
+        papers = await prisma.researchPaper.findMany({
+          where,
+          orderBy: [{ year: "desc" }, { createdAt: "desc" }],
         });
       }
-      papers = await prisma.researchPaper.findMany({
-        orderBy: [{ year: "desc" }, { createdAt: "desc" }],
-      });
+    } catch (seedErr) {
+      console.warn("Lỗi khi auto-seed research papers:", seedErr);
+    }
+
+    // 3. Loại bỏ triệt để các bài báo đã bị xóa
+    if (deletedIds.length > 0) {
+      papers = papers.filter(
+        (p) => !deletedIds.includes(p.id) && !deletedIds.includes(p.slug || "")
+      );
     }
 
     // Format output
