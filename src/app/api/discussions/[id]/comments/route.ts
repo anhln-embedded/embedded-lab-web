@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { ensureDiscussionSchema } from "@/lib/db-sync";
 
 interface Params {
   params: Promise<{ id: string }>;
@@ -8,6 +9,7 @@ interface Params {
 // GET /api/discussions/[id]/comments
 export async function GET(request: Request, { params }: Params) {
   try {
+    await ensureDiscussionSchema();
     const { id } = await params;
 
     const comments = await prisma.discussionComment.findMany({
@@ -60,6 +62,7 @@ export async function GET(request: Request, { params }: Params) {
 // POST /api/discussions/[id]/comments - Tạo bình luận mới
 export async function POST(request: Request, { params }: Params) {
   try {
+    await ensureDiscussionSchema();
     const { id } = await params;
     const body = await request.json();
     const {

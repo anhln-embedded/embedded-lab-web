@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { ensureDiscussionSchema } from "@/lib/db-sync";
 
 interface Params {
   params: Promise<{ id: string }>;
@@ -8,6 +9,7 @@ interface Params {
 // POST /api/discussions/[id]/vote - Cập nhật điểm vote
 export async function POST(request: Request, { params }: Params) {
   try {
+    await ensureDiscussionSchema();
     const { id } = await params;
     const body = await request.json();
     const { diff = 1 } = body; // diff có thể là 1, -1, 2, -2

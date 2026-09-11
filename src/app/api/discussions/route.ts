@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { ensureDiscussionSchema } from "@/lib/db-sync";
 
 // GET /api/discussions - Lấy danh sách bài viết từ database SQLite
 export async function GET(request: Request) {
   try {
+    await ensureDiscussionSchema();
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
     const flair = searchParams.get("flair");
@@ -105,6 +107,7 @@ export async function GET(request: Request) {
 // POST /api/discussions - Tạo mới chủ đề thảo luận trong database SQLite
 export async function POST(request: Request) {
   try {
+    await ensureDiscussionSchema();
     const body = await request.json();
     const {
       title,

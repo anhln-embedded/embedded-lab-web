@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { ensureDiscussionSchema } from "@/lib/db-sync";
 
 interface Params {
   params: Promise<{ id: string }>;
@@ -8,6 +9,7 @@ interface Params {
 // GET /api/discussions/[id] - Lấy chi tiết chủ đề thảo luận kèm các bình luận
 export async function GET(request: Request, { params }: Params) {
   try {
+    await ensureDiscussionSchema();
     const { id } = await params;
 
     const thread = await prisma.discussionThread.findUnique({
@@ -111,6 +113,7 @@ export async function GET(request: Request, { params }: Params) {
 // DELETE /api/discussions/[id] - Xóa bài viết (Người đăng hoặc Admin/SuperAdmin)
 export async function DELETE(request: Request, { params }: Params) {
   try {
+    await ensureDiscussionSchema();
     const { id } = await params;
 
     const thread = await prisma.discussionThread.findUnique({

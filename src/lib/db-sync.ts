@@ -95,6 +95,9 @@ export async function ensureTutorialSchema() {
     // 4. Đồng bộ bảng và cột Gamification
     await ensureGamificationSchema();
 
+    // 5. Đồng bộ bảng Diễn đàn thảo luận
+    await ensureDiscussionSchema();
+
     isSchemaEnsured = true;
   } catch (error) {
     console.error("Lỗi khi tự động đồng bộ schema:", error);
@@ -296,5 +299,85 @@ export async function ensureCircuitPresetSchema() {
     isCircuitPresetEnsured = true;
   } catch (error) {
     console.error("Lỗi khi đồng bộ bảng CircuitPreset:", error);
+  }
+}
+
+let isDiscussionEnsured = false;
+
+/**
+ * Tự động đồng bộ bảng DiscussionThread & DiscussionComment trong SQLite
+ * Đảm bảo hoạt động ngay lập tức trên Docker VPS mà không cần chạy migration thủ công
+ */
+export async function ensureDiscussionSchema() {
+  if (isDiscussionEnsured) return;
+
+  try {
+    // 1. Tạo bảng DiscussionThread
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "DiscussionThread" (
+        "id" TEXT NOT NULL PRIMARY KEY,
+        "title" TEXT NOT NULL,
+        "category" TEXT NOT NULL DEFAULT 'embedded-mcu',
+        "flair" TEXT NOT NULL DEFAULT 'thao-luan',
+        "author" TEXT NOT NULL,
+        "authorId" TEXT NOT NULL,
+        "authorRole" TEXT DEFAULT 'user',
+        "authorAvatar" TEXT DEFAULT '👤',
+        "authorTitle" TEXT DEFAULT 'Thành viên',
+        "content" TEXT NOT NULL,
+        "codeSnippet" TEXT,
+        "attachedFiles" TEXT,
+        "hasSimulatorPreview" BOOLEAN NOT NULL DEFAULT 0,
+        "simulatorCode" TEXT,
+        "votes" INTEGER NOT NULL DEFAULT 1,
+        "viewsCount" INTEGER NOT NULL DEFAULT 0,
+        "repliesCount" INTEGER NOT NULL DEFAULT 0,
+        "reactions" TEXT DEFAULT '{"ung":0,"gach":0,"ung_bung":0,"haha":0,"nguong_mo":0}',
+        "isPinned" BOOLEAN NOT NULL DEFAULT 0,
+        "tags" TEXT DEFAULT '[]',
+        "lastActivity" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // 2. Tạo bảng DiscussionComment
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "DiscussionComment" (
+        "id" TEXT NOT NULL PRIMARY KEY,
+        "threadId" TEXT NOT NULL,
+        "parentId" TEXT,
+        "author" TEXT NOT NULL,
+        "authorId" TEXT NOT NULL,
+        "authorRole" TEXT DEFAULT 'user',
+        "authorAvatar" TEXT DEFAULT '👤',
+        "authorTitle" TEXT DEFAULT 'Thành viên',
+        "content" TEXT NOT NULL,
+        "quoteContent" TEXT,
+        "quoteAuthor" TEXT,
+        "attachedFiles" TEXT,
+        "votes" INTEGER NOT NULL DEFAULT 0,
+        "reactions" TEXT DEFAULT '{"ung":0,"gach":0,"ung_bung":0}',
+        "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "DiscussionComment_threadId_fkey" FOREIGN KEY ("threadId") REFERENCES "DiscussionThread" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+      )
+    `);
+
+    // 3. Tạo index
+    try {
+      await prisma.$executeRawUnsafe(`
+        CREATE INDEX IF NOT EXISTS "DiscussionThread_category_idx" ON "DiscussionThread"("category")
+      `);
+      await prisma.$executeRawUnsafe(`
+        CREATE INDEX IF NOT EXISTS "DiscussionThread_createdAt_idx" ON "DiscussionThread"("createdAt")
+      `);
+      await prisma.$executeRawUnsafe(`
+        CREATE INDEX IF NOT EXISTS "DiscussionComment_threadId_idx" ON "DiscussionComment"("threadId")
+      `);
+    } catch {}
+
+    isDiscussionEnsured = true;
+  } catch (error) {
+    console.error("Lỗi khi tự động đồng bộ Discussion schema:", error);
   }
 }
