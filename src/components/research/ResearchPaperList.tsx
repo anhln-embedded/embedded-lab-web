@@ -7,12 +7,6 @@ import {
   PublicationType,
   PUBLICATION_TYPES,
   RESEARCH_FIELDS,
-  DEFAULT_RESEARCH_PAPERS,
-  getAllResearchPapers,
-  saveResearchPaper,
-  deleteResearchPaper,
-  getDeletedPaperIds,
-  saveDeletedPaperId,
 } from "@/lib/research-store";
 import { BibtexModal } from "./BibtexModal";
 import { ResearchPaperModal } from "./ResearchPaperModal";
@@ -37,7 +31,10 @@ import {
   Sparkles,
   GitBranch,
   Layers,
-  GraduationCap
+  GraduationCap,
+  Loader2,
+  RefreshCw,
+  AlertCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
@@ -49,6 +46,8 @@ export function ResearchPaperList() {
   const isAdmin = Boolean(user && (user.role === "admin" || user.role === "superadmin"));
 
   const [papers, setPapers] = React.useState<ResearchPaper[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [fetchError, setFetchError] = React.useState<string | null>(null);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [selectedType, setSelectedType] = React.useState<string>("all");
   const [selectedYear, setSelectedYear] = React.useState<string>("all");
@@ -63,30 +62,32 @@ export function ResearchPaperList() {
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
+    setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // Load papers on mount
-  React.useEffect(() => {
-    const loadData = async () => {
-      const deletedIds = getDeletedPaperIds();
-      try {
-        const res = await fetch("/api/research");
-        const json = await res.json();
-        if (json.success && Array.isArray(json.data)) {
-          const valid = (json.data as ResearchPaper[]).filter(
-            (p) => !deletedIds.includes(p.id) && (!p.slug || !deletedIds.includes(p.slug))
-          );
-          setPapers(valid);
-          return;
-        }
-      } catch (err) {
-        console.warn("Không thể fetch API research, dùng store cục bộ:", err);
+  // Nạp trực tiếp dữ liệu từ Database SQLite trung tâm (nguồn chân lý duy nhất cho mọi User)
+  const loadData = React.useCallback(async () => {
+    setIsLoading(true);
+    setFetchError(null);
+    try {
+      const res = await fetch("/api/research", { cache: "no-store" });
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data)) {
+        setPapers(json.data);
+      } else {
+        throw new Error(json.error || "Không thể tải danh sách bài báo từ máy chủ");
       }
-      setPapers(getAllResearchPapers());
-    };
-    loadData();
+    } catch (err: any) {
+      console.error("Lỗi khi fetch API research từ database:", err);
+      setFetchError(err.message || "Lỗi kết nối cơ sở dữ liệu");
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  React.useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   // Compute available years
   const availableYears = React.useMemo(() => {
@@ -168,11 +169,6 @@ export function ResearchPaperList() {
       return;
     }
 
-    // Lưu vào localStorage
-    const updated = saveResearchPaper(paper);
-    setPapers(updated);
-
-    // Đồng bộ với API server kèm xác thực quyền
     try {
       const res = await fetch("/api/research", {
         method: "POST",
@@ -188,14 +184,17 @@ export function ResearchPaperList() {
       });
       const data = await res.json();
       if (!data.success) {
-        showToast(data.error || "Không thể lưu bài báo lên server.");
+        showToast(data.error || "Không thể lưu bài báo lên cơ sở dữ liệu.");
         return;
       }
-    } catch (err) {
-      console.warn("Lỗi khi đồng bộ bài báo lên server:", err);
-    }
 
-    showToast(editingPaper ? "Đã cập nhật bài báo thành công!" : "Đã đăng bài nghiên cứu mới thành công!");
+      // Nạp lại danh sách chính xác từ Database SQLite trung tâm
+      await loadData();
+      showToast(editingPaper ? "Đã cập nhật bài báo thành công vào Database!" : "Đã đăng bài nghiên cứu mới vào Database thành công!");
+    } catch (err: any) {
+      console.error("Lỗi khi đồng bộ bài báo lên server database:", err);
+      showToast("Lỗi kết nối khi gửi bài báo lên máy chủ");
+    }
   };
 
   const handleDeletePaper = async (id: string, title: string) => {
@@ -208,14 +207,6 @@ export function ResearchPaperList() {
       return;
     }
 
-    // 1. Optimistic UI update ngay lập tức
-    setPapers((prev) => prev.filter((p) => p.id !== id && p.slug !== id));
-
-    // 2. Lưu vào local storage blacklist vĩnh viễn
-    deleteResearchPaper(id);
-    saveDeletedPaperId(id);
-
-    // 3. Gửi lệnh xóa lên Server API kèm xác thực quyền Admin
     try {
       const res = await fetch(`/api/research/${id}`, {
         method: "DELETE",
@@ -226,14 +217,17 @@ export function ResearchPaperList() {
       });
       const data = await res.json();
       if (!data.success) {
-        showToast(data.error || "Không thể xóa bài báo trên server.");
+        showToast(data.error || "Không thể xóa bài báo trên máy chủ.");
         return;
       }
-    } catch (err) {
-      console.warn("Lỗi khi gửi yêu cầu xóa bài lên server:", err);
-    }
 
-    showToast("Đã xóa bài báo nghiên cứu thành công!");
+      // Xóa thành công khỏi database, cập nhật danh sách
+      setPapers((prev) => prev.filter((p) => p.id !== id && p.slug !== id));
+      showToast("Đã xóa bài báo nghiên cứu khỏi Database thành công!");
+    } catch (err) {
+      console.error("Lỗi khi gửi yêu cầu xóa bài lên server database:", err);
+      showToast("Lỗi kết nối khi gửi yêu cầu xóa bài báo");
+    }
   };
 
   const getPubTypeLabel = (type: PublicationType, isShort = false) => {
@@ -438,7 +432,28 @@ export function ResearchPaperList() {
 
       {/* 3. PAPERS LIST */}
       <div className="space-y-4">
-        {filteredPapers.length === 0 ? (
+        {isLoading ? (
+          <div className="p-16 text-center rounded-2xl bg-bg-panel border border-border/80 space-y-4">
+            <Loader2 className="w-8 h-8 text-accent animate-spin mx-auto" />
+            <p className="text-xs text-text-muted font-medium">Đang đồng bộ danh sách bài báo nghiên cứu từ Database...</p>
+          </div>
+        ) : fetchError ? (
+          <div className="p-12 text-center rounded-2xl bg-bg-panel border border-rose-500/30 space-y-4">
+            <div className="w-12 h-12 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center mx-auto">
+              <AlertCircle className="w-6 h-6" />
+            </div>
+            <h3 className="text-sm font-bold text-text-primary">Không thể tải dữ liệu từ máy chủ</h3>
+            <p className="text-xs text-text-muted max-w-md mx-auto">{fetchError}</p>
+            <button
+              type="button"
+              onClick={() => loadData()}
+              className="px-4 py-2 rounded-xl bg-accent text-white text-xs font-semibold hover:bg-accent-hover transition-all cursor-pointer inline-flex items-center gap-1.5 mx-auto"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Thử kết nối lại</span>
+            </button>
+          </div>
+        ) : filteredPapers.length === 0 ? (
           <div className="p-12 text-center rounded-2xl bg-bg-panel border border-border/80 space-y-4">
             <div className="w-12 h-12 rounded-full bg-accent/10 text-accent flex items-center justify-center mx-auto">
               <Search className="w-6 h-6" />

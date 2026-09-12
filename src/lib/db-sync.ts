@@ -122,6 +122,9 @@ export async function ensureTutorialSchema() {
     // 5. Đồng bộ bảng Diễn đàn thảo luận
     await ensureDiscussionSchema();
 
+    // 6. Đồng bộ bảng Bài báo nghiên cứu khoa học
+    await ensureResearchSchema();
+
     isSchemaEnsured = true;
   } catch (error) {
     console.error("Lỗi khi tự động đồng bộ schema:", error);
@@ -405,3 +408,127 @@ export async function ensureDiscussionSchema() {
     console.error("Lỗi khi tự động đồng bộ Discussion schema:", error);
   }
 }
+
+let isResearchEnsured = false;
+
+/**
+ * Tự động đồng bộ bảng ResearchPaper & SystemSetting trong SQLite
+ * Đảm bảo dữ liệu các bài báo nghiên cứu khoa học được lưu thống nhất trên Database máy chủ
+ */
+export async function ensureResearchSchema() {
+  if (isResearchEnsured) return;
+
+  try {
+    // 1. Tạo bảng SystemSetting nếu chưa tồn tại
+    try {
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "SystemSetting" (
+          "key" TEXT NOT NULL PRIMARY KEY,
+          "value" TEXT NOT NULL,
+          "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+    } catch {}
+
+    // 2. Tạo bảng ResearchPaper nếu chưa tồn tại
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "ResearchPaper" (
+        "id" TEXT NOT NULL PRIMARY KEY,
+        "title" TEXT NOT NULL,
+        "slug" TEXT UNIQUE,
+        "authors" TEXT NOT NULL,
+        "labAuthors" TEXT,
+        "publicationType" TEXT NOT NULL DEFAULT 'journal',
+        "venue" TEXT NOT NULL,
+        "year" INTEGER NOT NULL DEFAULT 2025,
+        "month" TEXT,
+        "volume" TEXT,
+        "doi" TEXT,
+        "doiUrl" TEXT,
+        "pdfUrl" TEXT,
+        "codeUrl" TEXT,
+        "demoUrl" TEXT,
+        "abstract" TEXT NOT NULL,
+        "keywords" TEXT NOT NULL DEFAULT 'Embedded, AIoT',
+        "field" TEXT NOT NULL DEFAULT 'Edge AI & TinyML',
+        "badge" TEXT DEFAULT 'Scopus Q1',
+        "citationCount" INTEGER NOT NULL DEFAULT 0,
+        "bibtex" TEXT,
+        "status" TEXT NOT NULL DEFAULT 'published',
+        "featured" BOOLEAN NOT NULL DEFAULT 0,
+        "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // 3. Tạo index cho ResearchPaper
+    try {
+      await prisma.$executeRawUnsafe(`
+        CREATE INDEX IF NOT EXISTS "ResearchPaper_year_idx" ON "ResearchPaper"("year")
+      `);
+      await prisma.$executeRawUnsafe(`
+        CREATE INDEX IF NOT EXISTS "ResearchPaper_publicationType_idx" ON "ResearchPaper"("publicationType")
+      `);
+      await prisma.$executeRawUnsafe(`
+        CREATE INDEX IF NOT EXISTS "ResearchPaper_field_idx" ON "ResearchPaper"("field")
+      `);
+      await prisma.$executeRawUnsafe(`
+        CREATE INDEX IF NOT EXISTS "ResearchPaper_createdAt_idx" ON "ResearchPaper"("createdAt")
+      `);
+    } catch {}
+
+    // 4. Kiểm tra và nạp dữ liệu ban đầu nếu bảng đang trống
+    try {
+      const existing: any = await prisma.$queryRawUnsafe(
+        `SELECT "id" FROM "ResearchPaper" LIMIT 1`
+      );
+
+      if (!existing || existing.length === 0) {
+        const { DEFAULT_RESEARCH_PAPERS } = await import("@/lib/research-store");
+        for (const item of DEFAULT_RESEARCH_PAPERS) {
+          try {
+            await prisma.researchPaper.upsert({
+              where: { id: item.id },
+              update: {},
+              create: {
+                id: item.id,
+                title: item.title,
+                slug: item.slug || item.id,
+                authors: item.authors,
+                labAuthors: item.labAuthors ? JSON.stringify(item.labAuthors) : null,
+                publicationType: item.publicationType,
+                venue: item.venue,
+                year: item.year,
+                month: item.month,
+                volume: item.volume,
+                doi: item.doi,
+                doiUrl: item.doiUrl,
+                pdfUrl: item.pdfUrl,
+                codeUrl: item.codeUrl,
+                demoUrl: item.demoUrl,
+                abstract: item.abstract,
+                keywords: Array.isArray(item.keywords) ? item.keywords.join(", ") : item.keywords,
+                field: item.field,
+                badge: item.badge,
+                citationCount: item.citationCount || 0,
+                bibtex: item.bibtex,
+                status: item.status,
+                featured: item.featured || false,
+                createdAt: new Date(item.createdAt),
+              },
+            });
+          } catch (seedItemErr) {
+            console.warn("Lỗi nạp seed paper:", item.id, seedItemErr);
+          }
+        }
+      }
+    } catch (seedErr) {
+      console.warn("Lỗi kiểm tra/seed ResearchPaper:", seedErr);
+    }
+
+    isResearchEnsured = true;
+  } catch (error) {
+    console.error("Lỗi khi tự động đồng bộ Research schema:", error);
+  }
+}
+

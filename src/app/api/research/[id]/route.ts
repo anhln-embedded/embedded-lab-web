@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { normalizeEmail, parseEmailList } from "@/lib/utils";
+import { ensureResearchSchema } from "@/lib/db-sync";
 
 interface Params {
   params: Promise<{ id: string }>;
@@ -9,6 +10,7 @@ interface Params {
 // GET /api/research/[id]
 export async function GET(request: Request, { params }: Params) {
   try {
+    await ensureResearchSchema();
     const { id } = await params;
     const paper = await prisma.researchPaper.findFirst({
       where: {
@@ -44,6 +46,7 @@ export async function GET(request: Request, { params }: Params) {
 // DELETE /api/research/[id] (Chỉ Admin)
 export async function DELETE(request: Request, { params }: Params) {
   try {
+    await ensureResearchSchema();
     const { id } = await params;
 
     // Xác thực quyền Admin/SuperAdmin

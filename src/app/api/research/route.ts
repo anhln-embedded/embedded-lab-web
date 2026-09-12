@@ -2,10 +2,12 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { DEFAULT_RESEARCH_PAPERS } from "@/lib/research-store";
 import { normalizeEmail, parseEmailList } from "@/lib/utils";
+import { ensureResearchSchema } from "@/lib/db-sync";
 
 // GET /api/research - Lấy danh sách bài báo nghiên cứu khoa học
 export async function GET(request: Request) {
   try {
+    await ensureResearchSchema();
     const { searchParams } = new URL(request.url);
     const type = searchParams.get("type");
     const year = searchParams.get("year");
@@ -140,6 +142,7 @@ export async function GET(request: Request) {
 // POST /api/research - Thêm mới hoặc cập nhật bài báo nghiên cứu khoa học (Chỉ Admin)
 export async function POST(request: Request) {
   try {
+    await ensureResearchSchema();
     const body = await request.json();
     const {
       id,
