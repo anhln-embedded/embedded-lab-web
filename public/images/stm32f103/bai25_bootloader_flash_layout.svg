@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" width="100%" height="100%">
+  <defs>
+    
+    <style>
+      :root {
+        --canvas-bg: #ffffff;
+        --canvas-border: #e2e8f0;
+        --card-bg: #ffffff;
+        --card-border: #cbd5e1;
+        --title-color: #0f172a;
+        --subtitle-color: #475569;
+        --text-primary: #1e293b;
+        --text-muted: #64748b;
+        --accent-blue: #0284c7;
+        --accent-green: #10b981;
+        --accent-amber: #f59e0b;
+        --accent-red: #ef4444;
+        --accent-purple: #8b5cf6;
+        --wire-line: #94a3b8;
+        --box-blue: #eff6ff;
+        --box-green: #ecfdf5;
+        --box-amber: #fffbeb;
+        --box-purple: #f5f3ff;
+      }
+
+      
+
+      .canvas-bg { fill: var(--canvas-bg); stroke: var(--canvas-border); stroke-width: 2; rx: 16; }
+      .title-text { fill: var(--title-color); font-weight: 800; font-size: 20px; text-anchor: middle; font-family: 'Segoe UI', Arial, sans-serif; }
+      .subtitle-text { fill: var(--subtitle-color); font-weight: 600; font-size: 13px; text-anchor: middle; font-family: 'Segoe UI', Arial, sans-serif; }
+      .card-box { fill: var(--card-bg); stroke: var(--card-border); stroke-width: 1.5; rx: 10; }
+      .txt-title { fill: var(--text-primary); font-weight: 700; font-size: 13px; font-family: 'Segoe UI', Arial, sans-serif; }
+      .txt-desc { fill: var(--text-muted); font-size: 11px; font-weight: 500; font-family: 'Segoe UI', Arial, sans-serif; }
+      .wire { stroke: var(--wire-line); stroke-width: 2; fill: none; }
+      .wire-arrow { fill: var(--wire-line); }
+      .tag-blue { fill: #0284c7; font-weight: 700; font-size: 11px; font-family: monospace; }
+    </style>
+    <filter id="shadowLight" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.08"/>
+    </filter>
+
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" class="wire-arrow"/>
+    </marker>
+  </defs>
+
+  <rect x="10" y="10" width="900" height="380" class="canvas-bg"/>
+  <text x="460" y="42" class="title-text">PHÂN VÙNG BỘ NHỚ FLASH CHO CUSTOM ISP BOOTLOADER</text>
+  <text x="460" y="66" class="subtitle-text">Kiến trúc chuyển hướng Vector Ngắt (SCB->VTOR) và hàm Jump to Application</text>
+
+  <!-- Thanh bộ nhớ Flash tổng thể -->
+  <g transform="translate(60, 95)">
+    <!-- Phân vùng 1: Bootloader 12KB -->
+    <rect x="0" y="0" width="220" height="110" rx="8" fill="#eff6ff" stroke="#0284c7" stroke-width="2" filter="url(#shadowLight)"/>
+    <rect x="0" y="0" width="220" height="32" rx="8" fill="#0284c7"/>
+    <text x="110" y="22" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">BOOTLOADER (12KB)</text>
+    <text x="110" y="55" font-size="11" font-family="monospace" font-weight="bold" fill="var(--text-primary)" text-anchor="middle">0x0800 0000 - 0x0800 2FFF</text>
+    <text x="110" y="78" font-size="10.5" fill="var(--text-muted)" text-anchor="middle">• Page 0 - Page 11</text>
+    <text x="110" y="98" font-size="10.5" font-weight="700" fill="#0284c7" text-anchor="middle">Nhận firmware qua UART</text>
+
+    <!-- Phân vùng 2: User Application 52KB -->
+    <rect x="235" y="0" width="565" height="110" rx="8" fill="#ecfdf5" stroke="#10b981" stroke-width="2" filter="url(#shadowLight)"/>
+    <rect x="235" y="0" width="565" height="32" rx="8" fill="#10b981"/>
+    <text x="517" y="22" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">USER APPLICATION AREA (52KB)</text>
+    <text x="517" y="55" font-size="11" font-family="monospace" font-weight="bold" fill="var(--text-primary)" text-anchor="middle">0x0800 3000 - 0x0800 FFFF</text>
+    <text x="517" y="78" font-size="10.5" fill="var(--text-muted)" text-anchor="middle">• Page 12 - Page 63 (Chương trình chính của khách hàng)</text>
+    <text x="517" y="98" font-size="10.5" font-weight="700" fill="#059669" text-anchor="middle">Bảng Vector Ngắt Mới (SCB->VTOR = 0x08003000)</text>
+  </g>
+
+  <!-- Hộp chi tiết 2 ô nhớ đầu tiên của Application -->
+  <g transform="translate(60, 230)">
+    <rect x="0" y="0" width="800" height="120" class="card-box"/>
+    <text x="20" y="28" font-size="12" font-weight="bold" fill="#0284c7">2 Ô NHỚ ĐẦU TIÊN QUYẾT ĐỊNH CỦA APPLICATION TẠI 0x08003000:</text>
+
+    <g transform="translate(30, 45)">
+      <rect x="0" y="0" width="350" height="55" rx="6" fill="var(--box-blue)" stroke="#0284c7"/>
+      <text x="175" y="24" font-size="11" font-family="monospace" font-weight="bold" fill="#0284c7" text-anchor="middle">Địa chỉ: 0x0800 3000</text>
+      <text x="175" y="44" font-size="10.5" font-weight="bold" fill="var(--text-primary)" text-anchor="middle">Initial MSP (Giá trị nạp vào con trỏ ngăn xếp RAM)</text>
+    </g>
+
+    <g transform="translate(410, 45)">
+      <rect x="0" y="0" width="350" height="55" rx="6" fill="var(--box-green)" stroke="#10b981"/>
+      <text x="175" y="24" font-size="11" font-family="monospace" font-weight="bold" fill="#059669" text-anchor="middle">Địa chỉ: 0x0800 3004</text>
+      <text x="175" y="44" font-size="10.5" font-weight="bold" fill="var(--text-primary)" text-anchor="middle">Reset_Handler Pointer (Địa chỉ hàm nhảy khởi động)</text>
+    </g>
+  </g>
+
+</svg>

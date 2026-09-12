@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 380" width="100%" height="100%">
+  <defs>
+    
+    <style>
+      :root {
+        --canvas-bg: #0b0f19;
+          --canvas-border: #1e293b;
+          --card-bg: #111827;
+          --card-border: #334155;
+          --title-color: #f8fafc;
+          --subtitle-color: #94a3b8;
+          --text-primary: #f8fafc;
+          --text-muted: #94a3b8;
+          --accent-blue: #38bdf8;
+          --accent-green: #34d399;
+          --accent-amber: #fbbf24;
+          --accent-red: #f87171;
+          --accent-purple: #a78bfa;
+          --wire-line: #475569;
+          --box-blue: #1e293b;
+          --box-green: #064e3b;
+          --box-amber: #78350f;
+          --box-purple: #2e1065;
+      }
+
+      
+
+      .canvas-bg { fill: var(--canvas-bg); stroke: var(--canvas-border); stroke-width: 2; rx: 16; }
+      .title-text { fill: var(--title-color); font-weight: 800; font-size: 20px; text-anchor: middle; font-family: 'Segoe UI', Arial, sans-serif; }
+      .subtitle-text { fill: var(--subtitle-color); font-weight: 600; font-size: 13px; text-anchor: middle; font-family: 'Segoe UI', Arial, sans-serif; }
+      .card-box { fill: var(--card-bg); stroke: var(--card-border); stroke-width: 1.5; rx: 10; }
+      .txt-title { fill: var(--text-primary); font-weight: 700; font-size: 13px; font-family: 'Segoe UI', Arial, sans-serif; }
+      .txt-desc { fill: var(--text-muted); font-size: 11px; font-weight: 500; font-family: 'Segoe UI', Arial, sans-serif; }
+      .wire { stroke: var(--wire-line); stroke-width: 2; fill: none; }
+      .wire-arrow { fill: var(--wire-line); }
+      .tag-blue { fill: #0284c7; font-weight: 700; font-size: 11px; font-family: monospace; }
+    </style>
+    <filter id="shadowLight" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.08"/>
+    </filter>
+
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" class="wire-arrow"/>
+    </marker>
+  </defs>
+
+  <rect x="10" y="10" width="900" height="360" class="canvas-bg"/>
+  <text x="460" y="42" class="title-text">SƠ ĐỒ GIAO TIẾP ĐỒNG BỘ NỐI TIẾP TỐC ĐỘ CAO SPI (FULL-DUPLEX)</text>
+  <text x="460" y="66" class="subtitle-text">Truyền nhận song công đồng thời giữa Master và Slave qua 4 đường tín hiệu chuyên biệt</text>
+
+  <!-- Master: STM32F103 -->
+  <g transform="translate(60, 95)">
+    <rect x="0" y="0" width="260" height="230" rx="12" fill="var(--card-bg)" stroke="#0284c7" stroke-width="2.5" filter="url(#shadowLight)"/>
+    <rect x="0" y="0" width="260" height="40" rx="12" fill="#0284c7"/>
+    <text x="130" y="25" font-size="13" font-weight="800" fill="#ffffff" text-anchor="middle">STM32F103 (SPI MASTER)</text>
+
+    <text x="240" y="75" font-size="12" font-weight="bold" fill="#0284c7" text-anchor="end">PA5 (SCK) ──</text>
+    <text x="240" y="115" font-size="12" font-weight="bold" fill="#10b981" text-anchor="end">PA7 (MOSI) ──</text>
+    <text x="240" y="155" font-size="12" font-weight="bold" fill="#f59e0b" text-anchor="end">PA6 (MISO) ──</text>
+    <text x="240" y="195" font-size="12" font-weight="bold" fill="#ef4444" text-anchor="end">PA4 (CS / NSS) ──</text>
+  </g>
+
+  <!-- Đường dây tín hiệu -->
+  <!-- SCK -->
+  <line x1="320" y1="165" x2="590" y2="165" stroke="#0284c7" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="455" y="158" font-size="11" font-weight="bold" fill="#0284c7" text-anchor="middle">Xung nhịp Clock (SCK)</text>
+
+  <!-- MOSI -->
+  <line x1="320" y1="205" x2="590" y2="205" stroke="#10b981" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="455" y="198" font-size="11" font-weight="bold" fill="#10b981" text-anchor="middle">Master Out Slave In (MOSI)</text>
+
+  <!-- MISO (Chiều ngược lại!) -->
+  <line x1="600" y1="245" x2="330" y2="245" stroke="#f59e0b" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="455" y="238" font-size="11" font-weight="bold" fill="#d97706" text-anchor="middle">◀ Master In Slave Out (MISO)</text>
+
+  <!-- CS -->
+  <line x1="320" y1="285" x2="590" y2="285" stroke="#ef4444" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="455" y="278" font-size="11" font-weight="bold" fill="#ef4444" text-anchor="middle">Chip Select (CS - Active Low)</text>
+
+  <!-- Slave: Flash W25Q64 -->
+  <g transform="translate(600, 95)">
+    <rect x="0" y="0" width="260" height="230" rx="12" fill="var(--card-bg)" stroke="#10b981" stroke-width="2.5" filter="url(#shadowLight)"/>
+    <rect x="0" y="0" width="260" height="40" rx="12" fill="#10b981"/>
+    <text x="130" y="25" font-size="13" font-weight="800" fill="#ffffff" text-anchor="middle">W25Q64 / TFT (SLAVE)</text>
+
+    <text x="20" y="75" font-size="12" font-weight="bold" fill="#0284c7">── CLK (Clock)</text>
+    <text x="20" y="115" font-size="12" font-weight="bold" fill="#10b981">── DI (Data In)</text>
+    <text x="20" y="155" font-size="12" font-weight="bold" fill="#f59e0b">── DO (Data Out)</text>
+    <text x="20" y="195" font-size="12" font-weight="bold" fill="#ef4444">── /CS (Chip Select)</text>
+  </g>
+
+</svg>

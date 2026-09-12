@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 440" width="100%" height="100%">
+  <defs>
+    
+    <style>
+      :root {
+        --canvas-bg: #ffffff;
+        --canvas-border: #e2e8f0;
+        --card-bg: #ffffff;
+        --card-border: #cbd5e1;
+        --title-color: #0f172a;
+        --subtitle-color: #475569;
+        --text-primary: #1e293b;
+        --text-muted: #64748b;
+        --accent-blue: #0284c7;
+        --accent-green: #10b981;
+        --accent-amber: #f59e0b;
+        --accent-red: #ef4444;
+        --accent-purple: #8b5cf6;
+        --wire-line: #94a3b8;
+        --box-blue: #eff6ff;
+        --box-green: #ecfdf5;
+        --box-amber: #fffbeb;
+        --box-purple: #f5f3ff;
+      }
+
+      
+
+      .canvas-bg { fill: var(--canvas-bg); stroke: var(--canvas-border); stroke-width: 2; rx: 16; }
+      .title-text { fill: var(--title-color); font-weight: 800; font-size: 20px; text-anchor: middle; font-family: 'Segoe UI', Arial, sans-serif; }
+      .subtitle-text { fill: var(--subtitle-color); font-weight: 600; font-size: 13px; text-anchor: middle; font-family: 'Segoe UI', Arial, sans-serif; }
+      .card-box { fill: var(--card-bg); stroke: var(--card-border); stroke-width: 1.5; rx: 10; }
+      .txt-title { fill: var(--text-primary); font-weight: 700; font-size: 13px; font-family: 'Segoe UI', Arial, sans-serif; }
+      .txt-desc { fill: var(--text-muted); font-size: 11px; font-weight: 500; font-family: 'Segoe UI', Arial, sans-serif; }
+      .wire { stroke: var(--wire-line); stroke-width: 2; fill: none; }
+      .wire-arrow { fill: var(--wire-line); }
+      .tag-blue { fill: #0284c7; font-weight: 700; font-size: 11px; font-family: monospace; }
+    </style>
+    <filter id="shadowLight" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.08"/>
+    </filter>
+
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" class="wire-arrow"/>
+    </marker>
+  </defs>
+
+  <rect x="10" y="10" width="900" height="420" class="canvas-bg"/>
+  <text x="460" y="42" class="title-text">GIẢI MÃ KHUNG NGĂN XẾP (STACK FRAME) KHI SẬP CHIP HARDFAULT</text>
+  <text x="460" y="66" class="subtitle-text">Lõi ARM Cortex-M3 tự động lưu 8 thanh ghi vào RAM để kỹ sư truy tìm thủ phạm gây lỗi</text>
+
+  <!-- Khung ngăn xếp Stack Frame -->
+  <g transform="translate(80, 95)">
+    <rect x="0" y="0" width="300" height="300" rx="10" fill="var(--card-bg)" stroke="#ef4444" stroke-width="2" filter="url(#shadowLight)"/>
+    <rect x="0" y="0" width="300" height="32" rx="10" fill="#ef4444"/>
+    <text x="150" y="22" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">CORTEX-M3 STACK FRAME (RAM)</text>
+
+    <!-- 8 ô thanh ghi -->
+    <g transform="translate(20, 42)">
+      <rect x="0" y="0" width="260" height="26" fill="var(--card-bg)" stroke="var(--card-border)"/>
+      <text x="130" y="18" font-size="11" font-family="monospace" fill="var(--text-muted)" text-anchor="middle">SP + 0x00 : R0</text>
+
+      <rect x="0" y="26" width="260" height="26" fill="var(--card-bg)" stroke="var(--card-border)"/>
+      <text x="130" y="44" font-size="11" font-family="monospace" fill="var(--text-muted)" text-anchor="middle">SP + 0x04 : R1</text>
+
+      <rect x="0" y="52" width="260" height="26" fill="var(--card-bg)" stroke="var(--card-border)"/>
+      <text x="130" y="70" font-size="11" font-family="monospace" fill="var(--text-muted)" text-anchor="middle">SP + 0x08 : R2</text>
+
+      <rect x="0" y="78" width="260" height="26" fill="var(--card-bg)" stroke="var(--card-border)"/>
+      <text x="130" y="96" font-size="11" font-family="monospace" fill="var(--text-muted)" text-anchor="middle">SP + 0x0C : R3</text>
+
+      <rect x="0" y="104" width="260" height="26" fill="var(--card-bg)" stroke="var(--card-border)"/>
+      <text x="130" y="122" font-size="11" font-family="monospace" fill="var(--text-muted)" text-anchor="middle">SP + 0x10 : R12</text>
+
+      <rect x="0" y="130" width="260" height="30" fill="#eff6ff" stroke="#0284c7"/>
+      <text x="130" y="150" font-size="11" font-family="monospace" font-weight="bold" fill="#0284c7" text-anchor="middle">SP + 0x14 : LR (Hàm Gọi)</text>
+
+      <!-- PC Nổi bật đỏ -->
+      <rect x="0" y="160" width="260" height="36" rx="4" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+      <text x="130" y="183" font-size="12" font-family="monospace" font-weight="900" fill="#b91c1c" text-anchor="middle">SP + 0x18 : PC (DÒNG CODE LỖI!)</text>
+
+      <rect x="0" y="196" width="260" height="26" fill="var(--card-bg)" stroke="var(--card-border)"/>
+      <text x="130" y="214" font-size="11" font-family="monospace" fill="var(--text-muted)" text-anchor="middle">SP + 0x1C : xPSR (Trạng thái)</text>
+    </g>
+  </g>
+
+  <!-- Mũi tên từ PC sang phần phân tích -->
+  <line x1="390" y1="280" x2="445" y2="280" class="wire" stroke="#ef4444" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- Bảng giải mã lỗi và các thanh ghi SCB -->
+  <g transform="translate(450, 95)">
+    <rect x="0" y="0" width="410" height="300" class="card-box"/>
+    <rect x="0" y="0" width="410" height="32" rx="10" fill="#1e293b"/>
+    <text x="205" y="22" font-size="12" font-weight="bold" fill="#38bdf8" text-anchor="middle">CÁC THANH GHI CHẨN ĐOÁN LỖI PHẦN CỨNG (SCB)</text>
+
+    <g transform="translate(20, 50)">
+      <text x="0" y="20" font-size="12" font-weight="bold" fill="#ef4444">• PC (Program Counter):</text>
+      <text x="15" y="40" font-size="11" fill="var(--text-primary)">Địa chỉ Hex chính xác của dòng lệnh C gây crash.</text>
+      <text x="15" y="58" font-size="10.5" font-family="monospace" fill="#0284c7">addr2line -e app.elf 0x080004BC ➜ main.c:142</text>
+
+      <text x="0" y="90" font-size="12" font-weight="bold" fill="#0284c7">• SCB->BFAR (BusFault Address):</text>
+      <text x="15" y="110" font-size="11" fill="var(--text-primary)">Lưu địa chỉ vùng nhớ cấm mà con trỏ vừa cố tình ghi vào!</text>
+
+      <text x="0" y="140" font-size="12" font-weight="bold" fill="#f59e0b">• SCB->CFSR (Fault Status):</text>
+      <text x="15" y="160" font-size="11" fill="var(--text-primary)">Phân loại: Chia cho 0 (DIVBYZERO), Lệnh sai (UNDEFINSTR),</text>
+      <text x="15" y="178" font-size="11" fill="var(--text-primary)">hoặc không căn chỉnh địa chỉ (UNALIGNED).</text>
+
+      <rect x="0" y="195" width="370" height="35" rx="6" fill="var(--box-green)" stroke="#10b981"/>
+      <text x="185" y="217" font-size="11" font-weight="bold" fill="#065f46" text-anchor="middle">✔ Định vị chính xác 100% nguyên nhân sập chip!</text>
+    </g>
+  </g>
+
+</svg>

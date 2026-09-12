@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 360" width="100%" height="100%">
+  <defs>
+    
+    <style>
+      :root {
+        --canvas-bg: #ffffff;
+        --canvas-border: #e2e8f0;
+        --card-bg: #ffffff;
+        --card-border: #cbd5e1;
+        --title-color: #0f172a;
+        --subtitle-color: #475569;
+        --text-primary: #1e293b;
+        --text-muted: #64748b;
+        --accent-blue: #0284c7;
+        --accent-green: #10b981;
+        --accent-amber: #f59e0b;
+        --accent-red: #ef4444;
+        --accent-purple: #8b5cf6;
+        --wire-line: #94a3b8;
+        --box-blue: #eff6ff;
+        --box-green: #ecfdf5;
+        --box-amber: #fffbeb;
+        --box-purple: #f5f3ff;
+      }
+
+      
+
+      .canvas-bg { fill: var(--canvas-bg); stroke: var(--canvas-border); stroke-width: 2; rx: 16; }
+      .title-text { fill: var(--title-color); font-weight: 800; font-size: 20px; text-anchor: middle; font-family: 'Segoe UI', Arial, sans-serif; }
+      .subtitle-text { fill: var(--subtitle-color); font-weight: 600; font-size: 13px; text-anchor: middle; font-family: 'Segoe UI', Arial, sans-serif; }
+      .card-box { fill: var(--card-bg); stroke: var(--card-border); stroke-width: 1.5; rx: 10; }
+      .txt-title { fill: var(--text-primary); font-weight: 700; font-size: 13px; font-family: 'Segoe UI', Arial, sans-serif; }
+      .txt-desc { fill: var(--text-muted); font-size: 11px; font-weight: 500; font-family: 'Segoe UI', Arial, sans-serif; }
+      .wire { stroke: var(--wire-line); stroke-width: 2; fill: none; }
+      .wire-arrow { fill: var(--wire-line); }
+      .tag-blue { fill: #0284c7; font-weight: 700; font-size: 11px; font-family: monospace; }
+    </style>
+    <filter id="shadowLight" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.08"/>
+    </filter>
+
+  </defs>
+
+  <rect x="10" y="10" width="900" height="340" class="canvas-bg"/>
+  <text x="460" y="42" class="title-text">GIẢN ĐỒ XUNG RUNG TIẾP ĐIỂM (BOUNCE) VÀ THUẬT TOÁN DEBOUNCE</text>
+  <text x="460" y="65" class="subtitle-text">Khử hiện tượng nảy xung cơ khí trong khoảng 15ms - 20ms bằng phần mềm</text>
+
+  <!-- Đồ thị 1: Tín hiệu thực tế bị nhiễu -->
+  <g transform="translate(40, 85)">
+    <rect x="0" y="0" width="840" height="110" class="card-box"/>
+    <text x="15" y="25" font-size="12" font-weight="bold" fill="#ef4444">1. TÍN HIỆU NÚT BẤM THỰC TẾ (CHƯA XỬ LÝ - BỊ NẢY XUNG NHIỄU):</text>
+    
+    <!-- Trục điện áp -->
+    <text x="15" y="55" font-size="10.5" font-weight="bold" fill="var(--text-muted)">3.3V</text>
+    <text x="15" y="95" font-size="10.5" font-weight="bold" fill="var(--text-muted)">0.0V</text>
+
+    <!-- Đường sóng nảy xung -->
+    <path d="M 60 50 L 220 50 L 220 90 L 240 90 L 240 55 L 260 55 L 260 90 L 275 90 L 275 60 L 290 60 L 290 90 L 800 90" 
+          stroke="#ef4444" stroke-width="3" fill="none"/>
+
+    <!-- Vùng highlight rung phím -->
+    <rect x="215" y="40" width="85" height="58" fill="#fee2e2" fill-opacity="0.4" stroke="#ef4444" stroke-dasharray="3,3"/>
+    <text x="257" y="32" font-size="10" font-weight="bold" fill="#b91c1c" text-anchor="middle">Rung phím (5-20ms)</text>
+    <text x="550" y="80" font-size="11" font-weight="bold" fill="#b91c1c">⚠ CPU 72MHz hiểu nhầm là hàng chục lần bấm!</text>
+  </g>
+
+  <!-- Đồ thị 2: Tín hiệu sau khi Debounce -->
+  <g transform="translate(40, 210)">
+    <rect x="0" y="0" width="840" height="115" class="card-box"/>
+    <text x="15" y="25" font-size="12" font-weight="bold" fill="#10b981">2. TÍN HIỆU SAU KHI LỌC DEBOUNCE (LẤY MẪU TRỄ 20MS):</text>
+
+    <!-- Trục điện áp -->
+    <text x="15" y="55" font-size="10.5" font-weight="bold" fill="var(--text-muted)">3.3V</text>
+    <text x="15" y="95" font-size="10.5" font-weight="bold" fill="var(--text-muted)">0.0V</text>
+
+    <!-- Đường sóng vuông chuẩn -->
+    <path d="M 60 50 L 300 50 L 300 90 L 800 90" stroke="#10b981" stroke-width="3.5" fill="none"/>
+
+    <!-- Mốc xác nhận phím -->
+    <line x1="300" y1="35" x2="300" y2="105" stroke="#0284c7" stroke-width="2" stroke-dasharray="4,3"/>
+    <rect x="310" y="45" width="220" height="30" rx="4" fill="var(--box-blue)" stroke="#0284c7"/>
+    <text x="420" y="65" font-size="11" font-weight="bold" fill="#0284c7" text-anchor="middle">✔ Điểm xác nhận nút bấm hợp lệ</text>
+  </g>
+
+</svg>

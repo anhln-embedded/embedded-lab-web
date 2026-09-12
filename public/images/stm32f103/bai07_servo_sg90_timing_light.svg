@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" width="100%" height="100%">
+
+    <style>
+      :root {
+        --canvas-bg: #ffffff;
+        --canvas-border: #e2e8f0;
+        --card-bg: #ffffff;
+        --card-border: #cbd5e1;
+        --title-color: #0f172a;
+        --subtitle-color: #475569;
+        --text-primary: #1e293b;
+        --text-muted: #64748b;
+        --accent-blue: #0284c7;
+        --accent-green: #10b981;
+        --accent-amber: #f59e0b;
+        --accent-red: #ef4444;
+        --accent-purple: #8b5cf6;
+        --wire-line: #94a3b8;
+        --bus-line: #3b82f6;
+      }
+      
+      text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    </style>
+
+  <rect width="920" height="400" rx="14" fill="var(--canvas-bg)" stroke="var(--canvas-border)" stroke-width="2"/>
+  <text x="460" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="var(--title-color)">GIẢN ĐỒ XUNG ĐIỀU KHIỂN ĐỘNG CƠ RC SERVO SG90 (CHU KỲ 20MS / 50HZ)</text>
+  <text x="460" y="62" text-anchor="middle" font-size="13" fill="var(--subtitle-color)">Độ rộng xung mức cao từ 0.5ms (-90°) đến 2.5ms (+90°)</text>
+
+  <!-- 0.5ms Pulse (Góc -90°) -->
+  <g transform="translate(60, 95)">
+    <text x="0" y="22" font-size="13" font-weight="700" fill="var(--accent-blue)">Góc 0° / -90° (T_on = 0.5ms / CCR = 50)</text>
+    <polyline points="0,60 40,60 40,25 70,25 70,60 800,60" fill="none" stroke="var(--accent-blue)" stroke-width="2.5"/>
+    <line x1="40" y1="20" x2="70" y2="20" stroke="var(--accent-blue)" stroke-width="1.5"/>
+    <text x="55" y="15" text-anchor="middle" font-size="10" fill="var(--accent-blue)">0.5ms</text>
+  </g>
+
+  <!-- 1.5ms Pulse (Góc 90°) -->
+  <g transform="translate(60, 190)">
+    <text x="0" y="22" font-size="13" font-weight="700" fill="var(--accent-green)">Góc Trung Tâm 90° (T_on = 1.5ms / CCR = 150)</text>
+    <polyline points="0,60 40,60 40,25 130,25 130,60 800,60" fill="none" stroke="var(--accent-green)" stroke-width="2.5"/>
+    <line x1="40" y1="20" x2="130" y2="20" stroke="var(--accent-green)" stroke-width="1.5"/>
+    <text x="85" y="15" text-anchor="middle" font-size="10" fill="var(--accent-green)">1.5ms</text>
+  </g>
+
+  <!-- 2.5ms Pulse (Góc 180°) -->
+  <g transform="translate(60, 285)">
+    <text x="0" y="22" font-size="13" font-weight="700" fill="var(--accent-amber)">Góc Tối Đa 180° / +90° (T_on = 2.5ms / CCR = 250)</text>
+    <polyline points="0,60 40,60 40,25 190,25 190,60 800,60" fill="none" stroke="var(--accent-amber)" stroke-width="2.5"/>
+    <line x1="40" y1="20" x2="190" y2="20" stroke="var(--accent-amber)" stroke-width="1.5"/>
+    <text x="115" y="15" text-anchor="middle" font-size="10" fill="var(--accent-amber)">2.5ms</text>
+  </g>
+</svg>

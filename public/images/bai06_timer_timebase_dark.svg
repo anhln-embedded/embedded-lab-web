@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 440" width="100%" height="100%">
+  <defs>
+    
+    <style>
+      :root {
+        --canvas-bg: #0b0f19;
+          --canvas-border: #1e293b;
+          --card-bg: #111827;
+          --card-border: #334155;
+          --title-color: #f8fafc;
+          --subtitle-color: #94a3b8;
+          --text-primary: #f8fafc;
+          --text-muted: #94a3b8;
+          --accent-blue: #38bdf8;
+          --accent-green: #34d399;
+          --accent-amber: #fbbf24;
+          --accent-red: #f87171;
+          --accent-purple: #a78bfa;
+          --wire-line: #475569;
+          --box-blue: #1e293b;
+          --box-green: #064e3b;
+          --box-amber: #78350f;
+          --box-purple: #2e1065;
+      }
+
+      
+
+      .canvas-bg { fill: var(--canvas-bg); stroke: var(--canvas-border); stroke-width: 2; rx: 16; }
+      .title-text { fill: var(--title-color); font-weight: 800; font-size: 20px; text-anchor: middle; font-family: 'Segoe UI', Arial, sans-serif; }
+      .subtitle-text { fill: var(--subtitle-color); font-weight: 600; font-size: 13px; text-anchor: middle; font-family: 'Segoe UI', Arial, sans-serif; }
+      .card-box { fill: var(--card-bg); stroke: var(--card-border); stroke-width: 1.5; rx: 10; }
+      .txt-title { fill: var(--text-primary); font-weight: 700; font-size: 13px; font-family: 'Segoe UI', Arial, sans-serif; }
+      .txt-desc { fill: var(--text-muted); font-size: 11px; font-weight: 500; font-family: 'Segoe UI', Arial, sans-serif; }
+      .wire { stroke: var(--wire-line); stroke-width: 2; fill: none; }
+      .wire-arrow { fill: var(--wire-line); }
+      .tag-blue { fill: #0284c7; font-weight: 700; font-size: 11px; font-family: monospace; }
+    </style>
+    <filter id="shadowLight" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.08"/>
+    </filter>
+
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" class="wire-arrow"/>
+    </marker>
+  </defs>
+
+  <rect x="10" y="10" width="900" height="420" class="canvas-bg"/>
+  <text x="460" y="42" class="title-text">CẤU TRÚC KHỐI CƠ SỞ THỜI GIAN TIME-BASE GENERATOR (TIM2 - TIM4)</text>
+  <text x="460" y="66" class="subtitle-text">Mối quan hệ nhịp đếm giữa Prescaler (PSC), Counter (CNT) và Auto-Reload (ARR)</text>
+
+  <!-- Nguồn xung ngoại vi 72MHz -->
+  <g transform="translate(40, 160)">
+    <rect x="0" y="0" width="160" height="70" rx="8" fill="#1e293b" filter="url(#shadowLight)"/>
+    <text x="80" y="28" font-size="11" font-weight="700" fill="#94a3b8" text-anchor="middle">XUNG NGOẠI VI</text>
+    <text x="80" y="52" font-size="16" font-weight="900" fill="#38bdf8" text-anchor="middle">TIMx_CLK 72MHz</text>
+  </g>
+
+  <line x1="200" y1="195" x2="255" y2="195" class="wire" marker-end="url(#arrow)"/>
+
+  <!-- Khối Prescaler PSC -->
+  <g transform="translate(260, 140)">
+    <rect x="0" y="0" width="170" height="110" rx="8" fill="var(--card-bg)" stroke="#0284c7" stroke-width="2" filter="url(#shadowLight)"/>
+    <rect x="0" y="0" width="170" height="32" rx="8" fill="#0284c7"/>
+    <text x="85" y="22" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">PRESCALER (PSC)</text>
+    <text x="85" y="56" font-size="11" font-weight="bold" fill="var(--text-primary)" text-anchor="middle">Bộ chia 16-bit (1-65536)</text>
+    <text x="85" y="78" font-size="10" font-family="monospace" fill="var(--text-muted)" text-anchor="middle">f_cnt = f_clk / (PSC+1)</text>
+    <text x="85" y="98" font-size="10.5" font-weight="700" fill="#10b981" text-anchor="middle">PSC = 7199 ➜ 10 kHz</text>
+  </g>
+
+  <line x1="430" y1="195" x2="485" y2="195" class="wire" marker-end="url(#arrow)"/>
+
+  <!-- Khối Counter CNT -->
+  <g transform="translate(490, 130)">
+    <rect x="0" y="0" width="170" height="130" rx="8" fill="var(--card-bg)" stroke="#10b981" stroke-width="2" filter="url(#shadowLight)"/>
+    <rect x="0" y="0" width="170" height="32" rx="8" fill="#10b981"/>
+    <text x="85" y="22" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">COUNTER (CNT)</text>
+    <text x="85" y="60" font-size="11" font-weight="bold" fill="var(--text-primary)" text-anchor="middle">Bộ Đếm 16-bit</text>
+    <text x="85" y="82" font-size="14" font-weight="900" fill="#059669" text-anchor="middle">0 ➜ ARR</text>
+    <text x="85" y="110" font-size="10" font-weight="600" fill="var(--text-muted)" text-anchor="middle">Đếm tăng dần (Up-count)</text>
+  </g>
+
+  <!-- Khối Auto-Reload ARR ở trên so sánh xuống -->
+  <g transform="translate(490, 290)">
+    <rect x="0" y="0" width="170" height="90" rx="8" fill="var(--card-bg)" stroke="#f59e0b" stroke-width="2" filter="url(#shadowLight)"/>
+    <rect x="0" y="0" width="170" height="30" rx="8" fill="#f59e0b"/>
+    <text x="85" y="20" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">AUTO-RELOAD (ARR)</text>
+    <text x="85" y="52" font-size="11" font-weight="bold" fill="var(--text-primary)" text-anchor="middle">Ngưỡng tràn chu kỳ</text>
+    <text x="85" y="74" font-size="11" font-weight="800" fill="#b45309" text-anchor="middle">ARR = 9999 (10000 nhịp)</text>
+    <line x1="85" y1="0" x2="85" y2="-30" class="wire" marker-end="url(#arrow)"/>
+  </g>
+
+  <!-- Mũi tên sự kiện tràn Update Event -->
+  <line x1="660" y1="195" x2="715" y2="195" class="wire" marker-end="url(#arrow)"/>
+
+  <!-- Khối Sự Kiện Tràn (Update Event) -->
+  <g transform="translate(720, 140)">
+    <rect x="0" y="0" width="160" height="110" rx="8" fill="#fef2f2" stroke="#ef4444" stroke-width="2" filter="url(#shadowLight)"/>
+    <text x="80" y="28" font-size="11" font-weight="bold" fill="#991b1b" text-anchor="middle">SỰ KIỆN TRÀN</text>
+    <text x="80" y="50" font-size="12" font-weight="900" fill="#dc2626" text-anchor="middle">UPDATE EVENT (UEV)</text>
+    <text x="80" y="74" font-size="10.5" font-weight="700" fill="#b91c1c" text-anchor="middle">Bật cờ UIF = 1</text>
+    <text x="80" y="94" font-size="10" font-weight="bold" fill="#047857" text-anchor="middle">Ngắt định kỳ đúng 1.0s!</text>
+  </g>
+
+</svg>

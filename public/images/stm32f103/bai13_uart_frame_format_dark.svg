@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 340" width="100%" height="100%">
+  <defs>
+    
+    <style>
+      :root {
+        --canvas-bg: #0b0f19;
+          --canvas-border: #1e293b;
+          --card-bg: #111827;
+          --card-border: #334155;
+          --title-color: #f8fafc;
+          --subtitle-color: #94a3b8;
+          --text-primary: #f8fafc;
+          --text-muted: #94a3b8;
+          --accent-blue: #38bdf8;
+          --accent-green: #34d399;
+          --accent-amber: #fbbf24;
+          --accent-red: #f87171;
+          --accent-purple: #a78bfa;
+          --wire-line: #475569;
+          --box-blue: #1e293b;
+          --box-green: #064e3b;
+          --box-amber: #78350f;
+          --box-purple: #2e1065;
+      }
+
+      
+
+      .canvas-bg { fill: var(--canvas-bg); stroke: var(--canvas-border); stroke-width: 2; rx: 16; }
+      .title-text { fill: var(--title-color); font-weight: 800; font-size: 20px; text-anchor: middle; font-family: 'Segoe UI', Arial, sans-serif; }
+      .subtitle-text { fill: var(--subtitle-color); font-weight: 600; font-size: 13px; text-anchor: middle; font-family: 'Segoe UI', Arial, sans-serif; }
+      .card-box { fill: var(--card-bg); stroke: var(--card-border); stroke-width: 1.5; rx: 10; }
+      .txt-title { fill: var(--text-primary); font-weight: 700; font-size: 13px; font-family: 'Segoe UI', Arial, sans-serif; }
+      .txt-desc { fill: var(--text-muted); font-size: 11px; font-weight: 500; font-family: 'Segoe UI', Arial, sans-serif; }
+      .wire { stroke: var(--wire-line); stroke-width: 2; fill: none; }
+      .wire-arrow { fill: var(--wire-line); }
+      .tag-blue { fill: #0284c7; font-weight: 700; font-size: 11px; font-family: monospace; }
+    </style>
+    <filter id="shadowLight" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.08"/>
+    </filter>
+
+  </defs>
+
+  <rect x="10" y="10" width="900" height="320" class="canvas-bg"/>
+  <text x="460" y="42" class="title-text">CẤU TRÚC KHUNG TRUYỀN DỮ LIỆU NỐI TIẾP UART (FRAME 8-N-1)</text>
+  <text x="460" y="66" class="subtitle-text">Quy chuẩn mức điện áp tín hiệu TX/RX: Mức nghỉ High (3.3V), Start bit 0V và 8 Data bits</text>
+
+  <g transform="translate(40, 95)">
+    <rect x="0" y="0" width="840" height="180" class="card-box"/>
+
+    <!-- Mức điện áp -->
+    <text x="15" y="45" font-size="11" font-weight="bold" fill="var(--text-muted)">3.3V (1)</text>
+    <text x="15" y="125" font-size="11" font-weight="bold" fill="var(--text-muted)">0.0V (0)</text>
+
+    <!-- Đường sóng UART -->
+    <!-- Idle -> Start(0) -> b0(1) -> b1(0) -> b2(1) -> b3(1) -> b4(0) -> b5(1) -> b6(0) -> b7(0) -> Stop(1) -> Idle -->
+    <path d="M 60 40 L 120 40 L 120 120 L 180 120 L 180 40 L 240 40 L 240 120 L 300 120 L 300 40 L 420 40 L 420 120 L 480 120 L 480 40 L 540 40 L 540 120 L 660 120 L 660 40 L 800 40" 
+          stroke="#0284c7" stroke-width="3.5" fill="none"/>
+
+    <!-- Phân chia các ô Bit -->
+    <!-- Idle -->
+    <rect x="60" y="135" width="60" height="35" rx="4" fill="var(--card-bg)" stroke="var(--card-border)"/>
+    <text x="90" y="157" font-size="10" font-weight="bold" fill="var(--text-muted)" text-anchor="middle">IDLE</text>
+
+    <!-- Start Bit -->
+    <rect x="120" y="135" width="60" height="35" rx="4" fill="#fee2e2" stroke="#ef4444" stroke-width="1.5"/>
+    <text x="150" y="157" font-size="10.5" font-weight="bold" fill="#b91c1c" text-anchor="middle">START</text>
+
+    <!-- 8 Data Bits -->
+    <rect x="180" y="135" width="480" height="35" rx="4" fill="var(--box-blue)" stroke="#0284c7"/>
+    <text x="420" y="157" font-size="11" font-weight="bold" fill="#0369a1" text-anchor="middle">8 DATA BITS (LSB b0 ➔ MSB b7)</text>
+
+    <!-- Stop Bit -->
+    <rect x="660" y="135" width="60" height="35" rx="4" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+    <text x="690" y="157" font-size="10.5" font-weight="bold" fill="#047857" text-anchor="middle">STOP</text>
+
+    <!-- Idle sau -->
+    <rect x="720" y="135" width="80" height="35" rx="4" fill="var(--card-bg)" stroke="var(--card-border)"/>
+    <text x="760" y="157" font-size="10" font-weight="bold" fill="var(--text-muted)" text-anchor="middle">IDLE</text>
+  </g>
+
+</svg>

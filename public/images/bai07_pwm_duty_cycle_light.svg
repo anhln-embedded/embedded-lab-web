@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 420" width="100%" height="100%">
+
+    <style>
+      :root {
+        --canvas-bg: #ffffff;
+        --canvas-border: #e2e8f0;
+        --card-bg: #ffffff;
+        --card-border: #cbd5e1;
+        --title-color: #0f172a;
+        --subtitle-color: #475569;
+        --text-primary: #1e293b;
+        --text-muted: #64748b;
+        --accent-blue: #0284c7;
+        --accent-green: #10b981;
+        --accent-amber: #f59e0b;
+        --accent-red: #ef4444;
+        --accent-purple: #8b5cf6;
+        --wire-line: #94a3b8;
+        --bus-line: #3b82f6;
+      }
+      
+      text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    </style>
+
+  <rect width="920" height="420" rx="14" fill="var(--canvas-bg)" stroke="var(--canvas-border)" stroke-width="2"/>
+  <text x="460" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="var(--title-color)">DẠNG SÓNG ĐIỀU CHẾ ĐỘ RỘNG XUNG PWM (PULSE WIDTH MODULATION)</text>
+  <text x="460" y="62" text-anchor="middle" font-size="13" fill="var(--subtitle-color)">Biểu diễn điện áp ngõ ra tương đương theo tỷ lệ Duty Cycle (CCR / ARR)</text>
+
+  <!-- 25% Duty Cycle -->
+  <g transform="translate(60, 95)">
+    <text x="0" y="25" font-size="14" font-weight="700" fill="var(--accent-blue)">Duty Cycle 25% (V_avg = 0.825V)</text>
+    <polyline points="0,70 60,70 60,35 110,35 110,70 260,70 260,35 310,35 310,70 460,70 460,35 510,35 510,70 660,70 660,35 710,35 710,70 800,70" 
+              fill="none" stroke="var(--accent-blue)" stroke-width="2.5"/>
+    <line x1="0" y1="70" x2="800" y2="70" stroke="var(--wire-line)" stroke-width="1" stroke-dasharray="2,2"/>
+  </g>
+
+  <!-- 50% Duty Cycle -->
+  <g transform="translate(60, 195)">
+    <text x="0" y="25" font-size="14" font-weight="700" fill="var(--accent-green)">Duty Cycle 50% (V_avg = 1.650V)</text>
+    <polyline points="0,70 60,70 60,35 160,35 160,70 260,70 260,35 360,35 360,70 460,70 460,35 560,35 560,70 660,70 660,35 760,35 760,70 800,70" 
+              fill="none" stroke="var(--accent-green)" stroke-width="2.5"/>
+    <line x1="0" y1="70" x2="800" y2="70" stroke="var(--wire-line)" stroke-width="1" stroke-dasharray="2,2"/>
+  </g>
+
+  <!-- 75% Duty Cycle -->
+  <g transform="translate(60, 295)">
+    <text x="0" y="25" font-size="14" font-weight="700" fill="var(--accent-amber)">Duty Cycle 75% (V_avg = 2.475V)</text>
+    <polyline points="0,70 60,70 60,35 210,35 210,70 260,70 260,35 410,35 410,70 460,70 460,35 610,35 610,70 660,70 660,35 800,35" 
+              fill="none" stroke="var(--accent-amber)" stroke-width="2.5"/>
+    <line x1="0" y1="70" x2="800" y2="70" stroke="var(--wire-line)" stroke-width="1" stroke-dasharray="2,2"/>
+  </g>
+</svg>

@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 500" width="100%" height="100%">
+  <defs>
+    
+    <style>
+      :root {
+        --canvas-bg: #0b0f19;
+          --canvas-border: #1e293b;
+          --card-bg: #111827;
+          --card-border: #334155;
+          --title-color: #f8fafc;
+          --subtitle-color: #94a3b8;
+          --text-primary: #f8fafc;
+          --text-muted: #94a3b8;
+          --accent-blue: #38bdf8;
+          --accent-green: #34d399;
+          --accent-amber: #fbbf24;
+          --accent-red: #f87171;
+          --accent-purple: #a78bfa;
+          --wire-line: #475569;
+          --box-blue: #1e293b;
+          --box-green: #064e3b;
+          --box-amber: #78350f;
+          --box-purple: #2e1065;
+      }
+
+      
+
+      .canvas-bg { fill: var(--canvas-bg); stroke: var(--canvas-border); stroke-width: 2; rx: 16; }
+      .title-text { fill: var(--title-color); font-weight: 800; font-size: 20px; text-anchor: middle; font-family: 'Segoe UI', Arial, sans-serif; }
+      .subtitle-text { fill: var(--subtitle-color); font-weight: 600; font-size: 13px; text-anchor: middle; font-family: 'Segoe UI', Arial, sans-serif; }
+      .card-box { fill: var(--card-bg); stroke: var(--card-border); stroke-width: 1.5; rx: 10; }
+      .txt-title { fill: var(--text-primary); font-weight: 700; font-size: 13px; font-family: 'Segoe UI', Arial, sans-serif; }
+      .txt-desc { fill: var(--text-muted); font-size: 11px; font-weight: 500; font-family: 'Segoe UI', Arial, sans-serif; }
+      .wire { stroke: var(--wire-line); stroke-width: 2; fill: none; }
+      .wire-arrow { fill: var(--wire-line); }
+      .tag-blue { fill: #0284c7; font-weight: 700; font-size: 11px; font-family: monospace; }
+    </style>
+    <filter id="shadowLight" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.08"/>
+    </filter>
+
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" class="wire-arrow"/>
+    </marker>
+  </defs>
+
+  <rect x="10" y="10" width="960" height="480" class="canvas-bg"/>
+  <text x="490" y="42" class="title-text">CÂY PHÂN PHỐI XUNG NHỊP STM32F103 (CLOCK TREE 72MHZ)</text>
+  <text x="490" y="66" class="subtitle-text">Hành trình nhân tần số từ thạch anh 8MHz qua PLL cấp cho lõi CPU và các Bus APB1, APB2</text>
+
+  <!-- Nguồn thạch anh ngoài HSE 8MHz -->
+  <g transform="translate(30, 160)">
+    <rect x="0" y="0" width="140" height="80" rx="8" fill="#f8fafc" stroke="#3b82f6" stroke-width="2" filter="url(#shadowLight)"/>
+    <text x="70" y="30" font-size="12" font-weight="800" fill="#1e3a8a" text-anchor="middle">HSE OSCILLATOR</text>
+    <text x="70" y="50" font-size="14" font-weight="900" fill="#0284c7" text-anchor="middle">8.000 MHz</text>
+    <text x="70" y="68" font-size="10" font-weight="600" fill="#64748b" text-anchor="middle">Thạch anh kim loại</text>
+  </g>
+
+  <!-- Mũi tên từ HSE vào PLL -->
+  <line x1="170" y1="200" x2="215" y2="200" class="wire" marker-end="url(#arrow)"/>
+
+  <!-- Bộ nhân tần PLL x9 -->
+  <g transform="translate(220, 150)">
+    <rect x="0" y="0" width="150" height="100" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="2" filter="url(#shadowLight)"/>
+    <text x="75" y="30" font-size="13" font-weight="800" fill="#1d4ed8" text-anchor="middle">BỘ PLL x9</text>
+    <text x="75" y="55" font-size="11" font-weight="600" fill="#475569" text-anchor="middle">PLL Source: HSE</text>
+    <text x="75" y="75" font-size="12" font-weight="800" fill="#10b981" text-anchor="middle">8MHz x 9 = 72MHz</text>
+  </g>
+
+  <!-- Mũi tên từ PLL sang SYSCLK MUX -->
+  <line x1="370" y1="200" x2="415" y2="200" class="wire" marker-end="url(#arrow)"/>
+
+  <!-- Khối SYSCLK 72MHz -->
+  <g transform="translate(420, 150)">
+    <rect x="0" y="0" width="150" height="100" rx="8" fill="#10b981" filter="url(#shadowLight)"/>
+    <text x="75" y="32" font-size="13" font-weight="800" fill="#ffffff" text-anchor="middle">SYSCLK</text>
+    <text x="75" y="60" font-size="18" font-weight="900" fill="#ffffff" text-anchor="middle">72 MHz</text>
+    <text x="75" y="82" font-size="10.5" font-weight="600" fill="#d1fae5" text-anchor="middle">Xung Nhịp Hệ Thống</text>
+  </g>
+
+  <!-- Rẽ nhánh sang AHB và Core -->
+  <line x1="570" y1="200" x2="630" y2="200" class="wire" marker-end="url(#arrow)"/>
+
+  <!-- Khối AHB Bus HCLK -->
+  <g transform="translate(635, 100)">
+    <rect x="0" y="0" width="300" height="65" rx="8" fill="var(--card-bg)" stroke="#0284c7" stroke-width="1.5"/>
+    <text x="15" y="26" font-size="12" font-weight="bold" fill="#0284c7">AHB Bus (HCLK = 72MHz)</text>
+    <text x="15" y="48" font-size="10.5" fill="var(--text-muted)">Cấp cho: Cortex-M3 Core, DMA1, Flash &amp; SRAM</text>
+  </g>
+
+  <!-- Khối APB2 Bus (72MHz) -->
+  <g transform="translate(635, 185)">
+    <rect x="0" y="0" width="300" height="85" rx="8" fill="var(--card-bg)" stroke="#10b981" stroke-width="1.5"/>
+    <text x="15" y="24" font-size="12" font-weight="bold" fill="#059669">APB2 Bus (PCLK2 = 72MHz - Tối Đa)</text>
+    <text x="15" y="44" font-size="10" fill="var(--text-muted)">Cấp cho: GPIO A, B, C, D, USART1, SPI1, TIM1</text>
+    <rect x="15" y="52" width="270" height="24" rx="4" fill="var(--box-amber)"/>
+    <text x="25" y="68" font-size="9.5" font-weight="bold" fill="#b45309">ADC Prescaler /6 ➜ ADCCLK = 12MHz (≤ 14MHz)</text>
+  </g>
+
+  <!-- Khối APB1 Bus (36MHz) -->
+  <g transform="translate(635, 290)">
+    <rect x="0" y="0" width="300" height="85" rx="8" fill="var(--card-bg)" stroke="#f59e0b" stroke-width="1.5"/>
+    <text x="15" y="24" font-size="12" font-weight="bold" fill="#d97706">APB1 Bus (PCLK1 = 36MHz - Bắt Buộc /2)</text>
+    <text x="15" y="44" font-size="10" fill="var(--text-muted)">Cấp cho: TIM2, TIM3, TIM4, USART2, I2C, SPI2, CAN</text>
+    <rect x="15" y="52" width="270" height="24" rx="4" fill="var(--box-green)"/>
+    <text x="25" y="68" font-size="9.5" font-weight="bold" fill="#047857">Nhân đôi xung Timer x2 ➜ TIM CLK = 72MHz!</text>
+  </g>
+
+  <!-- Lưu ý Flash Latency -->
+  <g transform="translate(30, 400)">
+    <rect x="0" y="0" width="905" height="50" rx="8" fill="#fef2f2" stroke="#ef4444" stroke-width="1.5"/>
+    <text x="452" y="31" font-size="11.5" font-weight="bold" fill="#b91c1c" text-anchor="middle">
+      ⚠ NGUYÊN TẮC BẮT BUỘC: Cấu hình 2 Wait States (FLASH_ACR LATENCY = 2) TRƯỚC KHI chuyển sang PLL 72MHz!
+    </text>
+  </g>
+
+</svg>

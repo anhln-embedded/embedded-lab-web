@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 950 480" width="100%" height="100%">
+
+    <style>
+      :root {
+        --canvas-bg: #0b1120;
+          --canvas-border: #1e293b;
+          --card-bg: #1e293b;
+          --card-border: #334155;
+          --title-color: #f8fafc;
+          --subtitle-color: #94a3b8;
+          --text-primary: #f1f5f9;
+          --text-muted: #94a3b8;
+          --accent-blue: #38bdf8;
+          --accent-green: #34d399;
+          --accent-amber: #fbbf24;
+          --accent-red: #f87171;
+          --accent-purple: #c084fc;
+          --wire-line: #475569;
+          --bus-line: #60a5fa;
+      }
+      
+      text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    </style>
+
+  <rect width="950" height="480" rx="14" fill="var(--canvas-bg)" stroke="var(--canvas-border)" stroke-width="2"/>
+  <text x="475" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="var(--title-color)">KIẾN TRÚC ĐIỀU HƯỚNG NGẮT NGOẠI VI STM32: EXTI &amp; NVIC</text>
+  <text x="475" y="62" text-anchor="middle" font-size="13" fill="var(--subtitle-color)">Cơ chế dồn kênh AFIO_EXTICRx ghép nối các cổng GPIO vào 16 kênh ngắt EXTI và NVIC Core</text>
+
+  <!-- GPIO Inputs -->
+  <g transform="translate(30, 90)">
+    <rect width="180" height="350" rx="10" fill="var(--card-bg)" stroke="var(--accent-blue)" stroke-width="2"/>
+    <text x="90" y="30" text-anchor="middle" font-size="15" font-weight="700" fill="var(--accent-blue)">GPIO PORTS</text>
+    <text x="90" y="50" text-anchor="middle" font-size="11" fill="var(--text-muted)">(16 Pins per Port)</text>
+    
+    <rect x="15" y="70" width="150" height="40" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="90" y="95" text-anchor="middle" font-size="12" font-weight="600" fill="var(--text-primary)">PA0, PB0 ... PG0</text>
+
+    <rect x="15" y="130" width="150" height="40" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="90" y="155" text-anchor="middle" font-size="12" font-weight="600" fill="var(--text-primary)">PA1, PB1 ... PG1</text>
+
+    <rect x="15" y="190" width="150" height="40" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="90" y="215" text-anchor="middle" font-size="12" font-weight="600" fill="var(--text-primary)">PA4, PB4 ... PG4</text>
+
+    <rect x="15" y="250" width="150" height="40" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="90" y="275" text-anchor="middle" font-size="12" font-weight="600" fill="var(--text-primary)">PA5..9, PB5..9</text>
+
+    <rect x="15" y="300" width="150" height="36" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="90" y="323" text-anchor="middle" font-size="12" font-weight="600" fill="var(--text-primary)">PA10..15, PB10..15</text>
+  </g>
+
+  <!-- Multiplexing AFIO -->
+  <g transform="translate(260, 90)">
+    <rect width="200" height="350" rx="10" fill="var(--card-bg)" stroke="var(--accent-amber)" stroke-width="2"/>
+    <text x="100" y="30" text-anchor="middle" font-size="15" font-weight="700" fill="var(--accent-amber)">AFIO MUX LOGIC</text>
+    <text x="100" y="50" text-anchor="middle" font-size="11" fill="var(--text-muted)">AFIO_EXTICR1..4</text>
+
+    <rect x="20" y="70" width="160" height="40" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="100" y="95" text-anchor="middle" font-size="12" font-weight="600" fill="var(--text-primary)">EXTICR1 [3:0]</text>
+
+    <rect x="20" y="130" width="160" height="40" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="100" y="155" text-anchor="middle" font-size="12" font-weight="600" fill="var(--text-primary)">EXTICR1 [7:4]</text>
+
+    <rect x="20" y="190" width="160" height="40" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="100" y="215" text-anchor="middle" font-size="12" font-weight="600" fill="var(--text-primary)">EXTICR2 [3:0]</text>
+
+    <rect x="20" y="250" width="160" height="40" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="100" y="275" text-anchor="middle" font-size="12" font-weight="600" fill="var(--text-primary)">EXTICR2..3 [15:4]</text>
+
+    <rect x="20" y="300" width="160" height="36" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="100" y="323" text-anchor="middle" font-size="12" font-weight="600" fill="var(--text-primary)">EXTICR4 [15:0]</text>
+  </g>
+
+  <!-- EXTI Controller -->
+  <g transform="translate(510, 90)">
+    <rect width="190" height="350" rx="10" fill="var(--card-bg)" stroke="var(--accent-purple)" stroke-width="2"/>
+    <text x="95" y="30" text-anchor="middle" font-size="15" font-weight="700" fill="var(--accent-purple)">EXTI CONTROLLER</text>
+    <text x="95" y="50" text-anchor="middle" font-size="11" fill="var(--text-muted)">Edge Detect &amp; Mask</text>
+
+    <rect x="20" y="70" width="150" height="40" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="95" y="95" text-anchor="middle" font-size="12" font-weight="600" fill="var(--accent-purple)">EXTI Line 0</text>
+
+    <rect x="20" y="130" width="150" height="40" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="95" y="155" text-anchor="middle" font-size="12" font-weight="600" fill="var(--accent-purple)">EXTI Line 1</text>
+
+    <rect x="20" y="190" width="150" height="40" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="95" y="215" text-anchor="middle" font-size="12" font-weight="600" fill="var(--accent-purple)">EXTI Line 4</text>
+
+    <rect x="20" y="250" width="150" height="40" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="95" y="275" text-anchor="middle" font-size="12" font-weight="600" fill="var(--accent-purple)">EXTI Line 5..9</text>
+
+    <rect x="20" y="300" width="150" height="36" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="95" y="323" text-anchor="middle" font-size="12" font-weight="600" fill="var(--accent-purple)">EXTI Line 10..15</text>
+  </g>
+
+  <!-- NVIC Core Controller -->
+  <g transform="translate(750, 90)">
+    <rect width="170" height="350" rx="10" fill="var(--card-bg)" stroke="var(--accent-green)" stroke-width="2"/>
+    <text x="85" y="30" text-anchor="middle" font-size="15" font-weight="700" fill="var(--accent-green)">ARM NVIC</text>
+    <text x="85" y="50" text-anchor="middle" font-size="11" fill="var(--text-muted)">Vector Table ISR</text>
+
+    <rect x="15" y="70" width="140" height="40" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-green)"/>
+    <text x="85" y="95" text-anchor="middle" font-size="12" font-weight="700" fill="var(--accent-green)">EXTI0_IRQHandler</text>
+
+    <rect x="15" y="130" width="140" height="40" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-green)"/>
+    <text x="85" y="155" text-anchor="middle" font-size="12" font-weight="700" fill="var(--accent-green)">EXTI1_IRQHandler</text>
+
+    <rect x="15" y="190" width="140" height="40" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-green)"/>
+    <text x="85" y="215" text-anchor="middle" font-size="12" font-weight="700" fill="var(--accent-green)">EXTI4_IRQHandler</text>
+
+    <rect x="15" y="250" width="140" height="40" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-green)"/>
+    <text x="85" y="275" text-anchor="middle" font-size="11" font-weight="700" fill="var(--accent-green)">EXTI9_5_IRQn</text>
+
+    <rect x="15" y="300" width="140" height="36" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-green)"/>
+    <text x="85" y="323" text-anchor="middle" font-size="11" font-weight="700" fill="var(--accent-green)">EXTI15_10_IRQn</text>
+  </g>
+
+  <!-- Connection Arrows -->
+  <path d="M 210 180 L 260 180" stroke="var(--bus-line)" stroke-width="2" marker-end="url(#arrow)"/>
+  <path d="M 460 180 L 510 180" stroke="var(--bus-line)" stroke-width="2" marker-end="url(#arrow)"/>
+  <path d="M 700 180 L 750 180" stroke="var(--accent-green)" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--bus-line)"/>
+    </marker>
+  </defs>
+</svg>

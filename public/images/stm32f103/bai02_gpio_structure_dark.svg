@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 520" width="100%" height="100%">
+  <defs>
+    
+    <style>
+      :root {
+        --canvas-bg: #0b0f19;
+          --canvas-border: #1e293b;
+          --card-bg: #111827;
+          --card-border: #334155;
+          --title-color: #f8fafc;
+          --subtitle-color: #94a3b8;
+          --text-primary: #f8fafc;
+          --text-muted: #94a3b8;
+          --accent-blue: #38bdf8;
+          --accent-green: #34d399;
+          --accent-amber: #fbbf24;
+          --accent-red: #f87171;
+          --accent-purple: #a78bfa;
+          --wire-line: #475569;
+          --box-blue: #1e293b;
+          --box-green: #064e3b;
+          --box-amber: #78350f;
+          --box-purple: #2e1065;
+      }
+
+      
+
+      .canvas-bg { fill: var(--canvas-bg); stroke: var(--canvas-border); stroke-width: 2; rx: 16; }
+      .title-text { fill: var(--title-color); font-weight: 800; font-size: 20px; text-anchor: middle; font-family: 'Segoe UI', Arial, sans-serif; }
+      .subtitle-text { fill: var(--subtitle-color); font-weight: 600; font-size: 13px; text-anchor: middle; font-family: 'Segoe UI', Arial, sans-serif; }
+      .card-box { fill: var(--card-bg); stroke: var(--card-border); stroke-width: 1.5; rx: 10; }
+      .txt-title { fill: var(--text-primary); font-weight: 700; font-size: 13px; font-family: 'Segoe UI', Arial, sans-serif; }
+      .txt-desc { fill: var(--text-muted); font-size: 11px; font-weight: 500; font-family: 'Segoe UI', Arial, sans-serif; }
+      .wire { stroke: var(--wire-line); stroke-width: 2; fill: none; }
+      .wire-arrow { fill: var(--wire-line); }
+      .tag-blue { fill: #0284c7; font-weight: 700; font-size: 11px; font-family: monospace; }
+    </style>
+    <filter id="shadowLight" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.08"/>
+    </filter>
+
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" class="wire-arrow"/>
+    </marker>
+  </defs>
+
+  <rect x="10" y="10" width="940" height="500" class="canvas-bg"/>
+  <text x="480" y="45" class="title-text">CẤU TRÚC ĐIỆN TỬ VẬT LÝ CHÂN I/O STM32F103 (GPIO PAD)</text>
+  <text x="480" y="70" class="subtitle-text">Mô hình phân tích transistor P-MOS, N-MOS, Diodes kẹp bảo vệ và Schmitt Trigger</text>
+
+  <!-- Khối vi mạch chân I/O -->
+  <rect x="140" y="95" width="760" height="390" class="card-box" stroke-dasharray="6,4"/>
+  <text x="160" y="120" font-size="12" font-weight="bold" fill="var(--accent-blue)">STM32 I/O INTERNAL STRUCTURE (RM0008)</text>
+
+  <!-- Chân Kim loại Ngoài (PAD) -->
+  <rect x="30" y="250" width="90" height="60" rx="8" fill="#3b82f6" stroke="#1d4ed8" stroke-width="2" filter="url(#shadowLight)"/>
+  <text x="75" y="278" font-size="14" font-weight="900" fill="#ffffff" text-anchor="middle">PAD</text>
+  <text x="75" y="296" font-size="11" font-weight="600" fill="#e0f2fe" text-anchor="middle">(Chân Pin I/O)</text>
+
+  <!-- Đường dẫn từ Pad vào trong -->
+  <line x1="120" y1="280" x2="800" y2="280" stroke="#0284c7" stroke-width="4"/>
+
+  <!-- Khối Diode bảo vệ kẹp áp -->
+  <g transform="translate(200, 150)">
+    <rect x="0" y="0" width="130" height="50" rx="8" fill="var(--box-amber)" stroke="#f59e0b" stroke-width="1.5"/>
+    <text x="65" y="24" font-size="11" font-weight="700" fill="var(--text-primary)" text-anchor="middle">Diode Kẹp VDD</text>
+    <text x="65" y="40" font-size="10" font-weight="600" fill="var(--accent-amber)" text-anchor="middle">Chống quá áp >3.3V</text>
+    <line x1="65" y1="50" x2="65" y2="130" class="wire"/>
+  </g>
+
+  <g transform="translate(200, 360)">
+    <rect x="0" y="0" width="130" height="50" rx="8" fill="var(--box-amber)" stroke="#f59e0b" stroke-width="1.5"/>
+    <text x="65" y="24" font-size="11" font-weight="700" fill="var(--text-primary)" text-anchor="middle">Diode Kẹp VSS</text>
+    <text x="65" y="40" font-size="10" font-weight="600" fill="var(--accent-amber)" text-anchor="middle">Chống điện áp âm &lt;0V</text>
+    <line x1="65" y1="0" x2="65" y2="-80" class="wire"/>
+  </g>
+
+  <!-- Khối Điện trở kéo Pull-up / Pull-down -->
+  <g transform="translate(370, 130)">
+    <rect x="0" y="0" width="150" height="70" rx="8" fill="var(--box-purple)" stroke="#8b5cf6" stroke-width="1.5"/>
+    <text x="75" y="25" font-size="12" font-weight="700" fill="var(--text-primary)" text-anchor="middle">Pull-up (40kΩ)</text>
+    <text x="75" y="45" font-size="10" font-weight="600" fill="var(--text-muted)" text-anchor="middle">Điều khiển bởi ODR</text>
+    <text x="75" y="60" font-size="10" font-weight="700" fill="var(--accent-purple)" text-anchor="middle">Kéo lên 3.3V</text>
+    <line x1="75" y1="70" x2="75" y2="150" class="wire"/>
+  </g>
+
+  <g transform="translate(370, 350)">
+    <rect x="0" y="0" width="150" height="70" rx="8" fill="var(--box-purple)" stroke="#8b5cf6" stroke-width="1.5"/>
+    <text x="75" y="25" font-size="12" font-weight="700" fill="var(--text-primary)" text-anchor="middle">Pull-down (40kΩ)</text>
+    <text x="75" y="45" font-size="10" font-weight="600" fill="var(--text-muted)" text-anchor="middle">Điều khiển bởi ODR</text>
+    <text x="75" y="60" font-size="10" font-weight="700" fill="var(--accent-purple)" text-anchor="middle">Kéo xuống GND</text>
+    <line x1="75" y1="0" x2="75" y2="-70" class="wire"/>
+  </g>
+
+  <!-- Khối Đệm Ngõ Ra Output Driver (Push-Pull vs Open-Drain) -->
+  <g transform="translate(560, 140)">
+    <rect x="0" y="0" width="170" height="120" rx="8" fill="var(--box-green)" stroke="#10b981" stroke-width="1.5"/>
+    <text x="85" y="25" font-size="12" font-weight="800" fill="#059669" text-anchor="middle">OUTPUT DRIVER</text>
+    <rect x="15" y="38" width="140" height="30" rx="4" fill="var(--card-bg)" stroke="#10b981"/>
+    <text x="85" y="58" font-size="11" font-weight="700" fill="var(--text-primary)" text-anchor="middle">P-MOS Transistor</text>
+    <rect x="15" y="76" width="140" height="30" rx="4" fill="var(--card-bg)" stroke="#10b981"/>
+    <text x="85" y="96" font-size="11" font-weight="700" fill="var(--text-primary)" text-anchor="middle">N-MOS Transistor</text>
+    <line x1="85" y1="120" x2="85" y2="140" class="wire"/>
+  </g>
+
+  <!-- Khối Đọc Ngõ Vào Schmitt Trigger -->
+  <g transform="translate(560, 310)">
+    <rect x="0" y="0" width="170" height="100" rx="8" fill="var(--box-blue)" stroke="#0284c7" stroke-width="1.5"/>
+    <text x="85" y="26" font-size="12" font-weight="800" fill="#0284c7" text-anchor="middle">INPUT CIRCUITRY</text>
+    <rect x="15" y="38" width="140" height="48" rx="4" fill="var(--card-bg)" stroke="#0284c7"/>
+    <text x="85" y="58" font-size="11" font-weight="700" fill="var(--text-primary)" text-anchor="middle">Schmitt Trigger</text>
+    <text x="85" y="74" font-size="9.5" font-weight="600" fill="var(--text-muted)" text-anchor="middle">Lọc nhiễu sườn xung</text>
+    <line x1="85" y1="0" x2="85" y2="-30" class="wire"/>
+    <!-- Đường đi vào IDR -->
+    <line x1="170" y1="62" x2="220" y2="62" class="wire" marker-end="url(#arrow)"/>
+  </g>
+
+  <!-- Thanh ghi IDR -->
+  <g transform="translate(790, 345)">
+    <rect x="0" y="0" width="95" height="55" rx="6" fill="#0284c7" filter="url(#shadowLight)"/>
+    <text x="47" y="24" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">GPIOx_IDR</text>
+    <text x="47" y="42" font-size="9.5" font-weight="600" fill="#bae6fd" text-anchor="middle">(Input Data)</text>
+  </g>
+
+  <!-- Thanh ghi ODR -->
+  <g transform="translate(745, 170)">
+    <rect x="0" y="0" width="95" height="55" rx="6" fill="#059669" filter="url(#shadowLight)"/>
+    <text x="47" y="24" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">GPIOx_ODR</text>
+    <text x="47" y="42" font-size="9.5" font-weight="600" fill="#d1fae5" text-anchor="middle">(Output Data)</text>
+    <line x1="0" y1="28" x2="-15" y2="28" class="wire" marker-end="url(#arrow)"/>
+  </g>
+
+</svg>

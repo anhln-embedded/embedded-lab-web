@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" width="100%" height="100%">
+
+    <style>
+      :root {
+        --canvas-bg: #ffffff;
+        --canvas-border: #e2e8f0;
+        --card-bg: #ffffff;
+        --card-border: #cbd5e1;
+        --title-color: #0f172a;
+        --subtitle-color: #475569;
+        --text-primary: #1e293b;
+        --text-muted: #64748b;
+        --accent-blue: #0284c7;
+        --accent-green: #10b981;
+        --accent-amber: #f59e0b;
+        --accent-red: #ef4444;
+        --accent-purple: #8b5cf6;
+        --wire-line: #94a3b8;
+        --bus-line: #3b82f6;
+      }
+      
+      text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    </style>
+
+  <rect width="900" height="420" rx="14" fill="var(--canvas-bg)" stroke="var(--canvas-border)" stroke-width="2"/>
+  <text x="450" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="var(--title-color)">KIẾN TRÚC ĐỒNG HỒ ĐỊNH THỜI CỐT LÕI SYSTICK TIMER (ARM CORTEX-M3)</text>
+  <text x="450" y="62" text-anchor="middle" font-size="13" fill="var(--subtitle-color)">Bộ đếm lùi 24-bit (Down-counter) tạo nhịp thời gian hệ thống và OS Heartbeat</text>
+
+  <!-- Clock Source MUX -->
+  <g transform="translate(40, 110)">
+    <rect width="180" height="230" rx="10" fill="var(--card-bg)" stroke="var(--accent-blue)" stroke-width="2"/>
+    <text x="90" y="30" text-anchor="middle" font-size="14" font-weight="700" fill="var(--accent-blue)">CLOCK SOURCE</text>
+    
+    <rect x="15" y="60" width="150" height="45" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="90" y="82" text-anchor="middle" font-size="12" font-weight="600" fill="var(--text-primary)">HCLK (72MHz)</text>
+    <text x="90" y="98" text-anchor="middle" font-size="10" fill="var(--text-muted)">CLKSOURCE = 1</text>
+
+    <rect x="15" y="130" width="150" height="45" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="90" y="152" text-anchor="middle" font-size="12" font-weight="600" fill="var(--text-primary)">HCLK / 8 (9MHz)</text>
+    <text x="90" y="168" text-anchor="middle" font-size="10" fill="var(--text-muted)">CLKSOURCE = 0</text>
+  </g>
+
+  <!-- 24-bit Down-Counter Core -->
+  <g transform="translate(270, 100)">
+    <rect width="360" height="250" rx="10" fill="var(--card-bg)" stroke="var(--accent-purple)" stroke-width="2"/>
+    <text x="180" y="30" text-anchor="middle" font-size="15" font-weight="700" fill="var(--accent-purple)">24-BIT DOWN-COUNTER CORE</text>
+    
+    <rect x="30" y="55" width="300" height="50" rx="8" fill="var(--canvas-bg)" stroke="var(--accent-amber)" stroke-width="1.5"/>
+    <text x="180" y="78" text-anchor="middle" font-size="13" font-weight="700" fill="var(--accent-amber)">SysTick-&gt;LOAD (Reload Register)</text>
+    <text x="180" y="96" text-anchor="middle" font-size="11" fill="var(--text-muted)">Nạp giá trị ban đầu N (Tối đa 0x00FFFFFF)</text>
+
+    <path d="M 180 105 L 180 135" stroke="var(--accent-purple)" stroke-width="2" stroke-dasharray="4,4"/>
+
+    <rect x="30" y="135" width="300" height="50" rx="8" fill="var(--canvas-bg)" stroke="var(--accent-purple)" stroke-width="2"/>
+    <text x="180" y="158" text-anchor="middle" font-size="13" font-weight="700" fill="var(--accent-purple)">SysTick-&gt;VAL (Current Value)</text>
+    <text x="180" y="176" text-anchor="middle" font-size="11" fill="var(--text-muted)">Đếm lùi: N → N-1 → ... → 1 → 0</text>
+
+    <rect x="30" y="200" width="300" height="35" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="180" y="222" text-anchor="middle" font-size="12" font-weight="600" fill="var(--text-primary)">Khi VAL chạm 0: Kéo cờ COUNTFLAG = 1 &amp; Nạp lại LOAD</text>
+  </g>
+
+  <!-- Output & Interrupt -->
+  <g transform="translate(680, 110)">
+    <rect width="180" height="230" rx="10" fill="var(--card-bg)" stroke="var(--accent-green)" stroke-width="2"/>
+    <text x="90" y="30" text-anchor="middle" font-size="14" font-weight="700" fill="var(--accent-green)">INTERRUPT &amp; FLAG</text>
+    
+    <rect x="15" y="60" width="150" height="65" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-green)"/>
+    <text x="90" y="85" text-anchor="middle" font-size="12" font-weight="700" fill="var(--accent-green)">SysTick_Handler</text>
+    <text x="90" y="105" text-anchor="middle" font-size="11" fill="var(--text-muted)">Ngắt hệ thống 1ms (TICKINT = 1)</text>
+
+    <rect x="15" y="145" width="150" height="60" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="90" y="170" text-anchor="middle" font-size="12" font-weight="600" fill="var(--text-primary)">OS Sched Tick</text>
+    <text x="90" y="190" text-anchor="middle" font-size="11" fill="var(--text-muted)">FreeRTOS Heartbeat</text>
+  </g>
+
+  <!-- Connections -->
+  <path d="M 220 220 L 270 220" stroke="var(--bus-line)" stroke-width="2"/>
+  <path d="M 630 160 L 680 160" stroke="var(--accent-green)" stroke-width="2"/>
+</svg>

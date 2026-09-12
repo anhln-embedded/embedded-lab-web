@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 440" width="100%" height="100%">
+
+    <style>
+      :root {
+        --canvas-bg: #ffffff;
+        --canvas-border: #e2e8f0;
+        --card-bg: #ffffff;
+        --card-border: #cbd5e1;
+        --title-color: #0f172a;
+        --subtitle-color: #475569;
+        --text-primary: #1e293b;
+        --text-muted: #64748b;
+        --accent-blue: #0284c7;
+        --accent-green: #10b981;
+        --accent-amber: #f59e0b;
+        --accent-red: #ef4444;
+        --accent-purple: #8b5cf6;
+        --wire-line: #94a3b8;
+        --bus-line: #3b82f6;
+      }
+      
+      text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    </style>
+
+  <rect width="940" height="440" rx="14" fill="var(--canvas-bg)" stroke="var(--canvas-border)" stroke-width="2"/>
+  <text x="470" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="var(--title-color)">KIẾN TRÚC BỘ CHUYỂN ĐỔI ADC 12-BIT SAR STM32F103</text>
+  <text x="470" y="62" text-anchor="middle" font-size="13" fill="var(--subtitle-color)">Mạch lấy mẫu Sample &amp; Hold, Multiplexer 16 kênh và thuật toán xấp xỉ liên tiếp (SAR)</text>
+
+  <!-- Input MUX -->
+  <g transform="translate(40, 95)">
+    <rect width="200" height="310" rx="10" fill="var(--card-bg)" stroke="var(--accent-blue)" stroke-width="2"/>
+    <text x="100" y="30" text-anchor="middle" font-size="14" font-weight="700" fill="var(--accent-blue)">ANALOG INPUT MUX</text>
+    
+    <rect x="20" y="55" width="160" height="35" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="100" y="77" text-anchor="middle" font-size="12" fill="var(--text-primary)">IN0 (PA0) .. IN3 (PA3)</text>
+
+    <rect x="20" y="105" width="160" height="35" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="100" y="127" text-anchor="middle" font-size="12" fill="var(--text-primary)">IN4 (PA4) .. IN7 (PA7)</text>
+
+    <rect x="20" y="155" width="160" height="35" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="100" y="177" text-anchor="middle" font-size="12" fill="var(--text-primary)">IN8 (PB0) .. IN9 (PB1)</text>
+
+    <rect x="20" y="205" width="160" height="35" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="100" y="227" text-anchor="middle" font-size="12" fill="var(--text-primary)">IN16: Cảm biến nhiệt nội</text>
+
+    <rect x="20" y="255" width="160" height="35" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="100" y="277" text-anchor="middle" font-size="12" fill="var(--text-primary)">IN17: Điện áp VREFINT 1.2V</text>
+  </g>
+
+  <!-- Sample & Hold and Comparator -->
+  <g transform="translate(280, 110)">
+    <rect width="360" height="280" rx="10" fill="var(--card-bg)" stroke="var(--accent-purple)" stroke-width="2"/>
+    <text x="180" y="32" text-anchor="middle" font-size="15" font-weight="700" fill="var(--accent-purple)">SAR CONVERTER ENGINE</text>
+    
+    <rect x="30" y="60" width="300" height="45" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="180" y="87" text-anchor="middle" font-size="12" font-weight="600" fill="var(--text-primary)">Khối lấy mẫu &amp; Giữ áp (Sample &amp; Hold - C_sample)</text>
+
+    <rect x="30" y="120" width="300" height="45" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-amber)" stroke-width="1.5"/>
+    <text x="180" y="147" text-anchor="middle" font-size="12" font-weight="700" fill="var(--accent-amber)">Bộ so sánh điện áp (Comparator)</text>
+
+    <rect x="30" y="180" width="300" height="45" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="180" y="207" text-anchor="middle" font-size="12" font-weight="600" fill="var(--text-primary)">Mạng điện trở phân áp DAC phản hồi nội</text>
+
+    <text x="180" y="250" text-anchor="middle" font-size="11" fill="var(--text-muted)">Thời gian chuyển đổi: Tconv = Ts + 12.5 chu kỳ ADC_CLK</text>
+  </g>
+
+  <!-- Output Registers -->
+  <g transform="translate(680, 110)">
+    <rect width="220" height="280" rx="10" fill="var(--card-bg)" stroke="var(--accent-green)" stroke-width="2"/>
+    <text x="110" y="32" text-anchor="middle" font-size="15" font-weight="700" fill="var(--accent-green)">DATA REGISTERS</text>
+    
+    <rect x="15" y="65" width="190" height="55" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-green)"/>
+    <text x="105" y="90" text-anchor="middle" font-size="12" font-weight="700" fill="var(--accent-green)">ADC_DR (16-bit)</text>
+    <text x="105" y="108" text-anchor="middle" font-size="11" fill="var(--text-muted)">Kết quả 12-bit (0..4095)</text>
+
+    <rect x="15" y="140" width="190" height="50" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="105" y="165" text-anchor="middle" font-size="12" font-weight="600" fill="var(--text-primary)">Cờ ngắt EOC</text>
+    <text x="105" y="181" text-anchor="middle" font-size="10" fill="var(--text-muted)">End of Conversion Interrupt</text>
+
+    <rect x="15" y="205" width="190" height="50" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-blue)"/>
+    <text x="105" y="230" text-anchor="middle" font-size="12" font-weight="700" fill="var(--accent-blue)">Kênh DMA Request</text>
+    <text x="105" y="246" text-anchor="middle" font-size="10" fill="var(--text-muted)">Tự động lưu RAM liên tục</text>
+  </g>
+
+  <path d="M 240 250 L 280 250" stroke="var(--bus-line)" stroke-width="2"/>
+  <path d="M 640 250 L 680 250" stroke="var(--bus-line)" stroke-width="2"/>
+</svg>

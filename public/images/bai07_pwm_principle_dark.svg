@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 440" width="100%" height="100%">
+  <defs>
+    
+    <style>
+      :root {
+        --canvas-bg: #0b0f19;
+          --canvas-border: #1e293b;
+          --card-bg: #111827;
+          --card-border: #334155;
+          --title-color: #f8fafc;
+          --subtitle-color: #94a3b8;
+          --text-primary: #f8fafc;
+          --text-muted: #94a3b8;
+          --accent-blue: #38bdf8;
+          --accent-green: #34d399;
+          --accent-amber: #fbbf24;
+          --accent-red: #f87171;
+          --accent-purple: #a78bfa;
+          --wire-line: #475569;
+          --box-blue: #1e293b;
+          --box-green: #064e3b;
+          --box-amber: #78350f;
+          --box-purple: #2e1065;
+      }
+
+      
+
+      .canvas-bg { fill: var(--canvas-bg); stroke: var(--canvas-border); stroke-width: 2; rx: 16; }
+      .title-text { fill: var(--title-color); font-weight: 800; font-size: 20px; text-anchor: middle; font-family: 'Segoe UI', Arial, sans-serif; }
+      .subtitle-text { fill: var(--subtitle-color); font-weight: 600; font-size: 13px; text-anchor: middle; font-family: 'Segoe UI', Arial, sans-serif; }
+      .card-box { fill: var(--card-bg); stroke: var(--card-border); stroke-width: 1.5; rx: 10; }
+      .txt-title { fill: var(--text-primary); font-weight: 700; font-size: 13px; font-family: 'Segoe UI', Arial, sans-serif; }
+      .txt-desc { fill: var(--text-muted); font-size: 11px; font-weight: 500; font-family: 'Segoe UI', Arial, sans-serif; }
+      .wire { stroke: var(--wire-line); stroke-width: 2; fill: none; }
+      .wire-arrow { fill: var(--wire-line); }
+      .tag-blue { fill: #0284c7; font-weight: 700; font-size: 11px; font-family: monospace; }
+    </style>
+    <filter id="shadowLight" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.08"/>
+    </filter>
+
+  </defs>
+
+  <rect x="10" y="10" width="920" height="420" class="canvas-bg"/>
+  <text x="470" y="42" class="title-text">NGUYÊN LÝ ĐIỀU CHẾ ĐỘ RỘNG XUNG (PWM MODE 1)</text>
+  <text x="470" y="66" class="subtitle-text">So sánh liên tục giá trị bộ đếm CNT với ngưỡng so sánh CCR để tạo dạng sóng ngõ ra</text>
+
+  <!-- Đồ thị 1: So sánh CNT và CCR -->
+  <g transform="translate(60, 90)">
+    <rect x="0" y="0" width="820" height="150" class="card-box"/>
+    <!-- Trục tung -->
+    <text x="20" y="30" font-size="11" font-weight="bold" fill="#0284c7">ARR (Chu kỳ)</text>
+    <text x="20" y="75" font-size="11" font-weight="bold" fill="#ef4444">CCR (Ngưỡng)</text>
+    <text x="20" y="130" font-size="11" font-weight="bold" fill="var(--text-muted)">0</text>
+
+    <!-- Đường đếm răng cưa CNT -->
+    <path d="M 80 130 L 280 25 L 280 130 L 480 25 L 480 130 L 680 25 L 680 130" stroke="#0284c7" stroke-width="3" fill="none"/>
+    <text x="180" y="70" font-size="11" font-weight="bold" fill="#0284c7">CNT đếm lên ➔</text>
+
+    <!-- Đường CCR nét đứt ngang -->
+    <line x1="80" y1="75" x2="750" y2="75" stroke="#ef4444" stroke-width="2" stroke-dasharray="6,4"/>
+    <text x="760" y="78" font-size="11" font-weight="bold" fill="#ef4444">CCR</text>
+  </g>
+
+  <!-- Đồ thị 2: Dạng sóng ngõ ra PWM chân I/O -->
+  <g transform="translate(60, 260)">
+    <rect x="0" y="0" width="820" height="140" class="card-box"/>
+    <text x="20" y="25" font-size="12" font-weight="bold" fill="#10b981">TÍN HIỆU NGÕ RA CHÂN GPIO (PWM MODE 1):</text>
+    <text x="20" y="60" font-size="11" font-weight="bold" fill="var(--text-muted)">3.3V (HIGH)</text>
+    <text x="20" y="110" font-size="11" font-weight="bold" fill="var(--text-muted)">0.0V (LOW)</text>
+
+    <!-- Xung vuông -->
+    <!-- Chu kỳ 1 -->
+    <path d="M 80 110 L 80 55 L 185 55 L 185 110 L 280 110 L 280 55 L 385 55 L 385 110 L 480 110 L 480 55 L 585 55 L 585 110 L 680 110" 
+          stroke="#10b981" stroke-width="3.5" fill="none"/>
+
+    <!-- Vùng Ton và Toff -->
+    <line x1="80" y1="45" x2="185" y2="45" stroke="#0284c7" stroke-width="1.5"/>
+    <text x="132" y="40" font-size="10.5" font-weight="bold" fill="#0284c7" text-anchor="middle">Ton (CNT &lt; CCR)</text>
+
+    <line x1="185" y1="45" x2="280" y2="45" stroke="#ef4444" stroke-width="1.5"/>
+    <text x="232" y="40" font-size="10.5" font-weight="bold" fill="#ef4444" text-anchor="middle">Toff (CNT ≥ CCR)</text>
+
+    <line x1="80" y1="125" x2="280" y2="125" stroke="#10b981" stroke-width="2"/>
+    <text x="180" y="138" font-size="11" font-weight="bold" fill="#047857" text-anchor="middle">CHU KỲ T (Period = ARR + 1)</text>
+
+    <!-- Công thức Duty Cycle -->
+    <rect x="520" y="20" width="280" height="50" rx="6" fill="var(--box-green)" stroke="#10b981"/>
+    <text x="660" y="40" font-size="11" font-weight="bold" fill="#065f46" text-anchor="middle">Hệ số công tác (Duty Cycle %):</text>
+    <text x="660" y="58" font-size="12" font-weight="800" fill="#047857" text-anchor="middle">Duty (%) = (CCR / (ARR + 1)) * 100%</text>
+  </g>
+
+</svg>

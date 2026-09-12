@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 440" width="100%" height="100%">
+
+    <style>
+      :root {
+        --canvas-bg: #ffffff;
+        --canvas-border: #e2e8f0;
+        --card-bg: #ffffff;
+        --card-border: #cbd5e1;
+        --title-color: #0f172a;
+        --subtitle-color: #475569;
+        --text-primary: #1e293b;
+        --text-muted: #64748b;
+        --accent-blue: #0284c7;
+        --accent-green: #10b981;
+        --accent-amber: #f59e0b;
+        --accent-red: #ef4444;
+        --accent-purple: #8b5cf6;
+        --wire-line: #94a3b8;
+        --bus-line: #3b82f6;
+      }
+      
+      text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    </style>
+
+  <rect width="920" height="440" rx="14" fill="var(--canvas-bg)" stroke="var(--canvas-border)" stroke-width="2"/>
+  <text x="460" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="var(--title-color)">CƠ CHẾ BỘ ĐỆM VÒNG TRÒN (CIRCULAR RING BUFFER FIFO)</text>
+  <text x="460" y="62" text-anchor="middle" font-size="13" fill="var(--subtitle-color)">Xử lý không nghẽn ngõ vào UART Rx Interrupt với hai con trỏ Head (Ghi) và Tail (Đọc)</text>
+
+  <!-- Linear Representation -->
+  <g transform="translate(60, 110)">
+    <rect width="800" height="150" rx="10" fill="var(--card-bg)" stroke="var(--card-border)" stroke-width="2"/>
+    <text x="400" y="32" text-anchor="middle" font-size="14" font-weight="700" fill="var(--title-color)">MẢNG BỘ NHỚ RAM LIÊN TỤC: uint8_t buffer[BUFFER_SIZE]</text>
+
+    <!-- Cells -->
+    <g transform="translate(40, 55)">
+      <rect x="0" y="0" width="85" height="50" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+      <text x="42" y="30" text-anchor="middle" font-size="12" fill="var(--text-muted)">Idx 0</text>
+
+      <rect x="85" y="0" width="85" height="50" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+      <text x="127" y="30" text-anchor="middle" font-size="12" fill="var(--text-muted)">Idx 1</text>
+
+      <rect x="170" y="0" width="85" height="50" fill="var(--accent-blue)" fill-opacity="0.2" stroke="var(--accent-blue)" stroke-width="2"/>
+      <text x="212" y="30" text-anchor="middle" font-size="13" font-weight="700" fill="var(--accent-blue)">DATA 2</text>
+
+      <rect x="255" y="0" width="85" height="50" fill="var(--accent-blue)" fill-opacity="0.2" stroke="var(--accent-blue)" stroke-width="2"/>
+      <text x="297" y="30" text-anchor="middle" font-size="13" font-weight="700" fill="var(--accent-blue)">DATA 3</text>
+
+      <rect x="340" y="0" width="85" height="50" fill="var(--accent-blue)" fill-opacity="0.2" stroke="var(--accent-blue)" stroke-width="2"/>
+      <text x="382" y="30" text-anchor="middle" font-size="13" font-weight="700" fill="var(--accent-blue)">DATA 4</text>
+
+      <rect x="425" y="0" width="85" height="50" fill="var(--accent-green)" fill-opacity="0.2" stroke="var(--accent-green)" stroke-width="2"/>
+      <text x="467" y="30" text-anchor="middle" font-size="13" font-weight="700" fill="var(--accent-green)">NEW</text>
+
+      <rect x="510" y="0" width="85" height="50" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+      <text x="552" y="30" text-anchor="middle" font-size="12" fill="var(--text-muted)">Idx 6</text>
+
+      <rect x="595" y="0" width="85" height="50" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+      <text x="637" y="30" text-anchor="middle" font-size="12" fill="var(--text-muted)">Idx 7</text>
+    </g>
+
+    <!-- Pointers -->
+    <text x="252" y="135" text-anchor="middle" font-size="13" font-weight="700" fill="var(--accent-purple)">▲ tail_ptr (Read)</text>
+    <text x="507" y="135" text-anchor="middle" font-size="13" font-weight="700" fill="var(--accent-green)">▲ head_ptr (Write)</text>
+  </g>
+
+  <!-- Equations -->
+  <g transform="translate(60, 290)">
+    <rect width="800" height="110" rx="10" fill="var(--card-bg)" stroke="var(--accent-blue)" stroke-width="1.5"/>
+    <text x="40" y="35" font-size="14" font-weight="700" fill="var(--accent-blue)">NGUYÊN TẮC TOÁN HỌC ĐỊNH TUYẾN CHỈ SỐ:</text>
+    <text x="40" y="65" font-size="13" fill="var(--text-primary)">• Ghi dữ liệu: buffer[head] = rx_data; head = (head + 1) % BUFFER_SIZE;</text>
+    <text x="40" y="90" font-size="13" fill="var(--text-primary)">• Đọc dữ liệu: tx_data = buffer[tail]; tail = (tail + 1) % BUFFER_SIZE;</text>
+    <text x="560" y="65" font-size="12" font-weight="700" fill="var(--accent-amber)">Rỗng: head == tail</text>
+    <text x="560" y="90" font-size="12" font-weight="700" fill="var(--accent-red)">Đầy: (head + 1) % SIZE == tail</text>
+  </g>
+</svg>

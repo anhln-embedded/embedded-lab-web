@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" width="100%" height="100%">
+
+    <style>
+      :root {
+        --canvas-bg: #ffffff;
+        --canvas-border: #e2e8f0;
+        --card-bg: #ffffff;
+        --card-border: #cbd5e1;
+        --title-color: #0f172a;
+        --subtitle-color: #475569;
+        --text-primary: #1e293b;
+        --text-muted: #64748b;
+        --accent-blue: #0284c7;
+        --accent-green: #10b981;
+        --accent-amber: #f59e0b;
+        --accent-red: #ef4444;
+        --accent-purple: #8b5cf6;
+        --wire-line: #94a3b8;
+        --bus-line: #3b82f6;
+      }
+      
+      text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    </style>
+
+  <rect width="920" height="400" rx="14" fill="var(--canvas-bg)" stroke="var(--canvas-border)" stroke-width="2"/>
+  <text x="460" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="var(--title-color)">TRÌNH TỰ TRUYỀN DỮ LIỆU I2C MASTER PHẦN CỨNG THEO SỰ KIỆN (EVENTS)</text>
+  <text x="460" y="62" text-anchor="middle" font-size="13" fill="var(--subtitle-color)">Các bước kiểm tra cờ trạng thái SR1 và SR2 đảm bảo bus không bị treo</text>
+
+  <g transform="translate(40, 100)">
+    <!-- Step 1: START -->
+    <rect x="0" y="0" width="150" height="120" rx="8" fill="var(--card-bg)" stroke="var(--accent-blue)" stroke-width="2"/>
+    <text x="75" y="30" text-anchor="middle" font-size="14" font-weight="700" fill="var(--accent-blue)">1. START BIT</text>
+    <text x="75" y="55" text-anchor="middle" font-size="11" fill="var(--text-primary)">Bật CR1-&gt;START</text>
+    <rect x="15" y="70" width="120" height="35" rx="4" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="75" y="92" text-anchor="middle" font-size="11" font-weight="600" fill="var(--accent-amber)">Chờ EV5 (SB = 1)</text>
+
+    <!-- Arrow 1 -->
+    <path d="M 150 60 L 180 60" stroke="var(--bus-line)" stroke-width="2"/>
+
+    <!-- Step 2: ADDR -->
+    <rect x="180" y="0" width="160" height="120" rx="8" fill="var(--card-bg)" stroke="var(--accent-purple)" stroke-width="2"/>
+    <text x="260" y="30" text-anchor="middle" font-size="14" font-weight="700" fill="var(--accent-purple)">2. GỬI ĐỊA CHỈ</text>
+    <text x="260" y="55" text-anchor="middle" font-size="11" fill="var(--text-primary)">Ghi Slave Addr + W/R</text>
+    <rect x="195" y="70" width="130" height="35" rx="4" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="260" y="92" text-anchor="middle" font-size="11" font-weight="600" fill="var(--accent-amber)">Chờ EV6 (ADDR = 1)</text>
+
+    <!-- Arrow 2 -->
+    <path d="M 340 60 L 370 60" stroke="var(--bus-line)" stroke-width="2"/>
+
+    <!-- Step 3: CLEAR ADDR -->
+    <rect x="370" y="0" width="150" height="120" rx="8" fill="var(--card-bg)" stroke="var(--card-border)" stroke-width="1.5"/>
+    <text x="445" y="30" text-anchor="middle" font-size="13" font-weight="700" fill="var(--title-color)">3. XÓA CỜ ADDR</text>
+    <text x="445" y="55" text-anchor="middle" font-size="11" fill="var(--text-primary)">Đọc thanh ghi SR1</text>
+    <text x="445" y="75" text-anchor="middle" font-size="11" fill="var(--text-primary)">Đọc thanh ghi SR2</text>
+    <text x="445" y="98" text-anchor="middle" font-size="10" fill="var(--text-muted)">(Tự động xóa)</text>
+
+    <!-- Arrow 3 -->
+    <path d="M 520 60 L 550 60" stroke="var(--bus-line)" stroke-width="2"/>
+
+    <!-- Step 4: DATA TX -->
+    <rect x="550" y="0" width="150" height="120" rx="8" fill="var(--card-bg)" stroke="var(--accent-green)" stroke-width="2"/>
+    <text x="625" y="30" text-anchor="middle" font-size="14" font-weight="700" fill="var(--accent-green)">4. GỬI DỮ LIỆU</text>
+    <text x="625" y="55" text-anchor="middle" font-size="11" fill="var(--text-primary)">Ghi DR = Data</text>
+    <rect x="565" y="70" width="120" height="35" rx="4" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="625" y="92" text-anchor="middle" font-size="11" font-weight="600" fill="var(--accent-amber)">Chờ EV8 (TXE / BTF)</text>
+
+    <!-- Arrow 4 -->
+    <path d="M 700 60 L 730 60" stroke="var(--bus-line)" stroke-width="2"/>
+
+    <!-- Step 5: STOP -->
+    <rect x="730" y="0" width="110" height="120" rx="8" fill="var(--card-bg)" stroke="var(--accent-red)" stroke-width="2"/>
+    <text x="785" y="30" text-anchor="middle" font-size="14" font-weight="700" fill="var(--accent-red)">5. STOP</text>
+    <text x="785" y="65" text-anchor="middle" font-size="11" fill="var(--text-primary)">CR1-&gt;STOP</text>
+    <text x="785" y="90" text-anchor="middle" font-size="10" fill="var(--text-muted)">Giải phóng Bus</text>
+  </g>
+
+  <!-- Warning Box -->
+  <g transform="translate(40, 260)">
+    <rect width="840" height="90" rx="8" fill="var(--card-bg)" stroke="var(--accent-amber)" stroke-width="1.5"/>
+    <text x="420" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="var(--accent-amber)">LƯU Ý SỐNG CÒN TRÁNH TREO VÒNG LẶP VÔ HẠN (DEADLOCK):</text>
+    <text x="420" y="58" text-anchor="middle" font-size="12" fill="var(--text-primary)">Mọi hàm chờ cờ `while (!I2C_CheckEvent(...))` bắt buộc phải cài đặt biến Timeout. Nếu thiết bị I2C không phản hồi,</text>
+    <text x="420" y="78" text-anchor="middle" font-size="12" fill="var(--text-primary)">hệ thống sẽ thoát lỗi thay vì bị đơ vĩnh viễn trong ngắt hoặc hàm truyền.</text>
+  </g>
+</svg>
