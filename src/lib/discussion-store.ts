@@ -236,20 +236,30 @@ export async function createDiscussionThreadApi(params: CreateThreadParams): Pro
   return json.data;
 }
 
-export async function deleteDiscussionThreadApi(threadId: string): Promise<boolean> {
+export async function deleteDiscussionThreadApi(
+  threadId: string,
+  user?: { role?: string; email?: string; id?: string; name?: string } | null
+): Promise<{ success: boolean; error?: string }> {
   try {
+    const headers: Record<string, string> = {};
+    if (user?.role) headers["x-user-role"] = user.role;
+    if (user?.email) headers["x-user-email"] = user.email;
+    if (user?.id) headers["x-user-id"] = user.id;
+    if (user?.name) headers["x-user-name"] = encodeURIComponent(user.name);
+
     const res = await fetch(`/api/discussions/${threadId}`, {
       method: "DELETE",
+      headers,
     });
     const json = await res.json();
     if (json.success) {
       deleteDiscussionThread(threadId);
-      return true;
+      return { success: true };
     }
-    return false;
-  } catch (error) {
+    return { success: false, error: json.error || "Không thể xóa bài thảo luận" };
+  } catch (error: any) {
     console.error("Lỗi khi xóa bài viết:", error);
-    return false;
+    return { success: false, error: error.message || "Lỗi khi gửi yêu cầu xóa bài viết" };
   }
 }
 

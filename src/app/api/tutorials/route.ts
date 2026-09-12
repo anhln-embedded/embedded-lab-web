@@ -96,9 +96,20 @@ export async function POST(request: Request) {
       author = "Lưu Ngọc Anh",
       authorTitle = "",
       authorAvatar = "/images/logo.png",
+      authorEmail,
+      authorId,
+      authorRole,
       coverImage = "/images/logo.png",
       posts = [],
     } = body;
+
+    const headerEmail = request.headers.get("x-user-email");
+    const headerId = request.headers.get("x-user-id");
+    const headerRole = request.headers.get("x-user-role");
+
+    const finalAuthorEmail = authorEmail || headerEmail || null;
+    const finalAuthorId = authorId || headerId || null;
+    const finalAuthorRole = authorRole || headerRole || "admin";
 
     if (!title || !slug || !description) {
       return NextResponse.json(
@@ -158,12 +169,15 @@ export async function POST(request: Request) {
           author,
           authorTitle,
           authorAvatar,
+          authorEmail: finalAuthorEmail,
+          authorId: finalAuthorId,
+          authorRole: finalAuthorRole,
           coverImage,
           order: (maxOrderTopic?._max?.order ?? 0) + 1,
           articles: {
             create: sanitizedArticles,
           },
-        },
+        } as any,
         include: {
           articles: true,
         },

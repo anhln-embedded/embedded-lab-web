@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { ensurePostSchema } from "@/lib/db-sync";
+import { canUserDeleteContent } from "@/lib/permissions";
 
 interface Params {
   params: Promise<{ id: string }>;
@@ -8,6 +10,7 @@ interface Params {
 // GET /api/posts/[id] - Get post by ID or Slug
 export async function GET(request: Request, { params }: Params) {
   try {
+    await ensurePostSchema();
     const { id } = await params;
 
     const post = await prisma.post.findFirst({
@@ -47,6 +50,7 @@ export async function GET(request: Request, { params }: Params) {
 // PUT /api/posts/[id] - Update post
 export async function PUT(request: Request, { params }: Params) {
   try {
+    await ensurePostSchema();
     const { id } = await params;
     const body = await request.json();
 
@@ -79,6 +83,9 @@ export async function PUT(request: Request, { params }: Params) {
       authorName,
       authorTitle,
       authorAvatar,
+      authorEmail,
+      authorId,
+      authorRole,
       facebookPostUrl,
       githubUrl,
       demoUrl,
@@ -104,6 +111,9 @@ export async function PUT(request: Request, { params }: Params) {
         ...(authorName !== undefined && { authorName }),
         ...(authorTitle !== undefined && { authorTitle }),
         ...(authorAvatar !== undefined && { authorAvatar }),
+        ...(authorEmail !== undefined && { authorEmail }),
+        ...(authorId !== undefined && { authorId }),
+        ...(authorRole !== undefined && { authorRole }),
         ...(facebookPostUrl !== undefined && { facebookPostUrl }),
         ...(githubUrl !== undefined && { githubUrl }),
         ...(demoUrl !== undefined && { demoUrl }),
@@ -123,6 +133,7 @@ export async function PUT(request: Request, { params }: Params) {
 // DELETE /api/posts/[id] - Delete post
 export async function DELETE(request: Request, { params }: Params) {
   try {
+    await ensurePostSchema();
     const { id } = await params;
 
     const existing = await prisma.post.findFirst({
@@ -133,6 +144,46 @@ export async function DELETE(request: Request, { params }: Params) {
       return NextResponse.json(
         { success: false, error: "Không tìm thấy bài viết để xóa" },
         { status: 404 }
+      );
+    }
+
+    // Xác thực quyền xóa bài viết
+    const headerRole = request.headers.get("x-user-role");
+    const headerEmail = request.headers.get("x-user-email");
+    const headerId = request.headers.get("x-user-id");
+    const rawHeaderName = request.headers.get("x-user-name");
+    let headerName: string | null = null;
+    try {
+      if (rawHeaderName) headerName = decodeURIComponent(rawHeaderName);
+    } catch {
+      headerName = rawHeaderName;
+    }
+
+    const permCheck = canUserDeleteContent({
+      currentUser: {
+        id: headerId,
+        email: headerEmail,
+        name: headerName,
+        role: headerRole,
+      },
+      author: {
+        id: (existing as any).authorId,
+        email: (existing as any).authorEmail,
+        name: existing.authorName,
+        role: (existing as any).authorRole || "admin",
+      },
+      isDiscussionOrComment: false,
+    });
+
+    if (!permCheck.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            permCheck.reason ||
+            "Truy cập bị từ chối: Quản trị viên không thể xóa bài viết của Quản trị viên khác. Chỉ Superadmin mới có quyền này.",
+        },
+        { status: 403 }
       );
     }
 

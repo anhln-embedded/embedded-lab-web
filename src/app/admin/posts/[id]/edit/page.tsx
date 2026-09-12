@@ -11,6 +11,7 @@ import { PostSettingsDrawer, PostSettingsData } from "@/components/editor/PostSe
 import { PostLivePreviewModal } from "@/components/editor/PostLivePreviewModal";
 import { SmartMarkdownImporterModal } from "@/components/tutorials/SmartMarkdownImporterModal";
 import { ParsedPost } from "@/lib/markdown-importer";
+import { canUserDeleteContent } from "@/lib/permissions";
 import {
   ArrowLeft,
   Sparkles,
@@ -40,6 +41,7 @@ export default function EditPostPage() {
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
+  const [loadedPost, setLoadedPost] = useState<any>(null);
 
   // Metadata Settings State
   const [settings, setSettings] = useState<PostSettingsData>({
@@ -78,6 +80,7 @@ export default function EditPostPage() {
         const json = await res.json();
         if (json.success && json.data) {
           const p = json.data;
+          setLoadedPost(p);
           setTitle(p.title || "");
           setExcerpt(p.excerpt || "");
           setContent(p.contentHtml || "");
@@ -178,13 +181,19 @@ export default function EditPostPage() {
     try {
       const res = await fetch(`/api/posts/${postId}`, {
         method: "DELETE",
+        headers: {
+          "x-user-role": user?.role || "",
+          "x-user-email": user?.email || "",
+          "x-user-id": user?.id || "",
+          "x-user-name": user?.name ? encodeURIComponent(user.name) : "",
+        },
       });
       const json = await res.json();
       if (!res.ok || !json.success) {
         throw new Error(json.error || "Lỗi xóa bản tin");
       }
       alert("Đã xóa bản tin thành công!");
-      router.push("/admin/posts");
+      router.push("/admin?tab=posts");
     } catch (err: any) {
       console.error(err);
       alert(`Lỗi khi xóa bản tin: ${err.message}`);
@@ -281,15 +290,42 @@ export default function EditPostPage() {
             </Button>
 
             {/* Nút Xóa */}
-            <button
-              type="button"
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="p-2 rounded-xl text-red-400 hover:bg-red-500/15 transition-colors cursor-pointer"
-              title="Xóa bản tin"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
+            {(() => {
+              const canDelete = Boolean(
+                user &&
+                  canUserDeleteContent({
+                    currentUser: user,
+                    author: {
+                      id: loadedPost?.authorId,
+                      email: loadedPost?.authorEmail,
+                      name: loadedPost?.authorName,
+                      role: loadedPost?.authorRole || "admin",
+                    },
+                    isDiscussionOrComment: false,
+                  }).allowed
+              );
+
+              return canDelete ? (
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="p-2 rounded-xl text-red-400 hover:bg-red-500/15 transition-colors cursor-pointer"
+                  title="Xóa bản tin"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  disabled
+                  className="p-2 rounded-xl text-text-muted/30 cursor-not-allowed opacity-40"
+                  title="Chỉ Super Admin hoặc chính tác giả mới có quyền xóa bản tin này"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              );
+            })()}
 
             {/* Lưu Thay Đổi */}
             <Button

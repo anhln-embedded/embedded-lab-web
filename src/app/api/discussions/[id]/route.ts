@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { ensureDiscussionSchema } from "@/lib/db-sync";
+import { canUserDeleteContent } from "@/lib/permissions";
 
 interface Params {
   params: Promise<{ id: string }>;
@@ -124,6 +125,45 @@ export async function DELETE(request: Request, { params }: Params) {
       return NextResponse.json(
         { success: false, error: "Chủ đề không tồn tại" },
         { status: 404 }
+      );
+    }
+
+    // Xác thực quyền xóa chủ đề
+    const headerRole = request.headers.get("x-user-role");
+    const headerEmail = request.headers.get("x-user-email");
+    const headerId = request.headers.get("x-user-id");
+    const rawHeaderName = request.headers.get("x-user-name");
+    let headerName: string | null = null;
+    try {
+      if (rawHeaderName) headerName = decodeURIComponent(rawHeaderName);
+    } catch {
+      headerName = rawHeaderName;
+    }
+
+    const permCheck = canUserDeleteContent({
+      currentUser: {
+        id: headerId,
+        email: headerEmail,
+        name: headerName,
+        role: headerRole,
+      },
+      author: {
+        id: thread.authorId,
+        name: thread.author,
+        role: thread.authorRole || "user",
+      },
+      isDiscussionOrComment: true,
+    });
+
+    if (!permCheck.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            permCheck.reason ||
+            "Truy cập bị từ chối: Quản trị viên không thể xóa bài thảo luận của Quản trị viên khác. Chỉ Superadmin mới có quyền này.",
+        },
+        { status: 403 }
       );
     }
 

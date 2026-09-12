@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { CategoryManagerModal, TutorialCategoryItem } from "@/components/tutorials/CategoryManagerModal";
+import { canUserDeleteContent } from "@/lib/permissions";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -85,6 +86,9 @@ export default function AdminDashboardPage() {
             readingTime: p.readingTime,
             author: p.authorName,
             authorTitle: p.authorTitle,
+            authorEmail: p.authorEmail,
+            authorId: p.authorId,
+            authorRole: p.authorRole,
             coverImage: p.coverImage,
             excerpt: p.excerpt,
             url: `/blog/${p.slug}`,
@@ -221,7 +225,37 @@ export default function AdminDashboardPage() {
     );
   }
 
-  const handleDeletePost = (id: string, title: string) => {
+  const canDeletePostItem = (post: any) => {
+    return canUserDeleteContent({
+      currentUser: user,
+      author: {
+        id: post.authorId,
+        email: post.authorEmail,
+        name: post.author,
+        role: post.authorRole || "admin",
+      },
+      isDiscussionOrComment: false,
+    }).allowed;
+  };
+
+  const canDeleteTutorialItem = (topic: any) => {
+    return canUserDeleteContent({
+      currentUser: user,
+      author: {
+        id: topic.authorId,
+        email: topic.authorEmail,
+        name: topic.author,
+        role: topic.authorRole || "admin",
+      },
+      isDiscussionOrComment: false,
+    }).allowed;
+  };
+
+  const handleDeletePost = (id: string, title: string, post?: any) => {
+    if (post && !canDeletePostItem(post)) {
+      showToast("Chỉ Super Admin hoặc chính tác giả mới có quyền xóa bài viết này");
+      return;
+    }
     setDeleteTarget({ type: "post", id, title });
   };
 
@@ -229,7 +263,11 @@ export default function AdminDashboardPage() {
     setDeleteTarget({ type: "course", id, title });
   };
 
-  const handleDeleteTutorial = (id: string, title: string) => {
+  const handleDeleteTutorial = (id: string, title: string, topic?: any) => {
+    if (topic && !canDeleteTutorialItem(topic)) {
+      showToast("Chỉ Super Admin hoặc chính tác giả mới có quyền xóa chuyên đề này");
+      return;
+    }
     setDeleteTarget({ type: "tutorial", id, title });
   };
 
@@ -240,9 +278,20 @@ export default function AdminDashboardPage() {
   const handleConfirmDelete = async () => {
     if (!deleteTarget) return;
     setIsDeleting(true);
+
+    const authHeaders = {
+      "x-user-role": user?.role || "",
+      "x-user-email": user?.email || "",
+      "x-user-id": user?.id || "",
+      "x-user-name": user?.name ? encodeURIComponent(user.name) : "",
+    };
+
     try {
       if (deleteTarget.type === "tutorial") {
-        const res = await fetch(`/api/tutorials/${encodeURIComponent(deleteTarget.id)}`, { method: "DELETE" });
+        const res = await fetch(`/api/tutorials/${encodeURIComponent(deleteTarget.id)}`, {
+          method: "DELETE",
+          headers: authHeaders,
+        });
         const json = await res.json();
         if (json.success) {
           setTutorials((prev) => prev.filter((t) => t.id !== deleteTarget.id && t.slug !== deleteTarget.id));
@@ -252,7 +301,10 @@ export default function AdminDashboardPage() {
           showToast(json.error || "Không thể xóa chuyên đề");
         }
       } else if (deleteTarget.type === "post") {
-        const res = await fetch(`/api/posts/${encodeURIComponent(deleteTarget.id)}`, { method: "DELETE" });
+        const res = await fetch(`/api/posts/${encodeURIComponent(deleteTarget.id)}`, {
+          method: "DELETE",
+          headers: authHeaders,
+        });
         const json = await res.json();
         if (json.success) {
           deletePost(deleteTarget.id);
@@ -262,7 +314,10 @@ export default function AdminDashboardPage() {
           showToast(json.error || "Không thể xóa bài viết");
         }
       } else if (deleteTarget.type === "course") {
-        await fetch(`/api/courses/${encodeURIComponent(deleteTarget.id)}`, { method: "DELETE" });
+        await fetch(`/api/courses/${encodeURIComponent(deleteTarget.id)}`, {
+          method: "DELETE",
+          headers: authHeaders,
+        });
         deleteCourse(deleteTarget.id);
         showToast(`🗑️ Đã xóa khóa học "${deleteTarget.title}" thành công!`);
       } else if (deleteTarget.type === "roadmap") {
@@ -702,13 +757,24 @@ export default function AdminDashboardPage() {
                         <Eye className="w-3.5 h-3.5" />
                         <span>Xem</span>
                       </Link>
-                      <button
-                        onClick={() => handleDeletePost(post._id, post.title)}
-                        className="py-2 px-3 rounded-xl bg-red-500/15 border border-red-500/30 text-red-400 hover:bg-red-500/25 flex items-center justify-center gap-1 text-xs font-bold"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        <span>Xóa</span>
-                      </button>
+                      {canDeletePostItem(post) ? (
+                        <button
+                          onClick={() => handleDeletePost(post._id, post.title, post)}
+                          className="py-2 px-3 rounded-xl bg-red-500/15 border border-red-500/30 text-red-400 hover:bg-red-500/25 flex items-center justify-center gap-1 text-xs font-bold cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Xóa</span>
+                        </button>
+                      ) : (
+                        <button
+                          disabled
+                          className="py-2 px-3 rounded-xl bg-bg-elevated/40 border border-border/50 text-text-muted/30 cursor-not-allowed flex items-center justify-center gap-1 text-xs font-semibold opacity-40"
+                          title="Chỉ Super Admin hoặc chính tác giả mới có quyền xóa bài này"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Khóa</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -763,13 +829,23 @@ export default function AdminDashboardPage() {
                             >
                               <Eye className="w-3.5 h-3.5" />
                             </Link>
-                            <button
-                              onClick={() => handleDeletePost(post._id, post.title)}
-                              className="p-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20"
-                              title="Xóa bài viết"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
+                            {canDeletePostItem(post) ? (
+                              <button
+                                onClick={() => handleDeletePost(post._id, post.title, post)}
+                                className="p-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 cursor-pointer"
+                                title="Xóa bài viết"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            ) : (
+                              <button
+                                disabled
+                                className="p-1.5 rounded-lg bg-bg-elevated/30 border border-border/40 text-text-muted/30 cursor-not-allowed opacity-40"
+                                title="Chỉ Super Admin hoặc chính tác giả mới có quyền xóa bài này"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -986,13 +1062,24 @@ export default function AdminDashboardPage() {
                         <Eye className="w-3.5 h-3.5" />
                         <span>Xem</span>
                       </Link>
-                      <button
-                        onClick={() => handleDeleteTutorial(topic.id || topic.slug, topic.title)}
-                        className="py-2 px-3 rounded-xl bg-red-500/15 border border-red-500/30 text-red-400 hover:bg-red-500/25 flex items-center justify-center gap-1 text-xs font-bold"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        <span>Xóa</span>
-                      </button>
+                      {canDeleteTutorialItem(topic) ? (
+                        <button
+                          onClick={() => handleDeleteTutorial(topic.id || topic.slug, topic.title, topic)}
+                          className="py-2 px-3 rounded-xl bg-red-500/15 border border-red-500/30 text-red-400 hover:bg-red-500/25 flex items-center justify-center gap-1 text-xs font-bold cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Xóa</span>
+                        </button>
+                      ) : (
+                        <button
+                          disabled
+                          className="py-2 px-3 rounded-xl bg-bg-elevated/40 border border-border/50 text-text-muted/30 cursor-not-allowed flex items-center justify-center gap-1 text-xs font-semibold opacity-40"
+                          title="Chỉ Super Admin hoặc chính tác giả mới có quyền xóa chuyên đề này"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Khóa</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -1063,14 +1150,25 @@ export default function AdminDashboardPage() {
                             >
                               <Eye className="w-3.5 h-3.5" />
                             </Link>
-                            <button
-                              onClick={() => handleDeleteTutorial(topic.id || topic.slug, topic.title)}
-                              className="p-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 flex items-center gap-1 text-xs px-2 font-medium"
-                              title="Xóa chuyên đề"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                              <span>Xóa</span>
-                            </button>
+                            {canDeleteTutorialItem(topic) ? (
+                              <button
+                                onClick={() => handleDeleteTutorial(topic.id || topic.slug, topic.title, topic)}
+                                className="p-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 flex items-center gap-1 text-xs px-2 font-medium cursor-pointer"
+                                title="Xóa chuyên đề"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>Xóa</span>
+                              </button>
+                            ) : (
+                              <button
+                                disabled
+                                className="p-1.5 rounded-lg bg-bg-elevated/30 border border-border/40 text-text-muted/30 cursor-not-allowed flex items-center gap-1 text-xs px-2 font-medium opacity-40"
+                                title="Chỉ Super Admin hoặc chính tác giả mới có quyền xóa chuyên đề này"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>Khóa</span>
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>

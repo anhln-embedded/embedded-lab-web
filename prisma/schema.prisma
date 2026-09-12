@@ -27,6 +27,9 @@ model Post {
   authorName      String    @default("Embedded-AIoT Lab PTIT")
   authorTitle     String?   @default("Kỹ sư Lab PTIT")
   authorAvatar    String?   @default("/images/logo.png")
+  authorEmail     String?
+  authorId        String?
+  authorRole      String?   @default("admin")
   facebookPostUrl String?
   githubUrl       String?
   demoUrl         String?
@@ -130,6 +133,9 @@ model TutorialTopic {
   author       String            @default("Kỹ sư Lab PTIT")
   authorTitle  String?           @default("Mentor Lab")
   authorAvatar String?           @default("/images/logo.png")
+  authorEmail  String?
+  authorId     String?
+  authorRole   String?           @default("admin")
   coverImage   String?           @default("/images/logo.png")
   order        Int               @default(0)
   createdAt    DateTime          @default(now())
@@ -264,6 +270,10 @@ model ResearchPaper {
   bibtex          String?
   status          String   @default("published") // published, accepted, in_review
   featured        Boolean  @default(false)
+  createdByEmail  String?
+  createdById     String?
+  creatorName     String?
+  creatorRole     String?  @default("admin")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }

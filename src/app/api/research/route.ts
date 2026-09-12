@@ -208,6 +208,17 @@ export async function POST(request: Request) {
     const keywordsStr = Array.isArray(keywords) ? keywords.join(", ") : keywords || "";
     const labAuthorsStr = Array.isArray(labAuthors) ? JSON.stringify(labAuthors) : labAuthors || null;
 
+    const rawCreatorName = request.headers.get("x-user-name");
+    let creatorName: string | null = null;
+    try {
+      if (rawCreatorName) creatorName = decodeURIComponent(rawCreatorName);
+    } catch {
+      creatorName = rawCreatorName;
+    }
+    const createdByEmail = email || null;
+    const createdById = request.headers.get("x-user-id") || user?.id || null;
+    const creatorRole = role || "admin";
+
     const saved = await prisma.researchPaper.upsert({
       where: { id: paperId },
       update: {
@@ -233,7 +244,11 @@ export async function POST(request: Request) {
         bibtex: bibtex || null,
         status: status || "published",
         featured: Boolean(featured),
-      },
+        ...(createdByEmail && { createdByEmail }),
+        ...(createdById && { createdById }),
+        ...(creatorName && { creatorName }),
+        ...(creatorRole && { creatorRole }),
+      } as any,
       create: {
         id: paperId,
         title,
@@ -258,7 +273,11 @@ export async function POST(request: Request) {
         bibtex: bibtex || null,
         status: status || "published",
         featured: Boolean(featured),
-      },
+        createdByEmail,
+        createdById,
+        creatorName,
+        creatorRole,
+      } as any,
     });
 
     return NextResponse.json({

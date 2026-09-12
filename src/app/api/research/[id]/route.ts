@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { normalizeEmail, parseEmailList } from "@/lib/utils";
 import { ensureResearchSchema } from "@/lib/db-sync";
+import { canUserDeleteContent } from "@/lib/permissions";
 
 interface Params {
   params: Promise<{ id: string }>;
@@ -49,26 +50,54 @@ export async function DELETE(request: Request, { params }: Params) {
     await ensureResearchSchema();
     const { id } = await params;
 
+    // Tìm bài báo nghiên cứu trước
+    const existing = await prisma.researchPaper.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { success: false, error: "Không tìm thấy bài báo để xóa" },
+        { status: 404 }
+      );
+    }
+
     // Xác thực quyền Admin/SuperAdmin
     const { searchParams } = new URL(request.url);
     const headerRole = request.headers.get("x-user-role") || searchParams.get("role");
     const headerEmail = request.headers.get("x-user-email") || searchParams.get("email");
-
-    let isAuthorized = headerRole === "admin" || headerRole === "superadmin";
-    if (!isAuthorized && headerEmail) {
-      const envRaw =
-        (typeof process !== "undefined" &&
-          (process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAILS || process.env.SUPER_ADMIN_EMAILS)) ||
-        "anhln.embedded@gmail.com,anhlnembedded@gmail.com";
-      const superAdmins = parseEmailList(envRaw);
-      isAuthorized = superAdmins.includes(normalizeEmail(headerEmail));
+    const headerId = request.headers.get("x-user-id") || searchParams.get("userId");
+    const rawHeaderName = request.headers.get("x-user-name") || searchParams.get("userName");
+    let headerName: string | null = null;
+    try {
+      if (rawHeaderName) headerName = decodeURIComponent(rawHeaderName);
+    } catch {
+      headerName = rawHeaderName;
     }
 
-    if (!isAuthorized) {
+    const permCheck = canUserDeleteContent({
+      currentUser: {
+        id: headerId,
+        email: headerEmail,
+        name: headerName,
+        role: headerRole,
+      },
+      author: {
+        id: (existing as any)?.createdById,
+        email: (existing as any)?.createdByEmail,
+        name: (existing as any)?.creatorName || existing?.authors,
+        role: (existing as any)?.creatorRole || "admin",
+      },
+      isDiscussionOrComment: false,
+    });
+
+    if (!permCheck.allowed) {
       return NextResponse.json(
         {
           success: false,
-          error: "Truy cập bị từ chối: Chỉ Quản trị viên (Admin/SuperAdmin) mới có quyền xóa bài báo nghiên cứu.",
+          error:
+            permCheck.reason ||
+            "Truy cập bị từ chối: Quản trị viên không thể xóa bài báo do Quản trị viên khác tạo. Chỉ Superadmin mới có quyền này.",
         },
         { status: 403 }
       );

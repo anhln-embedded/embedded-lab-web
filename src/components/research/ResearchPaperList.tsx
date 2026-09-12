@@ -8,6 +8,7 @@ import {
   PUBLICATION_TYPES,
   RESEARCH_FIELDS,
 } from "@/lib/research-store";
+import { canUserDeleteContent } from "@/lib/permissions";
 import { BibtexModal } from "./BibtexModal";
 import { ResearchPaperModal } from "./ResearchPaperModal";
 import {
@@ -213,6 +214,8 @@ export function ResearchPaperList() {
         headers: {
           "x-user-role": user?.role || "",
           "x-user-email": user?.email || "",
+          "x-user-id": user?.id || "",
+          "x-user-name": user?.name ? encodeURIComponent(user.name) : "",
         },
       });
       const data = await res.json();
@@ -673,13 +676,39 @@ export function ResearchPaperList() {
                       >
                         <Edit3 className="w-4 h-4" />
                       </button>
-                      <button
-                        onClick={() => handleDeletePaper(paper.id, paper.title)}
-                        className="p-1.5 rounded-lg text-text-muted hover:text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
-                        title="Xóa bài báo này (Chỉ Admin)"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      {(() => {
+                        const canDeletePaper = Boolean(
+                          user &&
+                            canUserDeleteContent({
+                              currentUser: user,
+                              author: {
+                                id: (paper as any).createdById,
+                                email: (paper as any).createdByEmail,
+                                name: (paper as any).creatorName || paper.authors,
+                                role: (paper as any).creatorRole || "admin",
+                              },
+                              isDiscussionOrComment: false,
+                            }).allowed
+                        );
+
+                        return canDeletePaper ? (
+                          <button
+                            onClick={() => handleDeletePaper(paper.id, paper.title)}
+                            className="p-1.5 rounded-lg text-text-muted hover:text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                            title="Xóa bài báo này"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        ) : (
+                          <button
+                            disabled
+                            className="p-1.5 rounded-lg text-text-muted/30 cursor-not-allowed opacity-40"
+                            title="Chỉ Superadmin hoặc chính tác giả mới có quyền xóa bài báo này"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        );
+                      })()}
                     </div>
                   )}
                 </div>

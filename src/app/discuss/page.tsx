@@ -137,11 +137,15 @@ function DiscussContent() {
   };
 
   const handleDeleteThread = async (threadId: string) => {
+    const res = await deleteDiscussionThreadApi(threadId, user);
+    if (!res.success) {
+      alert(res.error || "Không thể xóa chủ đề thảo luận.");
+      return;
+    }
     setThreads((prev) => prev.filter((t) => t.id !== threadId));
     if (selectedThread && selectedThread.id === threadId) {
       setSelectedThread(null);
     }
-    await deleteDiscussionThreadApi(threadId);
   };
 
   const totalVotes = useMemo(() => {

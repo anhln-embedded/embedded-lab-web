@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { ensurePostSchema } from "@/lib/db-sync";
 
 // GET /api/posts - Fetch all posts (support filtering by tag, postType, search)
 export async function GET(request: Request) {
   try {
+    await ensurePostSchema();
     const { searchParams } = new URL(request.url);
     const tag = searchParams.get("tag");
     const postType = searchParams.get("postType");
@@ -62,6 +64,7 @@ export async function GET(request: Request) {
 // POST /api/posts - Create new post
 export async function POST(request: Request) {
   try {
+    await ensurePostSchema();
     const body = await request.json();
     const {
       title,
@@ -81,10 +84,21 @@ export async function POST(request: Request) {
       authorName = "Embedded-AIoT Lab PTIT",
       authorTitle = "Kỹ sư Lab PTIT",
       authorAvatar = "/images/logo.png",
+      authorEmail,
+      authorId,
+      authorRole,
       facebookPostUrl,
       githubUrl,
       demoUrl,
     } = body;
+
+    const headerEmail = request.headers.get("x-user-email");
+    const headerId = request.headers.get("x-user-id");
+    const headerRole = request.headers.get("x-user-role");
+
+    const finalAuthorEmail = authorEmail || headerEmail || null;
+    const finalAuthorId = authorId || headerId || null;
+    const finalAuthorRole = authorRole || headerRole || "admin";
 
     if (!title || !excerpt || !contentHtml) {
       return NextResponse.json(
@@ -125,10 +139,13 @@ export async function POST(request: Request) {
         authorName,
         authorTitle,
         authorAvatar,
+        authorEmail: finalAuthorEmail,
+        authorId: finalAuthorId,
+        authorRole: finalAuthorRole,
         facebookPostUrl: facebookPostUrl || null,
         githubUrl: githubUrl || null,
         demoUrl: demoUrl || null,
-      },
+      } as any,
     });
 
     return NextResponse.json({ success: true, data: post }, { status: 201 });

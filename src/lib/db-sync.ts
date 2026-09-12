@@ -41,6 +41,21 @@ export async function ensureTutorialSchema() {
       );
     } catch {}
 
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE "TutorialTopic" ADD COLUMN "authorEmail" TEXT`);
+    } catch {}
+
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE "TutorialTopic" ADD COLUMN "authorId" TEXT`);
+    } catch {}
+
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE "TutorialTopic" ADD COLUMN "authorRole" TEXT DEFAULT 'admin'`);
+    } catch {}
+
+    // Đồng bộ các cột tác giả cho bảng Post
+    await ensurePostSchema();
+
     // Dọn dẹp các title/authorTitle mặc định (Super Admin Lab, Mentor Lab, Kỹ sư...)
     try {
       await prisma.$executeRawUnsafe(`UPDATE "User" SET "title" = '' WHERE "title" LIKE '%Super Admin%' OR "title" LIKE '%Kỹ sư%' OR "title" LIKE '%Mentor Lab%'`);
@@ -477,6 +492,20 @@ export async function ensureResearchSchema() {
       `);
     } catch {}
 
+    // Bổ sung các cột thông tin người tạo cho ResearchPaper
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE "ResearchPaper" ADD COLUMN "createdByEmail" TEXT`);
+    } catch {}
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE "ResearchPaper" ADD COLUMN "createdById" TEXT`);
+    } catch {}
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE "ResearchPaper" ADD COLUMN "creatorName" TEXT`);
+    } catch {}
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE "ResearchPaper" ADD COLUMN "creatorRole" TEXT DEFAULT 'admin'`);
+    } catch {}
+
     // 4. Kiểm tra và nạp dữ liệu ban đầu nếu bảng đang trống
     try {
       const existing: any = await prisma.$queryRawUnsafe(
@@ -529,6 +558,29 @@ export async function ensureResearchSchema() {
     isResearchEnsured = true;
   } catch (error) {
     console.error("Lỗi khi tự động đồng bộ Research schema:", error);
+  }
+}
+
+let isPostEnsured = false;
+
+/**
+ * Tự động đảm bảo schema bảng Post có đầy đủ các cột tác giả
+ */
+export async function ensurePostSchema() {
+  if (isPostEnsured) return;
+  try {
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE "Post" ADD COLUMN "authorEmail" TEXT`);
+    } catch {}
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE "Post" ADD COLUMN "authorId" TEXT`);
+    } catch {}
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE "Post" ADD COLUMN "authorRole" TEXT DEFAULT 'admin'`);
+    } catch {}
+    isPostEnsured = true;
+  } catch (error) {
+    console.error("Lỗi khi tự động đồng bộ Post schema:", error);
   }
 }
 

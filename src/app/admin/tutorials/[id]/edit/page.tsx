@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { slugify } from "@/lib/utils";
 import { TUTORIAL_TOPICS } from "@/lib/tutorials-data";
+import { canUserDeleteContent } from "@/lib/permissions";
+import { TutorialCategoryItem } from "@/components/tutorials/CategoryManagerModal";
 import {
   ArrowLeft,
   Sparkles,
@@ -46,16 +48,10 @@ export default function EditTutorialTopicPage({ params }: PageProps) {
   const [isTopicSettingsOpen, setIsTopicSettingsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [categories, setCategories] = useState<Array<{ slug: string; name: string; icon: string }>>([
-    { slug: "linux", name: "Embedded Linux", icon: "🐧" },
-    { slug: "rtos", name: "Real-Time OS", icon: "⚡" },
-    { slug: "automotive", name: "Automotive & EV", icon: "🚗" },
-    { slug: "mcu", name: "Microcontrollers", icon: "🎛️" },
-    { slug: "programming", name: "Lập Trình C & Kỹ Năng", icon: "💻" },
-    { slug: "hardware", name: "Phần Cứng PCB & FPGA", icon: "📐" },
-  ]);
+  const [categories, setCategories] = useState<TutorialCategoryItem[]>([]);
+  const [loadedTopic, setLoadedTopic] = useState<any>(null);
 
-  // Topic Metadata
+  // Topic Metadata State
   const [topicId, setTopicId] = useState("");
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
@@ -113,6 +109,7 @@ export default function EditTutorialTopicPage({ params }: PageProps) {
         const json = await res.json();
         if (json.success && json.data) {
           const t = json.data;
+          setLoadedTopic(t);
           setTopicId(t.id || t.slug);
           setTitle(t.title);
           setSlug(t.slug);
@@ -291,14 +288,44 @@ export default function EditTutorialTopicPage({ params }: PageProps) {
     }
   };
 
+  const canDelete = Boolean(
+    user &&
+      canUserDeleteContent({
+        currentUser: user,
+        author: {
+          id: loadedTopic?.authorId,
+          email: loadedTopic?.authorEmail,
+          name: loadedTopic?.author || author,
+          role: loadedTopic?.authorRole || "admin",
+        },
+        isDiscussionOrComment: false,
+      }).allowed
+  );
+
   const handleDelete = () => {
+    if (!canDelete) {
+      alert("Chỉ Super Admin hoặc chính tác giả mới có quyền xóa chuyên đề này.");
+      return;
+    }
     setIsDeleteDialogOpen(true);
   };
 
   const handleConfirmDelete = async () => {
+    if (!canDelete) {
+      alert("Chỉ Super Admin hoặc chính tác giả mới có quyền xóa chuyên đề này.");
+      return;
+    }
     setIsDeleting(true);
     try {
-      const res = await fetch(`/api/tutorials/${encodeURIComponent(topicId || slug)}`, { method: "DELETE" });
+      const res = await fetch(`/api/tutorials/${encodeURIComponent(topicId || slug)}`, {
+        method: "DELETE",
+        headers: {
+          "x-user-role": user?.role || "",
+          "x-user-email": user?.email || "",
+          "x-user-id": user?.id || "",
+          "x-user-name": user?.name ? encodeURIComponent(user.name) : "",
+        },
+      });
       const json = await res.json();
       if (!res.ok || !json.success) {
         throw new Error(json.error || "Lỗi xóa chuyên đề");
@@ -385,18 +412,32 @@ export default function EditTutorialTopicPage({ params }: PageProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="text-xs border-red-500/40 text-red-400 hover:bg-red-500/10 hover:border-red-500 flex items-center gap-1.5"
-              title="Xóa vĩnh viễn chuyên đề này và tất cả bài học bên trong"
-            >
-              <Trash2 className="w-3.5 h-3.5 text-red-400" />
-              <span className="hidden sm:inline">{isDeleting ? "Đang xóa..." : "Xóa Chuyên Đề"}</span>
-            </Button>
+            {canDelete ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="text-xs border-red-500/40 text-red-400 hover:bg-red-500/10 hover:border-red-500 flex items-center gap-1.5"
+                title="Xóa vĩnh viễn chuyên đề này và tất cả bài học bên trong"
+              >
+                <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                <span className="hidden sm:inline">{isDeleting ? "Đang xóa..." : "Xóa Chuyên Đề"}</span>
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled
+                className="text-xs border-border/40 text-text-muted/30 cursor-not-allowed opacity-40 flex items-center gap-1.5"
+                title="Chỉ Super Admin hoặc chính tác giả mới có quyền xóa chuyên đề này"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Khóa Xóa</span>
+              </Button>
+            )}
 
             <Button
               type="button"
@@ -879,15 +920,27 @@ export default function EditTutorialTopicPage({ params }: PageProps) {
             </div>
 
             <div className="pt-3 border-t border-border flex items-center justify-between">
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={isDeleting}
-                className="text-xs text-rose-400 hover:underline flex items-center gap-1"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>{isDeleting ? "Đang xóa..." : "Xóa chuyên đề này"}</span>
-              </button>
+              {canDelete ? (
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="text-xs text-rose-400 hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>{isDeleting ? "Đang xóa..." : "Xóa chuyên đề này"}</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  disabled
+                  className="text-xs text-text-muted/30 cursor-not-allowed flex items-center gap-1 opacity-40"
+                  title="Chỉ Super Admin hoặc chính tác giả mới có quyền xóa chuyên đề này"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Khóa xóa</span>
+                </button>
+              )}
 
               <Button
                 type="button"

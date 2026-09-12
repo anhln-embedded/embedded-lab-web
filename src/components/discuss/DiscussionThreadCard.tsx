@@ -13,6 +13,7 @@ import {
 } from "@/lib/discussion-store";
 import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
+import { canUserDeleteContent } from "@/lib/permissions";
 import {
   MessageSquare,
   Eye,
@@ -311,22 +312,31 @@ export function DiscussionThreadCard({
               <Share2 className="w-3.5 h-3.5" />
             </button>
 
-            {/* Nút Xóa bài dành cho Admin / Tác giả */}
-            {user && (user.role === "admin" || user.role === "superadmin" || user.id === thread.authorId) && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (window.confirm(`Bạn có chắc chắn muốn xóa chủ đề "${thread.title}" không? Hành động này sẽ xóa vĩnh viễn cả các phản hồi liên quan.`)) {
-                    onDeleteThread?.(thread.id);
-                  }
-                }}
-                className="p-1 px-1.5 rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all flex items-center gap-1 text-[11px] font-semibold"
-                title={user.role === "admin" || user.role === "superadmin" ? "Xóa bài (Quyền Quản trị viên)" : "Xóa bài của bạn"}
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Xóa</span>
-              </button>
-            )}
+            {/* Nút Xóa bài: Superadmin, Tác giả, hoặc Admin kiểm duyệt bài user thường (Admin k xóa được bài admin khác) */}
+            {user &&
+              canUserDeleteContent({
+                currentUser: user,
+                author: {
+                  id: thread.authorId,
+                  name: thread.author,
+                  role: thread.authorRole || "user",
+                },
+                isDiscussionOrComment: true,
+              }).allowed && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (window.confirm(`Bạn có chắc chắn muốn xóa chủ đề "${thread.title}" không? Hành động này sẽ xóa vĩnh viễn cả các phản hồi liên quan.`)) {
+                      onDeleteThread?.(thread.id);
+                    }
+                  }}
+                  className="p-1 px-1.5 rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all flex items-center gap-1 text-[11px] font-semibold cursor-pointer"
+                  title={user.role === "superadmin" ? "Xóa bài (Superadmin)" : user.id === thread.authorId ? "Xóa bài của bạn" : "Xóa bài (Kiểm duyệt viên)"}
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Xóa</span>
+                </button>
+              )}
           </div>
         </div>
       </div>
