@@ -1,0 +1,192 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1140 680" width="100%" height="100%">
+
+    <style>
+      :root {
+        --canvas-bg: #ffffff;
+        --canvas-border: #cbd5e1;
+        --card-bg: #ffffff;
+        --card-border: #94a3b8;
+        --title-color: #0f172a;
+        --subtitle-color: #475569;
+        --text-primary: #0f172a;
+        --text-muted: #64748b;
+        --st-blue: #00205b;
+        --accent-blue: #0284c7;
+        --accent-green: #059669;
+        --accent-amber: #d97706;
+        --accent-red: #dc2626;
+        --accent-purple: #7c3aed;
+        --wire-line: #334155;
+        --bus-line: #0284c7;
+        --vdd-color: #dc2626;
+        --vss-color: #16a34a;
+        --logic-gate: #0284c7;
+      }
+      
+      path { fill: none; }
+      marker path { fill: inherit; }
+      polygon { fill: inherit; }
+      text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    </style>
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--wire-line)"/>
+      </marker>
+      <marker id="arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--bus-line)"/>
+      </marker>
+      <marker id="arrow-red" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--accent-red)"/>
+      </marker>
+      <marker id="arrow-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--accent-green)"/>
+      </marker>
+    </defs>
+
+  <!-- Background Canvas -->
+  <rect width="1140" height="680" rx="12" fill="var(--canvas-bg)" stroke="var(--canvas-border)" stroke-width="2"/>
+
+  <!-- Top Title Bar -->
+  <rect x="25" y="16" width="1090" height="64" rx="8" fill="var(--card-bg)" stroke="var(--card-border)" stroke-width="1.5"/>
+  <text x="45" y="42" font-size="17" font-weight="800" fill="var(--title-color)">STMicroelectronics RM0008 Reference Manual — Section 17.2</text>
+  <text x="45" y="64" font-size="13" font-weight="600" fill="var(--accent-blue)">Figure 149: Independent watchdog block diagram (Sơ đồ khối chức năng bộ giám sát độc lập IWDG)</text>
+  <rect x="960" y="28" width="135" height="36" rx="6" fill="#00205b"/>
+  <text x="1027" y="51" text-anchor="middle" font-size="12" font-weight="800" fill="#ffffff">STM32F103</text>
+
+  <!-- Left: Bus Interface & Control Registers (X: 35 -> 290) -->
+  <g transform="translate(35, 100)">
+    <rect width="255" height="520" rx="8" fill="var(--card-bg)" stroke="var(--card-border)" stroke-width="1.5"/>
+    <text x="127" y="28" text-anchor="middle" font-size="13" font-weight="800" fill="var(--title-color)">BUS INTERFACE &amp; REGISTERS</text>
+    <text x="127" y="46" text-anchor="middle" font-size="11" fill="var(--text-muted)">Miền Nguồn VDD (APB1 Bus Interface)</text>
+
+    <!-- Key Register (IWDG_KR) -->
+    <g transform="translate(15, 65)">
+      <rect width="225" height="130" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-blue)" stroke-width="2"/>
+      <text x="112" y="24" text-anchor="middle" font-size="12" font-weight="800" fill="var(--accent-blue)">KEY REGISTER (IWDG_KR)</text>
+      
+      <text x="12" y="48" font-size="10" font-weight="700" fill="var(--accent-green)">• 0x5555: Mở khóa cấu hình PR &amp; RLR</text>
+      <text x="12" y="68" font-size="10" font-weight="700" fill="var(--accent-blue)">• 0xAAAA: Nuôi chó (Nạp lại Counter)</text>
+      <text x="12" y="88" font-size="10" font-weight="700" fill="var(--accent-red)">• 0xCCCC: Kích hoạt IWDG bắt đầu chạy</text>
+      <line x1="10" y1="98" x2="215" y2="98" stroke="var(--card-border)"/>
+      <text x="112" y="116" text-anchor="middle" font-size="9" fill="var(--text-muted)">Chống ghi đè vô ý khi code bị treo</text>
+    </g>
+
+    <!-- Prescaler Register (IWDG_PR) -->
+    <g transform="translate(15, 210)">
+      <rect width="225" height="80" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)" stroke-width="1.5"/>
+      <text x="112" y="22" text-anchor="middle" font-size="11" font-weight="800" fill="var(--title-color)">PRESCALER REGISTER (IWDG_PR)</text>
+      <text x="112" y="40" text-anchor="middle" font-size="10" class="mono">PR[2:0]: 3-bit chia tần số</text>
+      <text x="112" y="58" text-anchor="middle" font-size="9" fill="var(--text-muted)">Hệ số chia: /4, /8, /16, /32, /64, /128, /256</text>
+      <text x="112" y="72" text-anchor="middle" font-size="8" fill="var(--accent-amber)">(Chỉ ghi được khi đã mở khóa 0x5555)</text>
+    </g>
+
+    <!-- Reload Register (IWDG_RLR) -->
+    <g transform="translate(15, 305)">
+      <rect width="225" height="85" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)" stroke-width="1.5"/>
+      <text x="112" y="22" text-anchor="middle" font-size="11" font-weight="800" fill="var(--title-color)">RELOAD REGISTER (IWDG_RLR)</text>
+      <text x="112" y="40" text-anchor="middle" font-size="10" class="mono">RL[11:0]: 12-bit giá trị nạp</text>
+      <text x="112" y="58" text-anchor="middle" font-size="9" fill="var(--text-muted)">Khoảng giá trị: 0x000 → 0xFFF (0..4095)</text>
+      <text x="112" y="74" text-anchor="middle" font-size="8" fill="var(--accent-amber)">(Quy định chu kỳ timeout tối đa)</text>
+    </g>
+
+    <!-- Status Register (IWDG_SR) -->
+    <g transform="translate(15, 405)">
+      <rect width="225" height="95" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-purple)" stroke-width="1.5"/>
+      <text x="112" y="22" text-anchor="middle" font-size="11" font-weight="800" fill="var(--accent-purple)">STATUS REGISTER (IWDG_SR)</text>
+      <text x="12" y="44" font-size="10" fill="var(--text-primary)">• Bit 0 (PVU): Đang cập nhật Prescaler</text>
+      <text x="12" y="64" font-size="10" fill="var(--text-primary)">• Bit 1 (RVU): Đang nạp lại Reload</text>
+      <text x="112" y="84" text-anchor="middle" font-size="8" font-weight="700" fill="var(--accent-purple)">Phải đợi cờ = 0 trước khi ghi tiếp!</text>
+    </g>
+  </g>
+
+  <!-- Middle: Isolated Clock Domain & 12-bit Downcounter Core (X: 330 -> 720) -->
+  <g transform="translate(330, 100)">
+    <rect width="390" height="520" rx="8" fill="var(--card-bg)" stroke="var(--accent-blue)" stroke-width="2"/>
+    <text x="195" y="28" text-anchor="middle" font-size="13" font-weight="800" fill="var(--accent-blue)">ISOLATED CORE DOMAIN (MIỀN NGUỒN RIÊNG)</text>
+    <text x="195" y="46" text-anchor="middle" font-size="11" fill="var(--text-muted)">Hoạt động độc lập ngay cả khi CPU ở chế độ Sleep/Stop/Standby</text>
+
+    <!-- Clock Source: LSI -->
+    <g transform="translate(20, 65)">
+      <rect width="350" height="70" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-amber)" stroke-width="2"/>
+      <text x="175" y="24" text-anchor="middle" font-size="12" font-weight="800" fill="var(--accent-amber)">LOW-SPEED INTERNAL RC OSCILLATOR (LSI)</text>
+      <text x="175" y="44" text-anchor="middle" font-size="13" font-weight="900" fill="var(--title-color)">Tần Số Danh Định: ~40kHz (30kHz - 60kHz)</text>
+      <text x="175" y="60" text-anchor="middle" font-size="9" fill="var(--text-muted)">Hoàn toàn độc lập với thạch anh chính HSE và xung nhịp APB</text>
+    </g>
+
+    <!-- Arrow from LSI down to Prescaler -->
+    <path d="M 195 135 L 195 165" fill="none" stroke="var(--bus-line)" stroke-width="2.5" marker-end="url(#arrow-blue)"/>
+    <text x="205" y="154" font-size="9" font-weight="700" fill="var(--bus-line)">f_LSI</text>
+
+    <!-- 8-bit Prescaler -->
+    <g transform="translate(20, 165)">
+      <rect width="350" height="85" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-blue)" stroke-width="1.5"/>
+      <text x="175" y="24" text-anchor="middle" font-size="12" font-weight="800" fill="var(--accent-blue)">8-BIT PRESCALER (BỘ CHIA TẦN SỐ)</text>
+      <text x="175" y="46" text-anchor="middle" font-size="11" font-weight="700" fill="var(--title-color)">Hệ số chia cấu hình từ IWDG_PR: /4, /8.. /256</text>
+      <text x="175" y="66" text-anchor="middle" font-size="10" fill="var(--text-muted)">Ví dụ: 40kHz / 64 = 625Hz (Mỗi nhịp đếm T_tick = 1.6ms)</text>
+    </g>
+
+    <!-- Arrow down to Downcounter -->
+    <path d="M 195 250 L 195 285" fill="none" stroke="var(--bus-line)" stroke-width="2.5" marker-end="url(#arrow-blue)"/>
+    <text x="205" y="272" font-size="9" font-weight="700" fill="var(--bus-line)">CK_CNT</text>
+
+    <!-- 12-bit Downcounter Unit -->
+    <g transform="translate(20, 285)">
+      <rect width="350" height="135" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-green)" stroke-width="2"/>
+      <text x="175" y="26" text-anchor="middle" font-size="13" font-weight="900" fill="var(--accent-green)">12-BIT DOWNCOUNTER (BỘ ĐẾM LÙI)</text>
+      
+      <rect x="25" y="40" width="300" height="40" rx="4" fill="var(--card-bg)" stroke="var(--accent-green)" stroke-width="1.5"/>
+      <text x="175" y="65" text-anchor="middle" font-size="13" font-weight="900" fill="var(--title-color)">Giá trị đếm: RLR[11:0] → ... → 0x000</text>
+
+      <text x="175" y="102" text-anchor="middle" font-size="10" font-weight="700" fill="var(--accent-blue)">• Lệnh nạp lại: Ghi 0xAAAA vào IWDG_KR</text>
+      <text x="175" y="120" text-anchor="middle" font-size="9" fill="var(--text-muted)">Bộ đếm lập tức nhảy về giá trị ban đầu cài trong IWDG_RLR</text>
+    </g>
+
+    <!-- Formula Box -->
+    <g transform="translate(20, 435)">
+      <rect width="350" height="70" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-amber)" stroke-width="1.5"/>
+      <text x="175" y="22" text-anchor="middle" font-size="11" font-weight="800" fill="var(--accent-amber)">CÔNG THỨC THỜI GIAN TIMEOUT IWDG:</text>
+      <text x="175" y="42" text-anchor="middle" font-size="12" font-weight="900" fill="var(--title-color)">T_timeout = (Prescaler × (RLR + 1)) / f_LSI</text>
+      <text x="175" y="58" text-anchor="middle" font-size="9" fill="var(--accent-green)">Ví dụ Timeout 1.0s: Prescaler = 64, RLR = 624</text>
+    </g>
+  </g>
+
+  <!-- Right: Zero Detector & Reset Generation to RCC (X: 760 -> 1100) -->
+  <g transform="translate(760, 100)">
+    <rect width="340" height="520" rx="8" fill="var(--card-bg)" stroke="var(--accent-red)" stroke-width="2"/>
+    <text x="170" y="28" text-anchor="middle" font-size="13" font-weight="800" fill="var(--accent-red)">RESET GENERATION LOGIC</text>
+    <text x="170" y="46" text-anchor="middle" font-size="11" fill="var(--text-muted)">Mạch So Sánh &amp; Tạo Tín Hiệu Reset Cứng</text>
+
+    <!-- Zero Comparator -->
+    <g transform="translate(20, 140)">
+      <!-- Line from Downcounter into Comparator -->
+      <path d="M -50 45 L 0 45" fill="none" stroke="var(--wire-line)" stroke-width="2.5" marker-end="url(#arrow)"/>
+      <rect width="300" height="90" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-red)" stroke-width="2"/>
+      <text x="150" y="26" text-anchor="middle" font-size="12" font-weight="800" fill="var(--accent-red)">ZERO COMPARATOR (SO SÁNH 0)</text>
+      <text x="150" y="48" text-anchor="middle" font-size="12" font-weight="900" fill="var(--title-color)">Điều kiện: Counter == 0x000</text>
+      <text x="150" y="70" text-anchor="middle" font-size="10" fill="var(--text-muted)">Xảy ra khi phần mềm bị treo quá thời hạn cho ăn</text>
+    </g>
+
+    <!-- Arrow down to Reset pulse -->
+    <path d="M 170 230 L 170 270" fill="none" stroke="var(--accent-red)" stroke-width="2.5" marker-end="url(#arrow-red)"/>
+
+    <!-- Reset Pulse Generator -->
+    <g transform="translate(20, 270)">
+      <rect width="300" height="85" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+      <text x="150" y="24" text-anchor="middle" font-size="12" font-weight="800" fill="var(--title-color)">RESET PULSE GENERATOR</text>
+      <text x="150" y="46" text-anchor="middle" font-size="11" font-weight="700" fill="var(--accent-red)">Tạo xung Reset tích cực mức thấp</text>
+      <text x="150" y="66" text-anchor="middle" font-size="10" fill="var(--text-muted)">Độ rộng xung tối thiểu: ~8 chu kỳ LSI</text>
+    </g>
+
+    <!-- Output to RCC Controller -->
+    <g transform="translate(20, 395)">
+      <path d="M 170 -40 L 170 0" fill="none" stroke="var(--accent-red)" stroke-width="3" marker-end="url(#arrow-red)"/>
+      <rect width="300" height="105" rx="8" fill="#00205b" stroke="#00a3e0" stroke-width="2"/>
+      <text x="150" y="30" text-anchor="middle" font-size="14" font-weight="900" fill="#ffffff">RCC RESET CONTROLLER</text>
+      <text x="150" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#38bdf8">KÍCH HOẠT HARD RESET TOÀN BỘ CHIP</text>
+      <line x1="20" y1="62" x2="280" y2="62" stroke="#1e293b"/>
+      <text x="150" y="80" text-anchor="middle" font-size="10" font-weight="700" fill="#f87171">Bật cờ IWDGRSTF trong thanh ghi RCC_CSR</text>
+      <text x="150" y="94" text-anchor="middle" font-size="9" fill="#94a3b8">(Cho phép firmware nhận biết nguyên nhân Reset)</text>
+    </g>
+  </g>
+</svg>

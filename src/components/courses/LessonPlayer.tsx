@@ -34,6 +34,8 @@ import {
   Minimize2,
   Edit3,
   ExternalLink,
+  PanelRightClose,
+  PanelRightOpen,
 } from "lucide-react";
 import { parseVideoSource } from "@/lib/video-parser";
 
@@ -78,6 +80,28 @@ export function LessonPlayer({
   const [copiedCode, setCopiedCode] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState<"video" | "text">("video");
   const [isFullscreen, setIsFullscreen] = React.useState(false);
+  const [showSidebar, setShowSidebar] = React.useState(true);
+
+  // Load sidebar visibility preference on mount
+  React.useEffect(() => {
+    try {
+      const saved = safeStorage.getItem("lesson_sidebar_visible");
+      if (saved !== null) {
+        setShowSidebar(saved === "true");
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
+
+  const toggleSidebar = () => {
+    setShowSidebar((prev) => {
+      const next = !prev;
+      safeStorage.setItem("lesson_sidebar_visible", String(next));
+      return next;
+    });
+  };
+
   const videoContainerRef = React.useRef<HTMLDivElement>(null);
 
   const videoSource = parseVideoSource(currentLessonState.videoUrl);
@@ -221,6 +245,28 @@ export function LessonPlayer({
               </Button>
             )}
 
+            <button
+              onClick={toggleSidebar}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+                showSidebar
+                  ? "bg-bg-elevated hover:bg-bg-code text-text-secondary hover:text-text-primary border-border/80 shadow-sm"
+                  : "bg-accent/15 text-accent border-accent/30 hover:bg-accent/25 shadow-sm"
+              }`}
+              title={showSidebar ? "Ẩn thanh chương trình học" : "Hiện thanh chương trình học"}
+            >
+              {showSidebar ? (
+                <>
+                  <PanelRightClose className="w-3.5 h-3.5 text-accent" />
+                  <span className="hidden sm:inline">Ẩn chương trình</span>
+                </>
+              ) : (
+                <>
+                  <PanelRightOpen className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Hiện chương trình</span>
+                </>
+              )}
+            </button>
+
             <span className="text-text-muted font-medium">Tiến độ: <strong className="text-accent">{progressPercent}%</strong></span>
             <div className="w-24 h-2 bg-bg-code rounded-full overflow-hidden border border-border/80">
               <div
@@ -232,10 +278,10 @@ export function LessonPlayer({
         </div>
       </div>
 
-      <div className="container py-8 max-w-6xl">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className={`container py-8 transition-all duration-300 ${showSidebar ? "max-w-6xl" : "max-w-5xl"}`}>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Main Lesson Player Section */}
-          <div className="lg:col-span-8 space-y-6 min-w-0">
+          <div className={`${showSidebar ? "lg:col-span-8" : "lg:col-span-12"} space-y-6 min-w-0 transition-all duration-300`}>
             {/* Interactive Video Player or Reading Hero Banner */}
             {hasVideo && videoSource ? (
               <div
@@ -584,66 +630,90 @@ export function LessonPlayer({
           </div>
 
           {/* Curriculum Sidebar */}
-          <div className="lg:col-span-4">
-            <div className="sticky top-32 p-5 rounded-2xl md:rounded-3xl bg-bg-panel border border-border/80 shadow-lg space-y-4">
-              <div className="flex items-center justify-between border-b border-border/60 pb-3">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-text-primary flex items-center gap-2">
-                  <Layers className="h-4 w-4 text-accent" />
-                  Chương trình khóa học
-                </h3>
-                <span className="text-[11px] text-accent font-mono font-bold">
-                  {completedLessons.size}/{allLessons.length} bài
-                </span>
-              </div>
-
-              <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
-                {courseState.curriculum.map((mod, mIdx) => (
-                  <div key={mIdx} className="space-y-2">
-                    <span className="text-[11px] font-bold text-text-muted uppercase block tracking-wider">
-                      {mod.module}
+          {showSidebar && (
+            <div className="lg:col-span-4 transition-all duration-300">
+              <div className="sticky top-32 p-5 rounded-2xl md:rounded-3xl bg-bg-panel border border-border/80 shadow-lg space-y-4">
+                <div className="flex items-center justify-between border-b border-border/60 pb-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-text-primary flex items-center gap-2">
+                    <Layers className="h-4 w-4 text-accent" />
+                    Chương trình khóa học
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] text-accent font-mono font-bold">
+                      {completedLessons.size}/{allLessons.length} bài
                     </span>
-                    <div className="space-y-1.5">
-                      {mod.lessons.map((lesson) => {
-                        const isCurrent = lesson.slug === currentLessonState.slug;
-                        const isCompleted = completedLessons.has(lesson.slug);
-                        const lessonHasVideo = lesson.hasVideo !== false && Boolean(parseVideoSource(lesson.videoUrl));
-                        return (
-                          <Link
-                            key={lesson.slug}
-                            href={`/courses/${courseState.slug}/lesson/${lesson.slug}`}
-                            className={`p-2.5 rounded-xl text-xs transition-all flex items-center justify-between block ${
-                              isCurrent
-                                ? "bg-accent text-white font-bold shadow-md shadow-accent/20"
-                                : "text-text-secondary hover:text-text-primary hover:bg-bg-elevated border border-transparent hover:border-border/60"
-                            }`}
-                          >
-                            <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
-                              {isCompleted ? (
-                                <CheckCircle2 className="h-4 w-4 text-emerald-400 flex-shrink-0" />
-                              ) : (
-                                <Circle className="h-4 w-4 opacity-40 flex-shrink-0" />
-                              )}
-                              {lessonHasVideo ? (
-                                <Video className={`h-3.5 w-3.5 flex-shrink-0 ${isCurrent ? "text-white" : "text-cyan-400/80"}`} />
-                              ) : (
-                                <FileText className={`h-3.5 w-3.5 flex-shrink-0 ${isCurrent ? "text-white" : "text-emerald-400/80"}`} />
-                              )}
-                              <span className="truncate">{lesson.title}</span>
-                            </div>
-                            <span className="text-[10px] opacity-75 font-mono flex-shrink-0">
-                              {lesson.duration}
-                            </span>
-                          </Link>
-                        );
-                      })}
-                    </div>
+                    <button
+                      onClick={toggleSidebar}
+                      className="p-1 rounded-lg text-text-muted hover:text-accent hover:bg-bg-elevated border border-transparent hover:border-border/60 transition-all cursor-pointer"
+                      title="Thu gọn / Ẩn thanh chương trình học"
+                      aria-label="Ẩn thanh chương trình học"
+                    >
+                      <PanelRightClose className="w-4 h-4" />
+                    </button>
                   </div>
-                ))}
+                </div>
+
+                <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1.5 scrollbar-thin">
+                  {courseState.curriculum.map((mod, mIdx) => (
+                    <div key={mIdx} className="space-y-2">
+                      <span className="text-[11px] font-bold text-text-muted uppercase block tracking-wider">
+                        {mod.module}
+                      </span>
+                      <div className="space-y-1.5">
+                        {mod.lessons.map((lesson) => {
+                          const isCurrent = lesson.slug === currentLessonState.slug;
+                          const isCompleted = completedLessons.has(lesson.slug);
+                          const lessonHasVideo = lesson.hasVideo !== false && Boolean(parseVideoSource(lesson.videoUrl));
+                          return (
+                            <Link
+                              key={lesson.slug}
+                              href={`/courses/${courseState.slug}/lesson/${lesson.slug}`}
+                              className={`p-2.5 rounded-xl text-xs transition-all flex items-center justify-between block ${
+                                isCurrent
+                                  ? "bg-accent text-white font-bold shadow-md shadow-accent/20"
+                                  : "text-text-secondary hover:text-text-primary hover:bg-bg-elevated border border-transparent hover:border-border/60"
+                              }`}
+                            >
+                              <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
+                                {isCompleted ? (
+                                  <CheckCircle2 className="h-4 w-4 text-emerald-400 flex-shrink-0" />
+                                ) : (
+                                  <Circle className="h-4 w-4 opacity-40 flex-shrink-0" />
+                                )}
+                                {lessonHasVideo ? (
+                                  <Video className={`h-3.5 w-3.5 flex-shrink-0 ${isCurrent ? "text-white" : "text-cyan-400/80"}`} />
+                                ) : (
+                                  <FileText className={`h-3.5 w-3.5 flex-shrink-0 ${isCurrent ? "text-white" : "text-emerald-400/80"}`} />
+                                )}
+                                <span className="truncate">{lesson.title}</span>
+                              </div>
+                              <span className="text-[10px] opacity-75 font-mono flex-shrink-0">
+                                {lesson.duration}
+                              </span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
+
+      {/* Floating Button to open sidebar when collapsed */}
+      {!showSidebar && (
+        <button
+          onClick={toggleSidebar}
+          className="fixed right-0 top-36 z-40 bg-bg-panel/95 hover:bg-accent text-text-secondary hover:text-white border border-r-0 border-border/80 shadow-2xl backdrop-blur-md px-3.5 py-2.5 rounded-l-2xl flex items-center gap-2 text-xs font-bold transition-all hover:pr-5 group cursor-pointer"
+          title="Mở thanh chương trình khóa học"
+        >
+          <PanelRightOpen className="w-4 h-4 text-accent group-hover:text-white transition-colors" />
+          <span className="hidden sm:inline">Chương trình ({completedLessons.size}/{allLessons.length})</span>
+        </button>
+      )}
 
       {/* Admin Live Lesson Editor Modal */}
       {isAuthorized && (

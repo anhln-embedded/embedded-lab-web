@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 380" width="100%" height="100%">
+  <style>
+    :root {
+      --canvas-bg: #ffffff;
+      --canvas-border: #cbd5e1;
+      --card-bg: #f8fafc;
+      --card-border: #94a3b8;
+      --title-color: #0f172a;
+      --subtitle-color: #475569;
+      --text-primary: #0f172a;
+      --text-muted: #64748b;
+      --accent-blue: #0284c7;
+      --accent-green: #059669;
+      --accent-amber: #d97706;
+      --accent-red: #dc2626;
+      --accent-purple: #7c3aed;
+      --wire-line: #334155;
+    }
+    path { fill: none; }
+    text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    .mono { font-family: ui-monospace, Menlo, Consolas, monospace; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--wire-line)"/>
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--accent-green)"/>
+    </marker>
+  </defs>
+
+  <rect width="920" height="380" rx="14" fill="var(--canvas-bg)" stroke="var(--canvas-border)" stroke-width="2"/>
+  <text x="460" y="36" text-anchor="middle" font-size="19" font-weight="700" fill="var(--title-color)">GIẢN ĐỒ THỜI GIAN NGẮT NHÀN RỖI (USART IDLE LINE DETECTION)</text>
+  <text x="460" y="58" text-anchor="middle" font-size="12.5" fill="var(--subtitle-color)">Cơ chế phát hiện kết thúc gói tin có chiều dài thay đổi mà không cần ký tự kết thúc</text>
+
+  <!-- Waveform panel -->
+  <g transform="translate(40, 80)">
+    <rect width="840" height="150" rx="8" fill="var(--card-bg)" stroke="var(--card-border)" stroke-width="1.5"/>
+    <text x="20" y="30" font-size="13" font-weight="700" fill="var(--accent-blue)">Tín hiệu đường truyền UART RX:</text>
+
+    <!-- Bytes packets -->
+    <rect x="50" y="60" width="110" height="40" rx="4" fill="#e0f2fe" stroke="var(--accent-blue)" stroke-width="1.5"/>
+    <text x="105" y="85" text-anchor="middle" font-size="12" font-weight="700" fill="var(--accent-blue)">Byte 1 (RXNE)</text>
+
+    <rect x="180" y="60" width="110" height="40" rx="4" fill="#e0f2fe" stroke="var(--accent-blue)" stroke-width="1.5"/>
+    <text x="235" y="85" text-anchor="middle" font-size="12" font-weight="700" fill="var(--accent-blue)">Byte 2 (RXNE)</text>
+
+    <rect x="310" y="60" width="110" height="40" rx="4" fill="#e0f2fe" stroke="var(--accent-blue)" stroke-width="1.5"/>
+    <text x="365" y="85" text-anchor="middle" font-size="12" font-weight="700" fill="var(--accent-blue)">Byte N (RXNE)</text>
+
+    <!-- Idle Line (Continuous High) -->
+    <path d="M 420 80 L 780 80" stroke="var(--accent-amber)" stroke-width="3"/>
+    <text x="550" y="70" text-anchor="middle" font-size="12" font-weight="700" fill="var(--accent-amber)">Đường truyền rảnh rỗi (Mức HIGH liên tục)</text>
+
+    <!-- 1 Frame width marker -->
+    <line x1="430" y1="110" x2="670" y2="110" stroke="var(--wire-line)" stroke-width="1.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+    <rect x="490" y="100" width="120" height="20" rx="3" fill="var(--canvas-bg)" stroke="var(--wire-line)"/>
+    <text x="550" y="114" text-anchor="middle" font-size="11" font-weight="600" fill="var(--text-primary)">Đúng 1 Khung (1 Frame)</text>
+
+    <!-- IDLE flag trigger point -->
+    <line x1="670" y1="50" x2="670" y2="120" stroke="var(--accent-green)" stroke-width="2" stroke-dasharray="3,3"/>
+    <polygon points="665,40 675,40 670,50" fill="var(--accent-green)"/>
+    <text x="670" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="var(--accent-green)">Kéo cờ IDLE = 1!</text>
+  </g>
+
+  <!-- Explanation Callout Box -->
+  <g transform="translate(40, 250)">
+    <rect width="840" height="100" rx="8" fill="var(--card-bg)" stroke="var(--accent-green)" stroke-width="1.5"/>
+    <text x="25" y="28" font-size="13" font-weight="700" fill="var(--accent-green)">ƯU ĐIỂM CỦA NGẮT IDLE TRONG THIẾT KẾ BỘ GIAO DIỆN CLI &amp; GIAO THỨC TRUYỀN THÔNG:</text>
+    <text x="25" y="52" font-size="12" fill="var(--text-primary)">1. Bắt trọn vẹn toàn bộ chuỗi ký tự hoặc gói tin nhị phân không cố định kích thước (Variable Length Frame).</text>
+    <text x="25" y="72" font-size="12" fill="var(--text-primary)">2. Không làm CPU quá tải: CPU chỉ vào hàm xử lý đúng một lần duy nhất sau khi toàn bộ gói tin đã được nhận xong.</text>
+    <text x="25" y="92" font-size="12" fill="var(--text-muted)">* Quy trình xóa cờ IDLE theo RM0008: Đọc thanh ghi USART_SR tiếp theo đọc thanh ghi USART_DR.</text>
+  </g>
+</svg>

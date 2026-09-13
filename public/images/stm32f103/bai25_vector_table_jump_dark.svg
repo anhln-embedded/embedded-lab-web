@@ -46,13 +46,13 @@
     <text x="205" y="30" text-anchor="middle" font-size="14" font-weight="700" fill="var(--accent-purple)">3 BƯỚC THỰC THI CHUYỂN GIAO QUYỀN ĐIỀU KHIỂN</text>
 
     <rect x="20" y="55" width="370" height="45" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
-    <text x="35" y="82" font-size="12" font-weight="600" fill="var(--text-primary)">1. Vô hiệu hóa toàn bộ ngắt: __disable_irq()</text>
+    <text x="30" y="82" font-size="11" font-weight="600" fill="var(--text-primary)">1. Vô hiệu hóa toàn bộ ngắt: __disable_irq()</text>
 
     <rect x="20" y="110" width="370" height="45" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
-    <text x="35" y="137" font-size="12" font-weight="600" fill="var(--text-primary)">2. Nạp lại đỉnh ngăn xếp: __set_MSP(*((uint32_t*)APP_ADDR))</text>
+    <text x="30" y="137" font-size="10.5" font-weight="600" fill="var(--text-primary)">2. Nạp đỉnh ngăn xếp: __set_MSP(*((uint32_t*)APP_ADDR))</text>
 
     <rect x="20" y="165" width="370" height="45" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-green)" stroke-width="1.5"/>
-    <text x="35" y="192" font-size="12" font-weight="700" fill="var(--accent-green)">3. Nhảy đến hàm Application: app_entry()</text>
+    <text x="30" y="192" font-size="11" font-weight="700" fill="var(--accent-green)">3. Nhảy đến hàm Application: app_entry()</text>
   </g>
 
   <path d="M 410 200 L 460 200" stroke="var(--bus-line)" stroke-width="2"/>

@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 430" width="100%" height="100%">
+  <style>
+    :root {
+      --canvas-bg: #0f172a;
+      --canvas-border: #334155;
+      --card-bg: #1e293b;
+      --card-border: #475569;
+      --title-color: #f8fafc;
+      --subtitle-color: #94a3b8;
+      --text-primary: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent-blue: #0284c7;
+      --accent-green: #059669;
+      --accent-amber: #d97706;
+      --accent-red: #dc2626;
+      --accent-purple: #7c3aed;
+      --wire-line: #334155;
+    }
+    path { fill: none; }
+    text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    .mono { font-family: ui-monospace, Menlo, Consolas, monospace; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--wire-line)"/>
+    </marker>
+    <marker id="arrow-red" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--accent-red)"/>
+    </marker>
+  </defs>
+
+  <rect width="940" height="430" rx="14" fill="var(--canvas-bg)" stroke="var(--canvas-border)" stroke-width="2"/>
+  <text x="470" y="36" text-anchor="middle" font-size="19" font-weight="700" fill="var(--title-color)">GIẢN ĐỒ THỜI GIAN CẢM BIẾN SIÊU ÂM HC-SR04</text>
+  <text x="470" y="58" text-anchor="middle" font-size="12.5" fill="var(--subtitle-color)">Xung kích TRIG 10us, chùm sóng siêu âm 40kHz phát đi và độ rộng xung phản hồi ECHO</text>
+
+  <!-- TRIG Line -->
+  <g transform="translate(40, 80)">
+    <text x="0" y="35" font-size="13" font-weight="700" fill="var(--accent-blue)">1. Chân TRIG</text>
+    <text x="0" y="52" font-size="11" fill="var(--text-muted)">(Kích từ MCU)</text>
+    <path d="M 120 40 L 160 40 L 160 15 L 200 15 L 200 40 L 860 40" stroke="var(--accent-blue)" stroke-width="2.5"/>
+    <text x="180" y="8" text-anchor="middle" font-size="11" font-weight="600" fill="var(--accent-blue)">≥ 10µs</text>
+  </g>
+
+  <!-- Sonic Burst Line -->
+  <g transform="translate(40, 150)">
+    <text x="0" y="35" font-size="13" font-weight="700" fill="var(--accent-amber)">2. Sóng Siêu Âm</text>
+    <text x="0" y="52" font-size="11" fill="var(--text-muted)">(Tần số 40kHz)</text>
+    <path d="M 120 40 L 220 40 L 230 15 L 240 40 L 250 15 L 260 40 L 270 15 L 280 40 L 290 15 L 300 40 L 310 15 L 320 40 L 860 40" stroke="var(--accent-amber)" stroke-width="2"/>
+    <text x="270" y="8" text-anchor="middle" font-size="11" font-weight="600" fill="var(--accent-amber)">8 chu kỳ sóng 40kHz</text>
+    <rect x="740" y="10" width="100" height="50" rx="4" fill="var(--card-bg)" stroke="var(--card-border)" stroke-dasharray="3,3"/>
+    <text x="790" y="38" text-anchor="middle" font-size="12" font-weight="700" fill="var(--text-muted)">VẬT CẢN</text>
+    <path d="M 330 25 L 730 25" stroke="var(--accent-amber)" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#arrow)"/>
+    <path d="M 730 45 L 330 45" stroke="var(--accent-red)" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#arrow-red)"/>
+  </g>
+
+  <!-- ECHO Line -->
+  <g transform="translate(40, 230)">
+    <text x="0" y="35" font-size="13" font-weight="700" fill="var(--accent-green)">3. Chân ECHO</text>
+    <text x="0" y="52" font-size="11" fill="var(--text-muted)">(Đo bằng Timer)</text>
+    <path d="M 120 40 L 320 40 L 320 15 L 680 15 L 680 40 L 860 40" stroke="var(--accent-green)" stroke-width="2.5"/>
+    <line x1="320" y1="8" x2="680" y2="8" stroke="var(--wire-line)" stroke-width="1.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+    <rect x="420" y="-3" width="160" height="22" rx="4" fill="var(--canvas-bg)" stroke="var(--wire-line)"/>
+    <text x="500" y="12" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--text-primary)">Thời gian phản hồi (Techo)</text>
+  </g>
+
+  <!-- Formula Callout Box -->
+  <g transform="translate(40, 320)">
+    <rect width="860" height="85" rx="8" fill="var(--card-bg)" stroke="var(--accent-blue)" stroke-width="1.5"/>
+    <text x="25" y="28" font-size="13" font-weight="700" fill="var(--accent-blue)">CÔNG THỨC QUY ĐỔI KHOẢNG CÁCH THỰC TẾ:</text>
+    <text x="25" y="54" font-size="12.5" fill="var(--text-primary)">• Vận tốc âm thanh: <tspan font-weight="700">v = 340 m/s = 0.034 cm/µs</tspan> (Sóng di chuyển 2 lượt: tới vật cản và dội ngược lại).</text>
+    <text x="25" y="74" font-size="13" font-weight="700" fill="var(--accent-purple)">• Khoảng cách (cm) = (Techo × 0.034) / 2 = Techo / 58</text>
+    <text x="550" y="74" font-size="13" font-weight="700" fill="var(--accent-purple)">• Khoảng cách (inch) = Techo / 148</text>
+  </g>
+</svg>

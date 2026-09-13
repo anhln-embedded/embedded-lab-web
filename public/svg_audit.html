@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SVG Text Overflow Audit</title>
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 20px; background: #0f172a; color: #f8fafc; }
+    .card { background: #1e293b; border-radius: 8px; padding: 16px; margin-bottom: 20px; border: 1px solid #334155; }
+    h2 { margin-top: 0; color: #38bdf8; }
+    .issue { background: #450a0a; border-left: 4px solid #ef4444; padding: 8px 12px; margin: 6px 0; border-radius: 4px; font-size: 13px; }
+    .issue-box { background: #422006; border-left: 4px solid #f59e0b; padding: 8px 12px; margin: 6px 0; border-radius: 4px; font-size: 13px; }
+    .status { font-weight: bold; font-size: 18px; margin-bottom: 12px; }
+    #svg-container { position: absolute; left: -9999px; top: -9999px; }
+  </style>
+</head>
+<body>
+  <h1>🔍 SVG Text Overflow Automated Audit</h1>
+  <div id="status" class="status">Starting audit...</div>
+  <div id="results"></div>
+  <div id="svg-container"></div>
+
+  <script>
+    const svgFiles = [
+      "bai01_memory_mapping_cortex_m3.svg",
+      "bai01_stlink_swd_connection.svg",
+      "bai01_stm32f103_bluepill_pinout.svg",
+      "bai02_bit_banding.svg",
+      "bai02_button_debounce.svg",
+      "bai02_gpio_structure.svg",
+      "bai03_clock_tree.svg",
+      "bai04_exti_nvic_routing.svg",
+      "bai04_exti_structure.svg",
+      "bai05_systick_timer.svg",
+      "bai06_timer_architecture.svg",
+      "bai06_timer_timebase.svg",
+      "bai07_pwm_duty_cycle.svg",
+      "bai07_pwm_principle.svg",
+      "bai07_servo_sg90_timing.svg",
+      "bai08_input_capture.svg",
+      "bai08_hcsr04_timing.svg",
+      "bai09_encoder_signals.svg",
+      "bai10_iwdg_block_diagram.svg",
+      "bai10_watchdog_comparison.svg",
+      "bai10_wwdg_block_diagram.svg",
+      "bai11_adc_sar_structure.svg",
+      "bai12_adc_scan_mode.svg",
+      "bai13_uart_frame_format.svg",
+      "bai14_ring_buffer_fifo.svg",
+      "bai14_uart_idle_line.svg",
+      "bai15_i2c_bus_topology.svg",
+      "bai15_i2c_transfer_sequence.svg",
+      "bai16_spi_topology.svg",
+      "bai16_spi_shift_register.svg",
+      "bai17_dma_architecture.svg",
+      "bai18_low_power_modes.svg",
+      "bai19_flash_memory_map.svg",
+      "bai20_freertos_architecture.svg",
+      "bai21_freertos_sync.svg",
+      "bai22_freertos_advanced_sync.svg",
+      "bai22_task_notifications.svg",
+      "bai23_can_bus_topology.svg",
+      "bai23_can_frame_format.svg",
+      "bai24_usb_clock_tree.svg",
+      "bai25_bootloader_flash_layout.svg",
+      "bai25_vector_table_jump.svg",
+      "bai26_hardfault_stack_frame.svg"
+    ];
+
+    window.auditData = {
+      completed: false,
+      totalIssues: 0,
+      filesWithIssues: 0,
+      details: {}
+    };
+
+    async function runAudit() {
+      const container = document.getElementById('svg-container');
+      const resultsDiv = document.getElementById('results');
+      const statusDiv = document.getElementById('status');
+
+      let totalIssues = 0;
+      let filesWithIssues = 0;
+
+      for (const file of svgFiles) {
+        try {
+          const res = await fetch(`/images/stm32f103/${file}`);
+          if (!res.ok) {
+            console.error("Failed to load", file);
+            continue;
+          }
+          const text = await res.text();
+          container.innerHTML = text;
+          const svg = container.querySelector('svg');
+          if (!svg) continue;
+
+          // Get viewBox
+          let vb = { x: 0, y: 0, width: 1000, height: 600 };
+          if (svg.viewBox && svg.viewBox.baseVal) {
+            vb = svg.viewBox.baseVal;
+          }
+
+          const fileIssues = [];
+
+          // Collect all rects
+          const rects = Array.from(svg.querySelectorAll('rect')).map(r => {
+            try {
+              const bbox = r.getBBox();
+              return { el: r, bbox: bbox };
+            } catch (e) {
+              return null;
+            }
+          }).filter(r => r && (r.bbox.width < vb.width * 0.95 || r.bbox.height < vb.height * 0.95));
+
+          // Collect all text elements
+          const texts = Array.from(svg.querySelectorAll('text'));
+
+          for (const t of texts) {
+            let tBBox;
+            try {
+              tBBox = t.getBBox();
+            } catch (e) {
+              continue;
+            }
+
+            const str = (t.textContent || "").trim();
+            if (!str || tBBox.width <= 0) continue;
+
+            // 1. Check canvas boundary overflow
+            // Using getBoundingClientRect relative to SVG or getBBox in SVG user space
+            // In SVG, if text is in a <g transform="...">, getBBox() returns coordinates in the local user unit system of that element!
+            // To get coordinates in SVG root coordinate system:
+            const ctm = t.getCTM();
+            const svgCtm = svg.getCTM();
+            
+            // Transform the 4 corners of text bbox into root SVG coordinates:
+            const pt1 = svg.createSVGPoint(); pt1.x = tBBox.x; pt1.y = tBBox.y;
+            const pt2 = svg.createSVGPoint(); pt2.x = tBBox.x + tBBox.width; pt2.y = tBBox.y + tBBox.height;
+            
+            const transMatrix = svgCtm ? svgCtm.inverse().multiply(ctm) : ctm;
+            const rootPt1 = pt1.matrixTransform(transMatrix);
+            const rootPt2 = pt2.matrixTransform(transMatrix);
+
+            const rootLeft = Math.min(rootPt1.x, rootPt2.x);
+            const rootRight = Math.max(rootPt1.x, rootPt2.x);
+            const rootTop = Math.min(rootPt1.y, rootPt2.y);
+            const rootBottom = Math.max(rootPt1.y, rootPt2.y);
+            const rootWidth = rootRight - rootLeft;
+
+            // Canvas overflow check (margin 4px)
+            if (rootRight > (vb.x + vb.width - 4)) {
+              fileIssues.push({
+                type: "CANVAS_RIGHT_OVERFLOW",
+                text: str,
+                overflow: Math.round(rootRight - (vb.x + vb.width)),
+                rootRight: Math.round(rootRight),
+                canvasWidth: Math.round(vb.width)
+              });
+            }
+            if (rootLeft < (vb.x + 4)) {
+              fileIssues.push({
+                type: "CANVAS_LEFT_OVERFLOW",
+                text: str,
+                overflow: Math.round(vb.x - rootLeft),
+                rootLeft: Math.round(rootLeft)
+              });
+            }
+
+            // 2. Check Box Overflow:
+            // Check if this text belongs to a rect (e.g. text center is inside rect)
+            const textCenterX = (rootLeft + rootRight) / 2;
+            const textCenterY = (rootTop + rootBottom) / 2;
+
+            for (const r of rects) {
+              const rPt1 = svg.createSVGPoint(); rPt1.x = r.bbox.x; rPt1.y = r.bbox.y;
+              const rPt2 = svg.createSVGPoint(); rPt2.x = r.bbox.x + r.bbox.width; rPt2.y = r.bbox.y + r.bbox.height;
+              const rTrans = svgCtm ? svgCtm.inverse().multiply(r.el.getCTM()) : r.el.getCTM();
+              const rRootPt1 = rPt1.matrixTransform(rTrans);
+              const rRootPt2 = rPt2.matrixTransform(rTrans);
+
+              const rLeft = Math.min(rRootPt1.x, rRootPt2.x);
+              const rRight = Math.max(rRootPt1.x, rRootPt2.x);
+              const rTop = Math.min(rRootPt1.y, rRootPt2.y);
+              const rBottom = Math.max(rRootPt1.y, rRootPt2.y);
+
+              // Check if text is intended to be inside this rect
+              // (vertical center is within rect bounds and horizontal overlap is significant)
+              if (textCenterY >= rTop - 4 && textCenterY <= rBottom + 4 &&
+                  textCenterX >= rLeft - 10 && textCenterX <= rRight + 10) {
+                
+                // If text sticks out of rect:
+                if (rootLeft < rLeft - 3 || rootRight > rRight + 3) {
+                  const ov = Math.max(rLeft - rootLeft, rootRight - rRight);
+                  if (ov > 3) {
+                    fileIssues.push({
+                      type: "BOX_OVERFLOW",
+                      text: str,
+                      overflow: Math.round(ov),
+                      textWidth: Math.round(rootWidth),
+                      boxWidth: Math.round(rRight - rLeft),
+                      boxEl: r.el.getAttribute('class') || r.el.getAttribute('id') || 'rect'
+                    });
+                    break;
+                  }
+                }
+              }
+            }
+          }
+
+          if (fileIssues.length > 0) {
+            filesWithIssues++;
+            totalIssues += fileIssues.length;
+            window.auditData.details[file] = fileIssues;
+
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `<h2>📁 ${file} (${fileIssues.length} issues)</h2>`;
+            fileIssues.forEach(iss => {
+              const div = document.createElement('div');
+              div.className = iss.type === 'BOX_OVERFLOW' ? 'issue-box' : 'issue';
+              div.innerHTML = `<strong>[${iss.type} +${iss.overflow}px]</strong> "${iss.text}" ${iss.boxWidth ? `(text: ${iss.textWidth}px, box: ${iss.boxWidth}px)` : ''}`;
+              card.appendChild(div);
+            });
+            resultsDiv.appendChild(card);
+          }
+
+        } catch (err) {
+          console.error("Error processing", file, err);
+        }
+      }
+
+      window.auditData.totalIssues = totalIssues;
+      window.auditData.filesWithIssues = filesWithIssues;
+      window.auditData.completed = true;
+
+      statusDiv.innerHTML = `✅ Audit Complete: Found <strong>${totalIssues}</strong> overflow issues across <strong>${filesWithIssues}</strong> files.`;
+      console.log("FINAL AUDIT DATA:", window.auditData);
+    }
+
+    window.addEventListener('DOMContentLoaded', runAudit);
+  </script>
+</body>
+</html>

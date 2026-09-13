@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 430" width="100%" height="100%">
+  <style>
+    :root {
+      --canvas-bg: #ffffff;
+      --canvas-border: #cbd5e1;
+      --card-bg: #f8fafc;
+      --card-border: #94a3b8;
+      --title-color: #0f172a;
+      --subtitle-color: #475569;
+      --text-primary: #0f172a;
+      --text-muted: #64748b;
+      --accent-blue: #0284c7;
+      --accent-green: #059669;
+      --accent-amber: #d97706;
+      --accent-red: #dc2626;
+      --accent-purple: #7c3aed;
+      --wire-line: #334155;
+    }
+    path { fill: none; }
+    text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    .mono { font-family: ui-monospace, Menlo, Consolas, monospace; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--wire-line)"/>
+    </marker>
+    <marker id="arrow-red" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--accent-red)"/>
+    </marker>
+  </defs>
+
+  <rect width="940" height="430" rx="14" fill="var(--canvas-bg)" stroke="var(--canvas-border)" stroke-width="2"/>
+  <text x="470" y="36" text-anchor="middle" font-size="19" font-weight="700" fill="var(--title-color)">CƠ CHẾ QUÉT KÊNH TUẦN TỰ (ADC SCAN MODE) VÀ VẤN ĐỀ GHI ĐÈ</text>
+  <text x="470" y="58" text-anchor="middle" font-size="12.5" fill="var(--subtitle-color)">Sự cần thiết của khối DMA khi chuyển đổi nhiều kênh tương tự trên thanh ghi duy nhất ADC_DR</text>
+
+  <!-- Left: Sequence Flow -->
+  <g transform="translate(30, 80)">
+    <rect width="400" height="320" rx="8" fill="var(--card-bg)" stroke="var(--accent-blue)" stroke-width="1.5"/>
+    <text x="200" y="26" text-anchor="middle" font-size="13.5" font-weight="700" fill="var(--accent-blue)">TIẾN TRÌNH QUÉT CÁC KÊNH (SCAN SEQUENCE)</text>
+    
+    <!-- Step 1 -->
+    <rect x="25" y="45" width="350" height="48" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="40" y="68" font-size="12" font-weight="700" fill="var(--accent-blue)">Bước 1: Chuyển đổi Kênh 0 (PA0)</text>
+    <text x="40" y="84" font-size="11" fill="var(--text-muted)">Lưu kết quả Kênh 0 vào thanh ghi ADC_DR ──> Sinh cờ EOC</text>
+
+    <!-- Step 2 -->
+    <rect x="25" y="115" width="350" height="48" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="40" y="138" font-size="12" font-weight="700" fill="var(--accent-blue)">Bước 2: Chuyển đổi Kênh 1 (PA1)</text>
+    <text x="40" y="154" font-size="11" fill="var(--text-muted)">Lưu kết quả Kênh 1 vào thanh ghi ADC_DR ──> Sinh cờ EOC</text>
+
+    <!-- Step 3 -->
+    <rect x="25" y="185" width="350" height="48" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+    <text x="40" y="208" font-size="12" font-weight="700" fill="var(--accent-blue)">Bước 3: Chuyển đổi Kênh 16 (Nhiệt độ nội)</text>
+    <text x="40" y="224" font-size="11" fill="var(--text-muted)">Lưu kết quả Kênh 16 vào thanh ghi ADC_DR ──> Hoàn tất</text>
+
+    <!-- Connecting arrows -->
+    <path d="M 200 93 L 200 115" stroke="var(--wire-line)" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M 200 163 L 200 185" stroke="var(--wire-line)" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <rect x="25" y="255" width="350" height="48" rx="6" fill="#fef2f2" stroke="var(--accent-red)"/>
+    <text x="200" y="278" text-anchor="middle" font-size="12" font-weight="700" fill="var(--accent-red)">NGUY HIỂM KHI KHÔNG CÓ DMA:</text>
+    <text x="200" y="294" text-anchor="middle" font-size="11" fill="var(--accent-red)">Giá trị Kênh 1 &amp; Kênh 16 lập tức ghi đè làm mất dữ liệu Kênh 0!</text>
+  </g>
+
+  <!-- Right: Architecture & Solution -->
+  <g transform="translate(460, 80)">
+    <rect width="450" height="320" rx="8" fill="var(--card-bg)" stroke="var(--accent-green)" stroke-width="1.5"/>
+    <text x="225" y="26" text-anchor="middle" font-size="13.5" font-weight="700" fill="var(--accent-green)">GIẢI PHÁP TIÊU CHUẨN CÔNG NGHIỆP: ADC + DMA</text>
+
+    <!-- Register box -->
+    <rect x="30" y="45" width="390" height="60" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-amber)" stroke-width="1.5"/>
+    <text x="225" y="70" text-anchor="middle" font-size="13" font-weight="700" fill="var(--accent-amber)">THANH GHI DỮ LIỆU DUY NHẤT: ADC_DR (16-bit)</text>
+    <text x="225" y="90" text-anchor="middle" font-size="11.5" fill="var(--text-muted)">Địa chỉ: 0x4001 244C (Chỉ chứa giá trị của kênh đo gần nhất!)</text>
+
+    <!-- DMA Arrow -->
+    <path d="M 225 105 L 225 145" stroke="var(--accent-green)" stroke-width="3" marker-end="url(#arrow)"/>
+    <rect x="150" y="115" width="150" height="22" rx="4" fill="var(--canvas-bg)" stroke="var(--accent-green)"/>
+    <text x="225" y="130" text-anchor="middle" font-size="11" font-weight="700" fill="var(--accent-green)">DMA Kênh 1 Tự Động Chuyển</text>
+
+    <!-- SRAM Buffer Array -->
+    <rect x="30" y="150" width="390" height="145" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-green)" stroke-width="1.5"/>
+    <text x="45" y="174" font-size="12.5" font-weight="700" fill="var(--accent-green)">MẢNG BỘ NHỚ SRAM (RAM Buffer): uint16_t adc_buf[3]</text>
+    
+    <rect x="45" y="185" width="360" height="28" rx="4" fill="#f0fdf4" stroke="var(--card-border)"/>
+    <text x="55" y="204" font-size="11.5" font-weight="600" fill="var(--text-primary)">adc_buf[0] ◄── DMA nạp giá trị Kênh 0 (PA0)</text>
+
+    <rect x="45" y="218" width="360" height="28" rx="4" fill="#f0fdf4" stroke="var(--card-border)"/>
+    <text x="55" y="237" font-size="11.5" font-weight="600" fill="var(--text-primary)">adc_buf[1] ◄── DMA nạp giá trị Kênh 1 (PA1)</text>
+
+    <rect x="45" y="251" width="360" height="28" rx="4" fill="#f0fdf4" stroke="var(--card-border)"/>
+    <text x="55" y="270" font-size="11.5" font-weight="600" fill="var(--text-primary)">adc_buf[2] ◄── DMA nạp giá trị Kênh 16 (Nhiệt độ chip)</text>
+  </g>
+</svg>

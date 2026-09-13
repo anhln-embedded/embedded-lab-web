@@ -1,96 +1,208 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 400" width="100%" height="100%">
-  <defs>
-    
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1140 680" width="100%" height="100%">
+
     <style>
       :root {
         --canvas-bg: #ffffff;
-        --canvas-border: #e2e8f0;
+        --canvas-border: #cbd5e1;
         --card-bg: #ffffff;
-        --card-border: #cbd5e1;
+        --card-border: #94a3b8;
         --title-color: #0f172a;
         --subtitle-color: #475569;
-        --text-primary: #1e293b;
+        --text-primary: #0f172a;
         --text-muted: #64748b;
+        --st-blue: #00205b;
         --accent-blue: #0284c7;
-        --accent-green: #10b981;
-        --accent-amber: #f59e0b;
-        --accent-red: #ef4444;
-        --accent-purple: #8b5cf6;
-        --wire-line: #94a3b8;
-        --box-blue: #eff6ff;
-        --box-green: #ecfdf5;
-        --box-amber: #fffbeb;
-        --box-purple: #f5f3ff;
+        --accent-green: #059669;
+        --accent-amber: #d97706;
+        --accent-red: #dc2626;
+        --accent-purple: #7c3aed;
+        --wire-line: #334155;
+        --bus-line: #0284c7;
+        --vdd-color: #dc2626;
+        --vss-color: #16a34a;
+        --logic-gate: #0284c7;
       }
-
       
-
-      .canvas-bg { fill: var(--canvas-bg); stroke: var(--canvas-border); stroke-width: 2; rx: 16; }
-      .title-text { fill: var(--title-color); font-weight: 800; font-size: 20px; text-anchor: middle; font-family: 'Segoe UI', Arial, sans-serif; }
-      .subtitle-text { fill: var(--subtitle-color); font-weight: 600; font-size: 13px; text-anchor: middle; font-family: 'Segoe UI', Arial, sans-serif; }
-      .card-box { fill: var(--card-bg); stroke: var(--card-border); stroke-width: 1.5; rx: 10; }
-      .txt-title { fill: var(--text-primary); font-weight: 700; font-size: 13px; font-family: 'Segoe UI', Arial, sans-serif; }
-      .txt-desc { fill: var(--text-muted); font-size: 11px; font-weight: 500; font-family: 'Segoe UI', Arial, sans-serif; }
-      .wire { stroke: var(--wire-line); stroke-width: 2; fill: none; }
-      .wire-arrow { fill: var(--wire-line); }
-      .tag-blue { fill: #0284c7; font-weight: 700; font-size: 11px; font-family: monospace; }
+      path { fill: none; }
+      marker path { fill: inherit; }
+      polygon { fill: inherit; }
+      text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
     </style>
-    <filter id="shadowLight" x="-5%" y="-5%" width="110%" height="110%">
-      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.08"/>
-    </filter>
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--wire-line)"/>
+      </marker>
+      <marker id="arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--bus-line)"/>
+      </marker>
+      <marker id="arrow-red" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--accent-red)"/>
+      </marker>
+      <marker id="arrow-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--accent-green)"/>
+      </marker>
+    </defs>
 
-  </defs>
+  <rect width="1140" height="680" rx="12" fill="var(--canvas-bg)" stroke="var(--canvas-border)" stroke-width="2"/>
 
-  <rect x="10" y="10" width="920" height="380" class="canvas-bg"/>
-  <text x="470" y="42" class="title-text">SƠ ĐỒ MẠNG TRUYỀN THÔNG CÔNG NGHIỆP VÀ Ô TÔ CAN BUS 2.0B</text>
-  <text x="470" y="66" class="subtitle-text">Đường truyền vi sai xoắn đôi CAN_H / CAN_L kết hợp bộ thu phát Transceiver TJA1050</text>
+  <!-- Header -->
+  <rect x="25" y="16" width="1090" height="64" rx="8" fill="var(--card-bg)" stroke="var(--card-border)" stroke-width="1.5"/>
+  <text x="45" y="42" font-size="17" font-weight="800" fill="var(--title-color)">STMicroelectronics RM0008 Reference Manual — Section 24</text>
+  <text x="45" y="64" font-size="13" font-weight="600" fill="var(--accent-blue)">Figure 245: CAN controller block diagram &amp; TJA1050 PHY (Kiến trúc vi điều khiển CAN và tầng truyền dẫn vật lý)</text>
+  <rect x="960" y="28" width="135" height="36" rx="6" fill="#00205b"/>
+  <text x="1027" y="51" text-anchor="middle" font-size="12" font-weight="800" fill="#ffffff">STM32F103</text>
 
-  <!-- Đường truyền CAN_H -->
-  <line x1="80" y1="130" x2="860" y2="130" stroke="#ef4444" stroke-width="3.5"/>
-  <text x="45" y="135" font-size="12" font-weight="bold" fill="#ef4444">CAN_H</text>
+  <!-- Left: STM32F103 bxCAN Core (X: 35 -> 480) -->
+  <g transform="translate(35, 100)">
+    <rect width="440" height="520" rx="8" fill="var(--card-bg)" stroke="var(--accent-blue)" stroke-width="2"/>
+    <text x="220" y="28" text-anchor="middle" font-size="14" font-weight="800" fill="var(--accent-blue)">STM32F103 bxCAN CONTROLLER (BASIC EXTENDED CAN)</text>
 
-  <!-- Trở đầu cuối trái 120 ohm -->
-  <rect x="90" y="140" width="22" height="45" rx="3" fill="var(--box-amber)" stroke="#f59e0b" stroke-width="1.5"/>
-  <text x="101" y="167" font-size="8.5" font-weight="bold" fill="#b45309" text-anchor="middle">120Ω</text>
-  <line x1="101" y1="130" x2="101" y2="140" class="wire"/>
-  <line x1="101" y1="185" x2="101" y2="195" class="wire"/>
+    <!-- Transmit Mailboxes -->
+    <g transform="translate(20, 50)">
+      <rect width="400" height="110" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-green)" stroke-width="1.5"/>
+      <text x="200" y="24" text-anchor="middle" font-size="12" font-weight="800" fill="var(--accent-green)">3 HỘP THƯ TRUYỀN DỮ LIỆU (TX MAILBOX 0, 1, 2)</text>
+      
+      <g transform="translate(15, 38)">
+        <rect width="115" height="55" rx="4" fill="var(--card-bg)" stroke="var(--card-border)"/>
+        <text x="57" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="var(--title-color)">Mailbox 0</text>
+        <text x="57" y="42" text-anchor="middle" font-size="9" fill="var(--text-muted)">ID + 8 Byte Data</text>
 
-  <!-- Trở đầu cuối phải 120 ohm -->
-  <rect x="830" y="140" width="22" height="45" rx="3" fill="var(--box-amber)" stroke="#f59e0b" stroke-width="1.5"/>
-  <text x="841" y="167" font-size="8.5" font-weight="bold" fill="#b45309" text-anchor="middle">120Ω</text>
-  <line x1="841" y1="130" x2="841" y2="140" class="wire"/>
-  <line x1="841" y1="185" x2="841" y2="195" class="wire"/>
+        <rect x="125" width="115" height="55" rx="4" fill="var(--card-bg)" stroke="var(--card-border)"/>
+        <text x="182" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="var(--title-color)">Mailbox 1</text>
+        <text x="182" y="42" text-anchor="middle" font-size="9" fill="var(--text-muted)">ID + 8 Byte Data</text>
 
-  <!-- Đường truyền CAN_L -->
-  <line x1="80" y1="195" x2="860" y2="195" stroke="#0284c7" stroke-width="3.5"/>
-  <text x="45" y="200" font-size="12" font-weight="bold" fill="#0284c7">CAN_L</text>
+        <rect x="250" width="115" height="55" rx="4" fill="var(--card-bg)" stroke="var(--card-border)"/>
+        <text x="307" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="var(--title-color)">Mailbox 2</text>
+        <text x="307" y="42" text-anchor="middle" font-size="9" fill="var(--text-muted)">ID + 8 Byte Data</text>
+      </g>
+    </g>
 
-  <!-- Node 1: Engine ECU -->
-  <g transform="translate(180, 230)">
-    <rect x="0" y="0" width="240" height="130" rx="10" fill="var(--card-bg)" stroke="#0284c7" stroke-width="2" filter="url(#shadowLight)"/>
-    <rect x="0" y="0" width="240" height="30" rx="10" fill="#0284c7"/>
-    <text x="120" y="20" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">NODE 1: ENGINE ECU (STM32)</text>
+    <!-- 14 Filter Banks -->
+    <g transform="translate(20, 175)">
+      <rect width="400" height="130" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-purple)" stroke-width="1.5"/>
+      <text x="200" y="24" text-anchor="middle" font-size="12" font-weight="800" fill="var(--accent-purple)">14 HÀNG BỘ LỌC CHẤP NHẬN (FILTER BANKS 0..13)</text>
+      
+      <g transform="translate(15, 38)">
+        <rect width="175" height="75" rx="4" fill="var(--card-bg)" stroke="var(--card-border)"/>
+        <text x="87" y="20" text-anchor="middle" font-size="10" font-weight="700" fill="var(--title-color)">Chế Độ Mask (Mặt nạ):</text>
+        <text x="15" y="40" font-size="9" fill="var(--accent-blue)">• ID Register (Mã định danh)</text>
+        <text x="15" y="58" font-size="9" fill="var(--accent-purple)">• Mask Register (Bit cần khớp)</text>
 
-    <rect x="20" y="42" width="200" height="35" rx="5" fill="var(--box-blue)" stroke="#0284c7"/>
-    <text x="120" y="64" font-size="11" font-weight="bold" fill="#0369a1" text-anchor="middle">Transceiver TJA1050</text>
+        <rect x="195" width="175" height="75" rx="4" fill="var(--card-bg)" stroke="var(--card-border)"/>
+        <text x="87" y="20" text-anchor="middle" font-size="10" font-weight="700" fill="var(--title-color)">Chế Độ List (Danh sách):</text>
+        <text x="15" y="40" font-size="9" fill="var(--text-muted)">• Khớp chính xác ID 1</text>
+        <text x="15" y="58" font-size="9" fill="var(--text-muted)">• Khớp chính xác ID 2</text>
+      </g>
+    </g>
 
-    <text x="120" y="100" font-size="10.5" fill="var(--text-muted)" text-anchor="middle">PA11 (RX) / PA12 (TX)</text>
-    <line x1="70" y1="42" x2="70" y2="-100" class="wire" stroke="#ef4444"/>
-    <line x1="100" y1="42" x2="100" y2="-35" class="wire" stroke="#0284c7"/>
+    <!-- Receive FIFOs -->
+    <g transform="translate(20, 320)">
+      <rect width="400" height="120" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-blue)" stroke-width="1.5"/>
+      <text x="200" y="24" text-anchor="middle" font-size="12" font-weight="800" fill="var(--accent-blue)">2 HÀNG ĐỢI NHẬN DỮ LIỆU (RX FIFO 0 &amp; FIFO 1)</text>
+      <text x="200" y="44" text-anchor="middle" font-size="10" fill="var(--text-muted)">Mỗi FIFO có 3 tầng sâu (chứa tối đa 3 gói tin trước khi tràn)</text>
+      
+      <g transform="translate(15, 55)">
+        <rect width="175" height="45" rx="4" fill="var(--card-bg)" stroke="var(--card-border)"/>
+        <text x="87" y="22" text-anchor="middle" font-size="10" font-weight="700" fill="var(--accent-blue)">FIFO 0 (3 messages)</text>
+        <text x="87" y="38" text-anchor="middle" font-size="8" fill="var(--text-muted)">Ngắt USB_LP_CAN1_RX0_IRQn</text>
+
+        <rect x="195" width="175" height="45" rx="4" fill="var(--card-bg)" stroke="var(--card-border)"/>
+        <text x="87" y="22" text-anchor="middle" font-size="10" font-weight="700" fill="var(--accent-blue)">FIFO 1 (3 messages)</text>
+        <text x="87" y="38" text-anchor="middle" font-size="8" fill="var(--text-muted)">Ngắt CAN1_RX1_IRQn</text>
+      </g>
+    </g>
+
+    <!-- Pins PA11, PA12 -->
+    <g transform="translate(20, 455)">
+      <rect width="190" height="48" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+      <text x="95" y="20" text-anchor="middle" font-size="10" font-weight="700" fill="var(--title-color)">CAN_TX (PA12 / PB9)</text>
+      <text x="95" y="36" text-anchor="middle" font-size="9" fill="var(--accent-green)">Tín hiệu số TTL 3.3V</text>
+
+      <rect x="210" width="190" height="48" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+      <text x="95" y="20" text-anchor="middle" font-size="10" font-weight="700" fill="var(--title-color)">CAN_RX (PA11 / PB8)</text>
+      <text x="95" y="36" text-anchor="middle" font-size="9" fill="var(--accent-blue)">Tín hiệu số TTL 3.3V</text>
+    </g>
   </g>
 
-  <!-- Node 2: Brake ABS -->
-  <g transform="translate(520, 230)">
-    <rect x="0" y="0" width="240" height="130" rx="10" fill="var(--card-bg)" stroke="#10b981" stroke-width="2" filter="url(#shadowLight)"/>
-    <rect x="0" y="0" width="240" height="30" rx="10" fill="#10b981"/>
-    <text x="120" y="20" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">NODE 2: BRAKE ABS (STM32)</text>
+  <!-- Middle: External PHY Transceiver TJA1050 (X: 510 -> 750) -->
+  <g transform="translate(510, 160)">
+    <!-- Arrows from STM32 to Transceiver -->
+    <path d="M -35 320 L 20 320" fill="none" stroke="var(--accent-green)" stroke-width="2.5" marker-end="url(#arrow-green)"/>
+    <text x="-20" y="310" font-size="9" font-weight="700" fill="var(--accent-green)">TXD</text>
 
-    <rect x="20" y="42" width="200" height="35" rx="5" fill="var(--box-green)" stroke="#10b981"/>
-    <text x="120" y="64" font-size="11" font-weight="bold" fill="#047857" text-anchor="middle">Transceiver TJA1050</text>
+    <path d="M 20 345 L -35 345" fill="none" stroke="var(--accent-blue)" stroke-width="2.5" marker-end="url(#arrow-blue)"/>
+    <text x="-20" y="360" font-size="9" font-weight="700" fill="var(--accent-blue)">RXD</text>
 
-    <text x="120" y="100" font-size="10.5" fill="var(--text-muted)" text-anchor="middle">PA11 (RX) / PA12 (TX)</text>
-    <line x1="70" y1="42" x2="70" y2="-100" class="wire" stroke="#ef4444"/>
-    <line x1="100" y1="42" x2="100" y2="-35" class="wire" stroke="#0284c7"/>
+    <rect width="220" height="360" rx="8" fill="var(--card-bg)" stroke="var(--accent-amber)" stroke-width="2"/>
+    <text x="110" y="30" text-anchor="middle" font-size="13" font-weight="900" fill="var(--accent-amber)">CAN TRANSCEIVER (PHY)</text>
+    <text x="110" y="50" text-anchor="middle" font-size="11" font-weight="700" fill="var(--title-color)">TJA1050 / SN65HVD230</text>
+    
+    <g transform="translate(15, 75)">
+      <rect width="190" height="100" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+      <text x="95" y="24" text-anchor="middle" font-size="10" font-weight="700" fill="var(--title-color)">CHỨC NĂNG CHÍNH:</text>
+      <text x="10" y="48" font-size="9" fill="var(--text-muted)">• Chuyển mức TTL (0-3.3V/5V)</text>
+      <text x="10" y="66" font-size="9" fill="var(--text-muted)">  thành điện áp vi sai CANH, CANL</text>
+      <text x="10" y="85" font-size="9" fill="var(--accent-red)">• Chống sét, triệt tiêu nhiễu EMI</text>
+    </g>
+
+    <!-- Differential Voltage Explanation -->
+    <g transform="translate(15, 190)">
+      <rect width="190" height="150" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-blue)" stroke-width="1.5"/>
+      <text x="95" y="22" text-anchor="middle" font-size="10" font-weight="800" fill="var(--accent-blue)">ĐIỆN ÁP VI SAI (CAN BUS):</text>
+      
+      <text x="10" y="48" font-size="10" font-weight="700" fill="var(--accent-red)">• Dominant (Mức 0 - Chiếm ưu):</text>
+      <text x="15" y="66" font-size="9" fill="var(--title-color)">CANH = 3.5V, CANL = 1.5V</text>
+      <text x="15" y="82" font-size="9" font-weight="700" fill="var(--accent-red)">V_Diff = 3.5 - 1.5 = 2.0V</text>
+
+      <line x1="10" y1="92" x2="180" y2="92" stroke="var(--card-border)"/>
+
+      <text x="10" y="110" font-size="10" font-weight="700" fill="var(--accent-blue)">• Recessive (Mức 1 - Nhường):</text>
+      <text x="15" y="126" font-size="9" fill="var(--title-color)">CANH = 2.5V, CANL = 2.5V</text>
+      <text x="15" y="142" font-size="9" font-weight="700" fill="var(--accent-blue)">V_Diff = 2.5 - 2.5 = 0.0V</text>
+    </g>
   </g>
 
+  <!-- Right: Two-Wire Differential CAN Bus Line (X: 770 -> 1100) -->
+  <g transform="translate(770, 160)">
+    <path d="M -40 180 L 40 180" fill="none" stroke="var(--accent-red)" stroke-width="3"/>
+    <text x="-25" y="170" font-size="10" font-weight="800" fill="var(--accent-red)">CAN_H</text>
+
+    <path d="M -40 280 L 40 280" fill="none" stroke="var(--accent-blue)" stroke-width="3"/>
+    <text x="-25" y="270" font-size="10" font-weight="800" fill="var(--accent-blue)">CAN_L</text>
+
+    <!-- 120 Ohm Termination Resistor Box -->
+    <g transform="translate(40, 140)">
+      <rect width="100" height="180" rx="8" fill="var(--card-bg)" stroke="var(--accent-amber)" stroke-width="2"/>
+      <text x="50" y="26" text-anchor="middle" font-size="11" font-weight="800" fill="var(--accent-amber)">TERMINATION</text>
+      
+      <line x1="50" y1="40" x2="50" y2="70" stroke="var(--wire-line)" stroke-width="2"/>
+      <rect x="35" y="70" width="30" height="45" rx="3" fill="var(--canvas-bg)" stroke="var(--title-color)" stroke-width="2"/>
+      <text x="50" y="96" text-anchor="middle" font-size="11" font-weight="900" fill="var(--title-color)">120Ω</text>
+      <line x1="50" y1="115" x2="50" y2="140" stroke="var(--wire-line)" stroke-width="2"/>
+
+      <text x="50" y="165" text-anchor="middle" font-size="8" fill="var(--text-muted)">Điện trở đầu cuối</text>
+    </g>
+
+    <!-- Physical Bus Connection -->
+    <g transform="translate(170, 80)">
+      <rect width="150" height="300" rx="8" fill="var(--card-bg)" stroke="var(--card-border)" stroke-width="1.5"/>
+      <text x="75" y="28" text-anchor="middle" font-size="12" font-weight="800" fill="var(--title-color)">MẠNG CAN BUS 2 DÂY</text>
+      <text x="75" y="46" text-anchor="middle" font-size="10" fill="var(--text-muted)">Khoảng cách đến 1km</text>
+
+      <g transform="translate(15, 65)">
+        <rect width="120" height="60" rx="4" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+        <text x="60" y="26" text-anchor="middle" font-size="10" font-weight="700" fill="var(--title-color)">ECU Node 2</text>
+        <text x="60" y="44" text-anchor="middle" font-size="9" fill="var(--text-muted)">Động cơ / Hộp số</text>
+
+        <rect y="75" width="120" height="60" rx="4" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+        <text x="60" y="101" text-anchor="middle" font-size="10" font-weight="700" fill="var(--title-color)">ECU Node 3</text>
+        <text x="60" y="119" text-anchor="middle" font-size="9" fill="var(--text-muted)">Phanh ABS / Túi khí</text>
+
+        <rect y="150" width="120" height="65" rx="4" fill="var(--canvas-bg)" stroke="var(--accent-amber)" stroke-width="1.5"/>
+        <text x="60" y="174" text-anchor="middle" font-size="10" font-weight="700" fill="var(--title-color)">Điện trở cuối 120Ω</text>
+        <text x="60" y="192" text-anchor="middle" font-size="8" fill="var(--accent-amber)">Bắt buộc 2 đầu mạng!</text>
+      </g>
+    </g>
+  </g>
 </svg>

@@ -1,100 +1,200 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 420" width="100%" height="100%">
-  <defs>
-    
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1140 680" width="100%" height="100%">
+
     <style>
       :root {
         --canvas-bg: #ffffff;
-        --canvas-border: #e2e8f0;
+        --canvas-border: #cbd5e1;
         --card-bg: #ffffff;
-        --card-border: #cbd5e1;
+        --card-border: #94a3b8;
         --title-color: #0f172a;
         --subtitle-color: #475569;
-        --text-primary: #1e293b;
+        --text-primary: #0f172a;
         --text-muted: #64748b;
+        --st-blue: #00205b;
         --accent-blue: #0284c7;
-        --accent-green: #10b981;
-        --accent-amber: #f59e0b;
-        --accent-red: #ef4444;
-        --accent-purple: #8b5cf6;
-        --wire-line: #94a3b8;
-        --box-blue: #eff6ff;
-        --box-green: #ecfdf5;
-        --box-amber: #fffbeb;
-        --box-purple: #f5f3ff;
+        --accent-green: #059669;
+        --accent-amber: #d97706;
+        --accent-red: #dc2626;
+        --accent-purple: #7c3aed;
+        --wire-line: #334155;
+        --bus-line: #0284c7;
+        --vdd-color: #dc2626;
+        --vss-color: #16a34a;
+        --logic-gate: #0284c7;
       }
-
       
-
-      .canvas-bg { fill: var(--canvas-bg); stroke: var(--canvas-border); stroke-width: 2; rx: 16; }
-      .title-text { fill: var(--title-color); font-weight: 800; font-size: 20px; text-anchor: middle; font-family: 'Segoe UI', Arial, sans-serif; }
-      .subtitle-text { fill: var(--subtitle-color); font-weight: 600; font-size: 13px; text-anchor: middle; font-family: 'Segoe UI', Arial, sans-serif; }
-      .card-box { fill: var(--card-bg); stroke: var(--card-border); stroke-width: 1.5; rx: 10; }
-      .txt-title { fill: var(--text-primary); font-weight: 700; font-size: 13px; font-family: 'Segoe UI', Arial, sans-serif; }
-      .txt-desc { fill: var(--text-muted); font-size: 11px; font-weight: 500; font-family: 'Segoe UI', Arial, sans-serif; }
-      .wire { stroke: var(--wire-line); stroke-width: 2; fill: none; }
-      .wire-arrow { fill: var(--wire-line); }
-      .tag-blue { fill: #0284c7; font-weight: 700; font-size: 11px; font-family: monospace; }
+      path { fill: none; }
+      marker path { fill: inherit; }
+      polygon { fill: inherit; }
+      text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
     </style>
-    <filter id="shadowLight" x="-5%" y="-5%" width="110%" height="110%">
-      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.08"/>
-    </filter>
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--wire-line)"/>
+      </marker>
+      <marker id="arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--bus-line)"/>
+      </marker>
+      <marker id="arrow-red" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--accent-red)"/>
+      </marker>
+      <marker id="arrow-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--accent-green)"/>
+      </marker>
+    </defs>
 
-    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" class="wire-arrow"/>
-    </marker>
-  </defs>
+  <rect width="1140" height="680" rx="12" fill="var(--canvas-bg)" stroke="var(--canvas-border)" stroke-width="2"/>
 
-  <rect x="10" y="10" width="900" height="400" class="canvas-bg"/>
-  <text x="460" y="42" class="title-text">KIẾN TRÚC MA TRẬN BUS VÀ BỘ ĐIỀU KHIỂN TRUY XUẤT BỘ NHỚ DMA</text>
-  <text x="460" y="66" class="subtitle-text">Truyền nhận dữ liệu song song trực tiếp giữa RAM và Ngoại vi hoàn toàn không tốn CPU</text>
+  <!-- Header -->
+  <rect x="25" y="16" width="1090" height="64" rx="8" fill="var(--card-bg)" stroke="var(--card-border)" stroke-width="1.5"/>
+  <text x="45" y="42" font-size="17" font-weight="800" fill="var(--title-color)">STMicroelectronics RM0008 Reference Manual — Section 13.2</text>
+  <text x="45" y="64" font-size="13" font-weight="600" fill="var(--accent-blue)">Figure 20: DMA block diagram (Kiến trúc bộ điều khiển truy cập bộ nhớ trực tiếp DMA Controller)</text>
+  <rect x="960" y="28" width="135" height="36" rx="6" fill="#00205b"/>
+  <text x="1027" y="51" text-anchor="middle" font-size="12" font-weight="800" fill="#ffffff">STM32F103</text>
 
-  <!-- CPU Cortex-M3 -->
-  <g transform="translate(360, 95)">
-    <rect x="0" y="0" width="200" height="60" rx="8" fill="#1e293b" stroke="#334155" stroke-width="2" filter="url(#shadowLight)"/>
-    <text x="100" y="28" font-size="12" font-weight="bold" fill="#94a3b8" text-anchor="middle">CPU CORE</text>
-    <text x="100" y="48" font-size="14" font-weight="900" fill="#38bdf8" text-anchor="middle">ARM Cortex-M3</text>
+  <!-- Left: Cortex-M3 Core & Masters (X: 35 -> 280) -->
+  <g transform="translate(35, 100)">
+    <rect width="240" height="520" rx="8" fill="var(--card-bg)" stroke="var(--card-border)" stroke-width="1.5"/>
+    <text x="120" y="28" text-anchor="middle" font-size="13" font-weight="800" fill="var(--title-color)">BUS MASTERS (Chủ Bus)</text>
+
+    <!-- ARM Cortex-M3 Core -->
+    <g transform="translate(15, 60)">
+      <rect width="210" height="120" rx="6" fill="#00205b" stroke="#00a3e0" stroke-width="2"/>
+      <text x="105" y="32" text-anchor="middle" font-size="14" font-weight="900" fill="#ffffff">ARM CORTEX-M3</text>
+      <text x="105" y="54" text-anchor="middle" font-size="11" font-weight="700" fill="#38bdf8">I-Bus (Instruction)</text>
+      <text x="105" y="74" text-anchor="middle" font-size="11" font-weight="700" fill="#38bdf8">D-Bus (Data)</text>
+      <text x="105" y="94" text-anchor="middle" font-size="11" font-weight="700" fill="#38bdf8">S-Bus (System)</text>
+    </g>
+
+    <!-- DMA1 Master -->
+    <g transform="translate(15, 210)">
+      <rect width="210" height="130" rx="6" fill="var(--card-bg)" stroke="var(--accent-blue)" stroke-width="2"/>
+      <text x="105" y="28" text-anchor="middle" font-size="13" font-weight="800" fill="var(--accent-blue)">DMA1 CONTROLLER</text>
+      <text x="105" y="48" text-anchor="middle" font-size="11" font-weight="700" fill="var(--title-color)">7 Kênh Độc Lập (CH1..CH7)</text>
+      <text x="15" y="72" font-size="10" fill="var(--text-muted)">• CH1: ADC1, TIM2_CH3</text>
+      <text x="15" y="90" font-size="10" fill="var(--text-muted)">• CH2: SPI1_RX, USART3_TX</text>
+      <text x="15" y="108" font-size="10" fill="var(--text-muted)">• CH3: SPI1_TX, USART3_RX</text>
+      <text x="15" y="124" font-size="10" fill="var(--text-muted)">• CH4/5: USART1_TX / RX</text>
+    </g>
+
+    <!-- DMA2 Master -->
+    <g transform="translate(15, 365)">
+      <rect width="210" height="90" rx="6" fill="var(--card-bg)" stroke="var(--accent-purple)" stroke-width="1.5"/>
+      <text x="105" y="26" text-anchor="middle" font-size="12" font-weight="800" fill="var(--accent-purple)">DMA2 CONTROLLER</text>
+      <text x="105" y="46" text-anchor="middle" font-size="10" font-weight="700" fill="var(--title-color)">5 Kênh Độc Lập</text>
+      <text x="15" y="68" font-size="9" fill="var(--text-muted)">(Chỉ có trên dòng High-Density STM32)</text>
+    </g>
   </g>
 
-  <!-- Ma trận Bus AHB -->
-  <g transform="translate(80, 180)">
-    <rect x="0" y="0" width="760" height="50" rx="6" fill="#0284c7" filter="url(#shadowLight)"/>
-    <text x="380" y="32" font-size="14" font-weight="800" fill="#ffffff" text-anchor="middle">MA TRẬN BUS AHB (AHB BUS MATRIX &amp; ARBITER)</text>
+  <!-- Middle: Bus Matrix & Arbiter (X: 310 -> 720) -->
+  <g transform="translate(310, 100)">
+    <rect width="380" height="200" rx="8" fill="var(--card-bg)" stroke="var(--accent-blue)" stroke-width="2"/>
+    <text x="190" y="30" text-anchor="middle" font-size="14" font-weight="800" fill="var(--accent-blue)">DMA ARBITER (BỘ TRỌNG TÀI PHÂN XỬ)</text>
+    <text x="190" y="52" text-anchor="middle" font-size="11" fill="var(--text-muted)">Giải quyết xung đột khi nhiều kênh yêu cầu cùng lúc</text>
+
+    <!-- Priority Levels -->
+    <g transform="translate(20, 70)">
+      <rect width="165" height="50" rx="4" fill="var(--canvas-bg)" stroke="var(--accent-red)" stroke-width="1.5"/>
+      <text x="82" y="22" text-anchor="middle" font-size="9.5" font-weight="800" fill="var(--accent-red)">1. Very High (Tối cao)</text>
+      <text x="82" y="38" text-anchor="middle" font-size="9" fill="var(--text-muted)">Cấu hình qua PL[1:0] = 11</text>
+
+      <rect x="175" width="165" height="50" rx="4" fill="var(--canvas-bg)" stroke="var(--accent-amber)" stroke-width="1.5"/>
+      <text x="257" y="22" text-anchor="middle" font-size="9.5" font-weight="800" fill="var(--accent-amber)">2. High (Ưu tiên cao)</text>
+      <text x="257" y="38" text-anchor="middle" font-size="9" fill="var(--text-muted)">Cấu hình qua PL[1:0] = 10</text>
+
+      <rect y="60" width="165" height="50" rx="4" fill="var(--canvas-bg)" stroke="var(--accent-blue)" stroke-width="1.5"/>
+      <text x="82" y="82" text-anchor="middle" font-size="9.5" font-weight="800" fill="var(--accent-blue)">3. Medium (Trung bình)</text>
+      <text x="82" y="98" text-anchor="middle" font-size="9" fill="var(--text-muted)">Cấu hình qua PL[1:0] = 01</text>
+
+      <rect x="175" y="60" width="165" height="50" rx="4" fill="var(--canvas-bg)" stroke="var(--accent-green)" stroke-width="1.5"/>
+      <text x="257" y="82" text-anchor="middle" font-size="9.5" font-weight="800" fill="var(--accent-green)">4. Low (Ưu tiên thấp)</text>
+      <text x="257" y="98" text-anchor="middle" font-size="9" fill="var(--text-muted)">Cấu hình qua PL[1:0] = 00</text>
+    </g>
+
+    <text x="190" y="190" text-anchor="middle" font-size="9" font-weight="700" fill="var(--text-muted)">*Nếu cùng mức ưu tiên phần mềm: Kênh số nhỏ hơn thắng (Kênh 1 &gt; Kênh 2 &gt; ...)</text>
+
+    <!-- Channel Registers Block -->
+    <g transform="translate(0, 230)">
+      <rect width="380" height="290" rx="8" fill="var(--card-bg)" stroke="var(--accent-green)" stroke-width="2"/>
+      <text x="190" y="28" text-anchor="middle" font-size="13" font-weight="800" fill="var(--accent-green)">CẤU TRÚC 1 KÊNH DMA (CHANNEL REGISTERS)</text>
+
+      <!-- CPAR -->
+      <g transform="translate(20, 45)">
+        <rect width="340" height="42" rx="4" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+        <text x="15" y="26" font-size="11" font-weight="800" fill="var(--accent-blue)" class="mono">DMA_CPARx:</text>
+        <text x="110" y="26" font-size="9.5" fill="var(--title-color)">Peripheral Address (Địa chỉ ngoại vi)</text>
+      </g>
+
+      <!-- CMAR -->
+      <g transform="translate(20, 95)">
+        <rect width="340" height="42" rx="4" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+        <text x="15" y="26" font-size="11" font-weight="800" fill="var(--accent-green)" class="mono">DMA_CMARx:</text>
+        <text x="110" y="26" font-size="9.5" fill="var(--title-color)">Memory Address (Địa chỉ mảng trong SRAM)</text>
+      </g>
+
+      <!-- CNDTR -->
+      <g transform="translate(20, 145)">
+        <rect width="340" height="42" rx="4" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+        <text x="15" y="26" font-size="11" font-weight="800" fill="var(--accent-amber)" class="mono">DMA_CNDTRx:</text>
+        <text x="115" y="26" font-size="9.5" fill="var(--title-color)">Data Counter (Số byte truyền: 0..65535)</text>
+      </g>
+
+      <!-- CCR Controls -->
+      <g transform="translate(20, 195)">
+        <rect width="340" height="80" rx="4" fill="var(--canvas-bg)" stroke="var(--accent-purple)" stroke-width="1.5"/>
+        <text x="170" y="20" text-anchor="middle" font-size="11" font-weight="800" fill="var(--accent-purple)">THANH GHI ĐIỀU KHIỂN DMA_CCRx</text>
+        <text x="15" y="40" font-size="10" fill="var(--title-color)">• DIR: Hướng truyền (0: Ngoại vi -&gt; RAM, 1: RAM -&gt; Ngoại vi)</text>
+        <text x="15" y="58" font-size="10" fill="var(--title-color)">• CIRC: Chế độ vòng tròn lặp vô tận (Circular Mode)</text>
+        <text x="15" y="74" font-size="10" fill="var(--title-color)">• MINC/PINC: Tự động tăng con trỏ địa chỉ bộ nhớ/ngoại vi</text>
+      </g>
+    </g>
   </g>
 
-  <!-- Đường kết nối CPU xuống AHB -->
-  <line x1="460" y1="155" x2="460" y2="180" class="wire" stroke-width="3"/>
+  <!-- Right: Slaves (SRAM, Flash, Peripherals) (X: 730 -> 1100) -->
+  <g transform="translate(730, 100)">
+    <rect width="370" height="520" rx="8" fill="var(--card-bg)" stroke="var(--card-border)" stroke-width="1.5"/>
+    <text x="185" y="28" text-anchor="middle" font-size="13" font-weight="800" fill="var(--title-color)">BUS SLAVES (ĐÍCH ĐẾN DỮ LIỆU)</text>
 
-  <!-- RAM & Flash -->
-  <g transform="translate(80, 260)">
-    <rect x="0" y="0" width="210" height="120" rx="8" fill="var(--card-bg)" stroke="#10b981" stroke-width="2" filter="url(#shadowLight)"/>
-    <rect x="0" y="0" width="210" height="30" rx="8" fill="#10b981"/>
-    <text x="105" y="20" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">BỘ NHỚ HỆ THỐNG</text>
-    <text x="105" y="58" font-size="12" font-weight="bold" fill="var(--text-primary)" text-anchor="middle">SRAM (20KB)</text>
-    <text x="105" y="80" font-size="11" font-weight="600" fill="var(--text-muted)" text-anchor="middle">Flash Memory (64KB)</text>
-    <text x="105" y="102" font-size="10" font-weight="700" fill="#059669" text-anchor="middle">Mảng đệm Dữ liệu (Buffers)</text>
-    <line x1="105" y1="0" x2="105" y2="-30" class="wire" stroke-width="3"/>
+    <!-- SRAM Memory -->
+    <g transform="translate(20, 55)">
+      <rect width="330" height="110" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-blue)" stroke-width="2"/>
+      <text x="165" y="28" text-anchor="middle" font-size="13" font-weight="800" fill="var(--accent-blue)">INTERNAL SRAM (20KB)</text>
+      <text x="165" y="48" text-anchor="middle" font-size="11" font-weight="700" fill="var(--title-color)">0x2000 0000 → 0x2000 4FFF</text>
+      <text x="15" y="75" font-size="10" fill="var(--text-muted)">• DMA đọc/ghi trực tiếp vào mảng RAM của chương trình</text>
+      <text x="15" y="95" font-size="10" font-weight="700" fill="var(--accent-green)">• TẢI CPU = 0%! Core hoàn toàn rảnh rang làm việc khác!</text>
+    </g>
+
+    <!-- Flash Memory -->
+    <g transform="translate(20, 185)">
+      <rect width="330" height="85" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-purple)" stroke-width="1.5"/>
+      <text x="165" y="26" text-anchor="middle" font-size="12" font-weight="800" fill="var(--accent-purple)">FLASH MEMORY (64KB / 128KB)</text>
+      <text x="165" y="46" text-anchor="middle" font-size="11" class="mono">0x0800 0000 → 0x0801 FFFF</text>
+      <text x="15" y="70" font-size="10" fill="var(--text-muted)">• Hỗ trợ Memory-to-Memory (Truyền siêu tốc Flash sang RAM)</text>
+    </g>
+
+    <!-- Peripheral Domain (APB1 & APB2) -->
+    <g transform="translate(20, 290)">
+      <rect width="330" height="205" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-amber)" stroke-width="2"/>
+      <text x="165" y="26" text-anchor="middle" font-size="12" font-weight="800" fill="var(--accent-amber)">CÁC NGOẠI VI GẮN DMA</text>
+      
+      <g transform="translate(15, 42)">
+        <rect width="300" height="35" rx="4" fill="var(--card-bg)" stroke="var(--card-border)"/>
+        <text x="15" y="22" font-size="10" font-weight="700" fill="var(--accent-blue)">USART1, USART2, USART3:</text>
+        <text x="180" y="22" font-size="10" fill="var(--text-muted)">DMA TX &amp; DMA RX</text>
+
+        <rect y="42" width="300" height="35" rx="4" fill="var(--card-bg)" stroke="var(--card-border)"/>
+        <text x="15" y="64" font-size="10" font-weight="700" fill="var(--accent-green)">SPI1, SPI2:</text>
+        <text x="110" y="64" font-size="10" fill="var(--text-muted)">Giao tiếp màn hình LCD/OLED tốc độ cao</text>
+
+        <rect y="84" width="300" height="35" rx="4" fill="var(--card-bg)" stroke="var(--card-border)"/>
+        <text x="15" y="106" font-size="10" font-weight="700" fill="var(--accent-amber)">ADC1:</text>
+        <text x="70" y="106" font-size="10" fill="var(--text-muted)">Lấy mẫu 16 kênh tự động không gián đoạn</text>
+
+        <rect y="126" width="300" height="35" rx="4" fill="var(--card-bg)" stroke="var(--card-border)"/>
+        <text x="15" y="148" font-size="9.5" font-weight="700" fill="var(--accent-purple)">TIM1..TIM4:</text>
+        <text x="85" y="148" font-size="9" fill="var(--text-muted)">Tạo xung PWM điều khiển LED / WS2812</text>
+      </g>
+    </g>
   </g>
-
-  <!-- DMA Controller -->
-  <g transform="translate(355, 260)">
-    <rect x="0" y="0" width="210" height="120" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="2" filter="url(#shadowLight)"/>
-    <rect x="0" y="0" width="210" height="30" rx="8" fill="#2563eb"/>
-    <text x="105" y="20" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">DMA1 CONTROLLER</text>
-    <text x="105" y="58" font-size="13" font-weight="900" fill="#1d4ed8" text-anchor="middle">7 Kênh Độc Lập</text>
-    <text x="105" y="80" font-size="10.5" font-weight="600" fill="#475569" text-anchor="middle">Tự động chuyển dữ liệu</text>
-    <text x="105" y="102" font-size="10" font-weight="bold" fill="#10b981" text-anchor="middle">⚡ 0% CPU LOAD!</text>
-    <line x1="105" y1="0" x2="105" y2="-30" class="wire" stroke-width="3"/>
-  </g>
-
-  <!-- Ngoại vi Peripherals -->
-  <g transform="translate(630, 260)">
-    <rect x="0" y="0" width="210" height="120" rx="8" fill="var(--card-bg)" stroke="#f59e0b" stroke-width="2" filter="url(#shadowLight)"/>
-    <rect x="0" y="0" width="210" height="30" rx="8" fill="#f59e0b"/>
-    <text x="105" y="20" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">KHỐI NGOẠI VI</text>
-    <text x="105" y="58" font-size="11" font-weight="bold" fill="var(--text-primary)" text-anchor="middle">ADC1 (Scan đa kênh)</text>
-    <text x="105" y="80" font-size="11" font-weight="bold" fill="var(--text-primary)" text-anchor="middle">USART1 (TX/RX buffer)</text>
-    <text x="105" y="102" font-size="10.5" font-weight="bold" fill="#d97706" text-anchor="middle">SPI1 / I2C1 / Timers</text>
-    <line x1="105" y1="0" x2="105" y2="-30" class="wire" stroke-width="3"/>
-  </g>
-
 </svg>

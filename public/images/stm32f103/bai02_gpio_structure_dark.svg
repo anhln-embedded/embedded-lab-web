@@ -1,133 +1,278 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 520" width="100%" height="100%">
-  <defs>
-    
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 720" width="100%" height="100%">
+
     <style>
       :root {
-        --canvas-bg: #0b0f19;
+        --canvas-bg: #0b1120;
           --canvas-border: #1e293b;
-          --card-bg: #111827;
+          --card-bg: #131d31;
           --card-border: #334155;
           --title-color: #f8fafc;
           --subtitle-color: #94a3b8;
-          --text-primary: #f8fafc;
+          --text-primary: #f1f5f9;
           --text-muted: #94a3b8;
+          --st-blue: #38bdf8;
           --accent-blue: #38bdf8;
           --accent-green: #34d399;
           --accent-amber: #fbbf24;
           --accent-red: #f87171;
-          --accent-purple: #a78bfa;
-          --wire-line: #475569;
-          --box-blue: #1e293b;
-          --box-green: #064e3b;
-          --box-amber: #78350f;
-          --box-purple: #2e1065;
+          --accent-purple: #c084fc;
+          --wire-line: #94a3b8;
+          --bus-line: #60a5fa;
+          --vdd-color: #f87171;
+          --vss-color: #4ade80;
+          --logic-gate: #38bdf8;
       }
-
       
-
-      .canvas-bg { fill: var(--canvas-bg); stroke: var(--canvas-border); stroke-width: 2; rx: 16; }
-      .title-text { fill: var(--title-color); font-weight: 800; font-size: 20px; text-anchor: middle; font-family: 'Segoe UI', Arial, sans-serif; }
-      .subtitle-text { fill: var(--subtitle-color); font-weight: 600; font-size: 13px; text-anchor: middle; font-family: 'Segoe UI', Arial, sans-serif; }
-      .card-box { fill: var(--card-bg); stroke: var(--card-border); stroke-width: 1.5; rx: 10; }
-      .txt-title { fill: var(--text-primary); font-weight: 700; font-size: 13px; font-family: 'Segoe UI', Arial, sans-serif; }
-      .txt-desc { fill: var(--text-muted); font-size: 11px; font-weight: 500; font-family: 'Segoe UI', Arial, sans-serif; }
-      .wire { stroke: var(--wire-line); stroke-width: 2; fill: none; }
-      .wire-arrow { fill: var(--wire-line); }
-      .tag-blue { fill: #0284c7; font-weight: 700; font-size: 11px; font-family: monospace; }
+      path { fill: none; }
+      marker path { fill: inherit; }
+      polygon { fill: inherit; }
+      text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
     </style>
-    <filter id="shadowLight" x="-5%" y="-5%" width="110%" height="110%">
-      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.08"/>
-    </filter>
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--wire-line)"/>
+      </marker>
+      <marker id="arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--bus-line)"/>
+      </marker>
+      <marker id="arrow-red" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--accent-red)"/>
+      </marker>
+      <marker id="arrow-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--accent-green)"/>
+      </marker>
+    </defs>
 
-    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" class="wire-arrow"/>
-    </marker>
-  </defs>
+  <!-- Background Canvas -->
+  <rect width="1180" height="720" rx="12" fill="var(--canvas-bg)" stroke="var(--canvas-border)" stroke-width="2"/>
 
-  <rect x="10" y="10" width="940" height="500" class="canvas-bg"/>
-  <text x="480" y="45" class="title-text">CẤU TRÚC ĐIỆN TỬ VẬT LÝ CHÂN I/O STM32F103 (GPIO PAD)</text>
-  <text x="480" y="70" class="subtitle-text">Mô hình phân tích transistor P-MOS, N-MOS, Diodes kẹp bảo vệ và Schmitt Trigger</text>
+  <!-- Top Title Bar -->
+  <rect x="25" y="16" width="1130" height="64" rx="8" fill="var(--card-bg)" stroke="var(--card-border)" stroke-width="1.5"/>
+  <text x="45" y="42" font-size="17" font-weight="800" fill="var(--title-color)">STMicroelectronics RM0008 Reference Manual — Section 9.1</text>
+  <text x="45" y="64" font-size="13" font-weight="600" fill="var(--accent-blue)">Figure 13: Basic structure of a standard I/O port bit (Sơ đồ nguyên lý mạch Transistor chân GPIO)</text>
+  <rect x="1000" y="28" width="135" height="36" rx="6" fill="#00205b"/>
+  <text x="1067" y="51" text-anchor="middle" font-size="12" font-weight="800" fill="#ffffff">STM32F103</text>
 
-  <!-- Khối vi mạch chân I/O -->
-  <rect x="140" y="95" width="760" height="390" class="card-box" stroke-dasharray="6,4"/>
-  <text x="160" y="120" font-size="12" font-weight="bold" fill="var(--accent-blue)">STM32 I/O INTERNAL STRUCTURE (RM0008)</text>
+  <!-- Zone 1: Bus Interface & Registers (X: 30 -> 240) -->
+  <g transform="translate(30, 95)">
+    <rect width="210" height="595" rx="8" fill="var(--card-bg)" stroke="var(--card-border)" stroke-width="1.5"/>
+    <text x="105" y="26" text-anchor="middle" font-size="13" font-weight="800" fill="var(--title-color)">BUS INTERFACE</text>
+    <text x="105" y="42" text-anchor="middle" font-size="11" font-weight="600" fill="var(--text-muted)">Peripheral Bus APB2</text>
 
-  <!-- Chân Kim loại Ngoài (PAD) -->
-  <rect x="30" y="250" width="90" height="60" rx="8" fill="#3b82f6" stroke="#1d4ed8" stroke-width="2" filter="url(#shadowLight)"/>
-  <text x="75" y="278" font-size="14" font-weight="900" fill="#ffffff" text-anchor="middle">PAD</text>
-  <text x="75" y="296" font-size="11" font-weight="600" fill="#e0f2fe" text-anchor="middle">(Chân Pin I/O)</text>
+    <!-- BSRR / BRR -->
+    <g transform="translate(15, 60)">
+      <rect width="180" height="48" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-blue)" stroke-width="1.5"/>
+      <text x="90" y="20" text-anchor="middle" font-size="11" font-weight="700" fill="var(--title-color)">Bit Set / Reset Reg</text>
+      <text x="90" y="36" text-anchor="middle" font-size="10" font-weight="700" fill="var(--accent-blue)" class="mono">GPIOx_BSRR / BRR</text>
+    </g>
 
-  <!-- Đường dẫn từ Pad vào trong -->
-  <line x1="120" y1="280" x2="800" y2="280" stroke="#0284c7" stroke-width="4"/>
+    <!-- Write Bus line to ODR -->
+    <path d="M 105 108 L 105 130" fill="none" stroke="var(--bus-line)" stroke-width="2.5" marker-end="url(#arrow-blue)"/>
 
-  <!-- Khối Diode bảo vệ kẹp áp -->
-  <g transform="translate(200, 150)">
-    <rect x="0" y="0" width="130" height="50" rx="8" fill="var(--box-amber)" stroke="#f59e0b" stroke-width="1.5"/>
-    <text x="65" y="24" font-size="11" font-weight="700" fill="var(--text-primary)" text-anchor="middle">Diode Kẹp VDD</text>
-    <text x="65" y="40" font-size="10" font-weight="600" fill="var(--accent-amber)" text-anchor="middle">Chống quá áp >3.3V</text>
-    <line x1="65" y1="50" x2="65" y2="130" class="wire"/>
+    <!-- ODR -->
+    <g transform="translate(15, 130)">
+      <rect width="180" height="52" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-blue)" stroke-width="2"/>
+      <text x="90" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="var(--title-color)">Output Data Register</text>
+      <text x="90" y="39" text-anchor="middle" font-size="11" font-weight="800" fill="var(--accent-blue)" class="mono">GPIOx_ODR</text>
+    </g>
+
+    <!-- Read ODR Feedback -->
+    <g transform="translate(15, 205)">
+      <rect width="180" height="34" rx="4" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+      <text x="90" y="22" text-anchor="middle" font-size="10" font-weight="600" fill="var(--text-primary)">Read GPIOx_ODR</text>
+    </g>
+
+    <!-- Alternate Function Output -->
+    <g transform="translate(15, 260)">
+      <rect width="180" height="48" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-purple)" stroke-width="1.5"/>
+      <text x="90" y="20" text-anchor="middle" font-size="11" font-weight="700" fill="var(--accent-purple)">Alternate Function Out</text>
+      <text x="90" y="36" text-anchor="middle" font-size="9" fill="var(--text-muted)">(USART_TX, SPI_SCK...)</text>
+    </g>
+
+    <!-- Input Data Register (IDR) -->
+    <g transform="translate(15, 365)">
+      <rect width="180" height="55" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-green)" stroke-width="2"/>
+      <text x="90" y="24" text-anchor="middle" font-size="11" font-weight="700" fill="var(--title-color)">Input Data Register</text>
+      <text x="90" y="42" text-anchor="middle" font-size="12" font-weight="800" fill="var(--accent-green)" class="mono">GPIOx_IDR</text>
+    </g>
+
+    <!-- Alternate Function Input -->
+    <g transform="translate(15, 445)">
+      <rect width="180" height="48" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-purple)" stroke-width="1.5"/>
+      <text x="90" y="20" text-anchor="middle" font-size="11" font-weight="700" fill="var(--accent-purple)">Alternate Function In</text>
+      <text x="90" y="36" text-anchor="middle" font-size="9" fill="var(--text-muted)">(USART_RX, EXTI, TIM)</text>
+    </g>
+
+    <!-- Analog In/Out -->
+    <g transform="translate(15, 520)">
+      <rect width="180" height="45" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-amber)" stroke-width="1.5"/>
+      <text x="90" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="var(--accent-amber)">Analog In / Out</text>
+      <text x="90" y="37" text-anchor="middle" font-size="9" fill="var(--text-muted)">(ADC Input / DAC Out)</text>
+    </g>
   </g>
 
-  <g transform="translate(200, 360)">
-    <rect x="0" y="0" width="130" height="50" rx="8" fill="var(--box-amber)" stroke="#f59e0b" stroke-width="1.5"/>
-    <text x="65" y="24" font-size="11" font-weight="700" fill="var(--text-primary)" text-anchor="middle">Diode Kẹp VSS</text>
-    <text x="65" y="40" font-size="10" font-weight="600" fill="var(--accent-amber)" text-anchor="middle">Chống điện áp âm &lt;0V</text>
-    <line x1="65" y1="0" x2="65" y2="-80" class="wire"/>
+  <!-- Zone 2: Output Control Block (X: 275 -> 445) -->
+  <g transform="translate(275, 215)">
+    <rect width="170" height="150" rx="8" fill="var(--card-bg)" stroke="var(--accent-blue)" stroke-width="2"/>
+    <text x="85" y="26" text-anchor="middle" font-size="12" font-weight="800" fill="var(--accent-blue)">OUTPUT CONTROL</text>
+    <text x="85" y="45" text-anchor="middle" font-size="10" font-weight="700" fill="var(--title-color)">Push-Pull / Open-Drain</text>
+    <text x="85" y="62" text-anchor="middle" font-size="9" fill="var(--text-muted)">Logic &amp; Driver Control</text>
+    
+    <line x1="15" y1="75" x2="155" y2="75" stroke="var(--card-border)"/>
+    <text x="85" y="94" text-anchor="middle" font-size="10" font-weight="700" fill="var(--accent-amber)">CNF[1:0] / MODE[1:0]</text>
+    <text x="85" y="112" text-anchor="middle" font-size="9" fill="var(--text-muted)">Output Speed 2/10/50MHz</text>
+    <text x="85" y="128" text-anchor="middle" font-size="9" fill="var(--text-muted)">Tự động ngắt P-MOS khi OD</text>
+
+    <!-- Input lines into Output Control from ODR & AF -->
+    <path d="M -35 30 L 0 30" fill="none" stroke="var(--bus-line)" stroke-width="2" marker-end="url(#arrow-blue)"/>
+    <text x="-5" y="24" text-anchor="end" font-size="9" font-weight="700" fill="var(--bus-line)">ODR bit</text>
+
+    <path d="M -35 90 L 0 90" fill="none" stroke="var(--accent-purple)" stroke-width="2" marker-end="url(#arrow-blue)"/>
+    <text x="-5" y="84" text-anchor="end" font-size="9" font-weight="700" fill="var(--accent-purple)">AF Out</text>
   </g>
 
-  <!-- Khối Điện trở kéo Pull-up / Pull-down -->
-  <g transform="translate(370, 130)">
-    <rect x="0" y="0" width="150" height="70" rx="8" fill="var(--box-purple)" stroke="#8b5cf6" stroke-width="1.5"/>
-    <text x="75" y="25" font-size="12" font-weight="700" fill="var(--text-primary)" text-anchor="middle">Pull-up (40kΩ)</text>
-    <text x="75" y="45" font-size="10" font-weight="600" fill="var(--text-muted)" text-anchor="middle">Điều khiển bởi ODR</text>
-    <text x="75" y="60" font-size="10" font-weight="700" fill="var(--accent-purple)" text-anchor="middle">Kéo lên 3.3V</text>
-    <line x1="75" y1="70" x2="75" y2="150" class="wire"/>
+  <!-- Zone 3: MOSFET Transistor Output Driver (X: 490 -> 640) -->
+  <g transform="translate(490, 150)">
+    <!-- Gate P line from Output Control -->
+    <path d="M -45 95 L -20 95 L -20 45 L 30 45" fill="none" stroke="var(--wire-line)" stroke-width="2" marker-end="url(#arrow)"/>
+    <text x="-15" y="38" font-size="10" font-weight="700" fill="var(--accent-red)">Gate P</text>
+
+    <!-- P-MOS Transistor Box -->
+    <rect x="30" y="15" width="130" height="65" rx="6" fill="var(--card-bg)" stroke="var(--accent-red)" stroke-width="2"/>
+    <!-- Inversion Bubble (PMOS) -->
+    <circle cx="24" cy="45" r="4" fill="none" stroke="var(--accent-red)" stroke-width="2"/>
+    <text x="95" y="40" text-anchor="middle" font-size="14" font-weight="900" fill="var(--accent-red)">P-MOS</text>
+    <text x="95" y="58" text-anchor="middle" font-size="9" font-weight="700" fill="var(--text-muted)">Pull-Up to VDD</text>
+
+    <!-- VDD Power Rail to P-MOS Source -->
+    <line x1="95" y1="-25" x2="95" y2="15" stroke="var(--vdd-color)" stroke-width="2.5"/>
+    <polygon points="90,-25 100,-25 95,-36" fill="var(--vdd-color)"/>
+    <text x="95" y="-42" text-anchor="middle" font-size="12" font-weight="900" fill="var(--vdd-color)">VDD (3.3V)</text>
+
+    <!-- Gate N line from Output Control -->
+    <path d="M -45 160 L -20 160 L -20 215 L 30 215" fill="none" stroke="var(--wire-line)" stroke-width="2" marker-end="url(#arrow)"/>
+    <text x="-15" y="208" font-size="10" font-weight="700" fill="var(--vss-color)">Gate N</text>
+
+    <!-- N-MOS Transistor Box -->
+    <rect x="30" y="185" width="130" height="65" rx="6" fill="var(--card-bg)" stroke="var(--vss-color)" stroke-width="2"/>
+    <text x="95" y="212" text-anchor="middle" font-size="14" font-weight="900" fill="var(--vss-color)">N-MOS</text>
+    <text x="95" y="230" text-anchor="middle" font-size="9" font-weight="700" fill="var(--text-muted)">Pull-Down to VSS</text>
+
+    <!-- VSS (Ground) from N-MOS Source -->
+    <line x1="95" y1="250" x2="95" y2="285" stroke="var(--vss-color)" stroke-width="2.5"/>
+    <line x1="75" y1="285" x2="115" y2="285" stroke="var(--vss-color)" stroke-width="2.5"/>
+    <line x1="82" y1="290" x2="108" y2="290" stroke="var(--vss-color)" stroke-width="2"/>
+    <line x1="89" y1="295" x2="101" y2="295" stroke="var(--vss-color)" stroke-width="1.5"/>
+    <text x="95" y="312" text-anchor="middle" font-size="11" font-weight="800" fill="var(--vss-color)">VSS (GND)</text>
+
+    <!-- Drains Junction: Output node combining P-MOS and N-MOS -->
+    <path d="M 160 45 L 200 45 L 200 215 L 160 215" fill="none" stroke="var(--wire-line)" stroke-width="2.5"/>
+    <circle cx="200" cy="130" r="4.5" fill="var(--title-color)"/>
+    <line x1="200" y1="130" x2="250" y2="130" stroke="var(--wire-line)" stroke-width="2.5"/>
+    <text x="210" y="122" font-size="10" font-weight="700" fill="var(--text-muted)">Driver Out</text>
   </g>
 
-  <g transform="translate(370, 350)">
-    <rect x="0" y="0" width="150" height="70" rx="8" fill="var(--box-purple)" stroke="#8b5cf6" stroke-width="1.5"/>
-    <text x="75" y="25" font-size="12" font-weight="700" fill="var(--text-primary)" text-anchor="middle">Pull-down (40kΩ)</text>
-    <text x="75" y="45" font-size="10" font-weight="600" fill="var(--text-muted)" text-anchor="middle">Điều khiển bởi ODR</text>
-    <text x="75" y="60" font-size="10" font-weight="700" fill="var(--accent-purple)" text-anchor="middle">Kéo xuống GND</text>
-    <line x1="75" y1="0" x2="75" y2="-70" class="wire"/>
+  <!-- Zone 4: Internal Pull-Up & Pull-Down Resistors (X: 720 -> 840) -->
+  <g transform="translate(710, 100)">
+    <!-- VDD Power Rail for Pull-Up -->
+    <line x1="60" y1="25" x2="60" y2="45" stroke="var(--vdd-color)" stroke-width="2"/>
+    <polygon points="55,25 65,25 60,16" fill="var(--vdd-color)"/>
+    <text x="60" y="10" text-anchor="middle" font-size="11" font-weight="800" fill="var(--vdd-color)">VDD</text>
+
+    <!-- Pull-Up Resistor Box -->
+    <rect x="5" y="45" width="110" height="75" rx="6" fill="var(--card-bg)" stroke="var(--card-border)" stroke-width="1.5"/>
+    <text x="60" y="68" text-anchor="middle" font-size="11" font-weight="700" fill="var(--title-color)">R_PU ~40kΩ</text>
+    <text x="60" y="86" text-anchor="middle" font-size="10" font-weight="700" fill="var(--accent-blue)">P-MOS Switch</text>
+    <text x="60" y="104" text-anchor="middle" font-size="8" fill="var(--text-muted)">(Bật khi ODR=1)</text>
+
+    <!-- Wire from Pull-up to Main I/O Bus -->
+    <line x1="60" y1="120" x2="60" y2="180" stroke="var(--wire-line)" stroke-width="2"/>
+    <circle cx="60" cy="180" r="4" fill="var(--title-color)"/>
+
+    <!-- Pull-Down Resistor Box -->
+    <rect x="5" y="225" width="110" height="75" rx="6" fill="var(--card-bg)" stroke="var(--card-border)" stroke-width="1.5"/>
+    <text x="60" y="248" text-anchor="middle" font-size="11" font-weight="700" fill="var(--title-color)">R_PD ~40kΩ</text>
+    <text x="60" y="266" text-anchor="middle" font-size="10" font-weight="700" fill="var(--accent-green)">N-MOS Switch</text>
+    <text x="60" y="284" text-anchor="middle" font-size="8" fill="var(--text-muted)">(Bật khi ODR=0)</text>
+
+    <line x1="60" y1="180" x2="60" y2="225" stroke="var(--wire-line)" stroke-width="2"/>
+    <line x1="60" y1="300" x2="60" y2="330" stroke="var(--vss-color)" stroke-width="2"/>
+    <!-- Ground symbol -->
+    <line x1="45" y1="330" x2="75" y2="330" stroke="var(--vss-color)" stroke-width="2"/>
+    <line x1="50" y1="334" x2="70" y2="334" stroke="var(--vss-color)" stroke-width="1.5"/>
+    <line x1="55" y1="338" x2="65" y2="338" stroke="var(--vss-color)" stroke-width="1"/>
+    <text x="60" y="352" text-anchor="middle" font-size="10" font-weight="700" fill="var(--vss-color)">VSS</text>
   </g>
 
-  <!-- Khối Đệm Ngõ Ra Output Driver (Push-Pull vs Open-Drain) -->
-  <g transform="translate(560, 140)">
-    <rect x="0" y="0" width="170" height="120" rx="8" fill="var(--box-green)" stroke="#10b981" stroke-width="1.5"/>
-    <text x="85" y="25" font-size="12" font-weight="800" fill="#059669" text-anchor="middle">OUTPUT DRIVER</text>
-    <rect x="15" y="38" width="140" height="30" rx="4" fill="var(--card-bg)" stroke="#10b981"/>
-    <text x="85" y="58" font-size="11" font-weight="700" fill="var(--text-primary)" text-anchor="middle">P-MOS Transistor</text>
-    <rect x="15" y="76" width="140" height="30" rx="4" fill="var(--card-bg)" stroke="#10b981"/>
-    <text x="85" y="96" font-size="11" font-weight="700" fill="var(--text-primary)" text-anchor="middle">N-MOS Transistor</text>
-    <line x1="85" y1="120" x2="85" y2="140" class="wire"/>
+  <!-- Zone 5: Input Stage - Schmitt Trigger (X: 520 -> 720, Y: 480) -->
+  <g transform="translate(460, 470)">
+    <!-- Tap wire from main I/O bus down to Schmitt Trigger -->
+    <path d="M 310 -190 L 310 -20 L 220 -20 L 220 20" fill="none" stroke="var(--wire-line)" stroke-width="2"/>
+    <circle cx="310" cy="-190" r="4" fill="var(--title-color)"/>
+
+    <!-- Schmitt Trigger Box -->
+    <rect x="70" y="0" width="160" height="65" rx="6" fill="var(--card-bg)" stroke="var(--accent-green)" stroke-width="2"/>
+    <text x="150" y="24" text-anchor="middle" font-size="12" font-weight="800" fill="var(--accent-green)">SCHMITT TRIGGER</text>
+    
+    <!-- Hysteresis Icon -->
+    <path d="M 130 46 L 148 46 L 148 36 L 166 36" fill="none" stroke="var(--accent-green)" stroke-width="2.5"/>
+    <text x="150" y="58" text-anchor="middle" font-size="8" fill="var(--text-muted)">Hysteresis ~200mV</text>
+
+    <!-- Line out of Schmitt Trigger to IDR and AF In -->
+    <path d="M 70 32 L -220 32 L -220 -10" fill="none" stroke="var(--accent-green)" stroke-width="2" marker-end="url(#arrow-green)"/>
+    <text x="-150" y="24" font-size="9" font-weight="700" fill="var(--accent-green)">Input to IDR</text>
+
+    <path d="M -220 32 L -220 50" fill="none" stroke="var(--accent-purple)" stroke-width="2" marker-end="url(#arrow-blue)"/>
+    <text x="-150" y="46" font-size="9" font-weight="700" fill="var(--accent-purple)">Input to AF</text>
   </g>
 
-  <!-- Khối Đọc Ngõ Vào Schmitt Trigger -->
-  <g transform="translate(560, 310)">
-    <rect x="0" y="0" width="170" height="100" rx="8" fill="var(--box-blue)" stroke="#0284c7" stroke-width="1.5"/>
-    <text x="85" y="26" font-size="12" font-weight="800" fill="#0284c7" text-anchor="middle">INPUT CIRCUITRY</text>
-    <rect x="15" y="38" width="140" height="48" rx="4" fill="var(--card-bg)" stroke="#0284c7"/>
-    <text x="85" y="58" font-size="11" font-weight="700" fill="var(--text-primary)" text-anchor="middle">Schmitt Trigger</text>
-    <text x="85" y="74" font-size="9.5" font-weight="600" fill="var(--text-muted)" text-anchor="middle">Lọc nhiễu sườn xung</text>
-    <line x1="85" y1="0" x2="85" y2="-30" class="wire"/>
-    <!-- Đường đi vào IDR -->
-    <line x1="170" y1="62" x2="220" y2="62" class="wire" marker-end="url(#arrow)"/>
-  </g>
+  <!-- Analog Tap wire directly from PAD to Analog Block -->
+  <path d="M 850 280 L 850 635 L 240 635" fill="none" stroke="var(--accent-amber)" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#arrow)"/>
+  <circle cx="850" cy="280" r="4" fill="var(--accent-amber)"/>
+  <text x="560" y="628" text-anchor="middle" font-size="9" font-weight="700" fill="var(--accent-amber)">Tín hiệu Analog (Bỏ qua Schmitt Trigger &amp; Output Driver)</text>
 
-  <!-- Thanh ghi IDR -->
-  <g transform="translate(790, 345)">
-    <rect x="0" y="0" width="95" height="55" rx="6" fill="#0284c7" filter="url(#shadowLight)"/>
-    <text x="47" y="24" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">GPIOx_IDR</text>
-    <text x="47" y="42" font-size="9.5" font-weight="600" fill="#bae6fd" text-anchor="middle">(Input Data)</text>
-  </g>
+  <!-- Zone 6: Protection Diodes & Physical I/O PAD (X: 860 -> 1140) -->
+  <g transform="translate(870, 95)">
+    <!-- Main I/O Net Bus Line -->
+    <line x1="-130" y1="185" x2="130" y2="185" stroke="var(--wire-line)" stroke-width="3"/>
 
-  <!-- Thanh ghi ODR -->
-  <g transform="translate(745, 170)">
-    <rect x="0" y="0" width="95" height="55" rx="6" fill="#059669" filter="url(#shadowLight)"/>
-    <text x="47" y="24" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">GPIOx_ODR</text>
-    <text x="47" y="42" font-size="9.5" font-weight="600" fill="#d1fae5" text-anchor="middle">(Output Data)</text>
-    <line x1="0" y1="28" x2="-15" y2="28" class="wire" marker-end="url(#arrow)"/>
-  </g>
+    <!-- Protection Diode D1 (to VDD) -->
+    <line x1="30" y1="185" x2="30" y2="70" stroke="var(--wire-line)" stroke-width="2"/>
+    <circle cx="30" cy="185" r="4" fill="var(--title-color)"/>
+    
+    <!-- Diode symbol pointing UP to VDD -->
+    <polygon points="20,105 40,105 30,85" fill="var(--accent-red)" stroke="var(--accent-red)" stroke-width="1.5"/>
+    <line x1="20" y1="85" x2="40" y2="85" stroke="var(--accent-red)" stroke-width="2"/>
+    <line x1="30" y1="85" x2="30" y2="40" stroke="var(--vdd-color)" stroke-width="2"/>
+    <polygon points="25,40 35,40 30,30" fill="var(--vdd-color)"/>
+    <text x="30" y="22" text-anchor="middle" font-size="11" font-weight="800" fill="var(--vdd-color)">VDD (3.3V)</text>
+    <text x="70" y="98" font-size="10" font-weight="700" fill="var(--accent-red)">D1 (ESD)</text>
 
+    <!-- Protection Diode D2 (from VSS) -->
+    <line x1="30" y1="185" x2="30" y2="300" stroke="var(--wire-line)" stroke-width="2"/>
+    <!-- Diode symbol pointing UP from VSS -->
+    <polygon points="20,270 40,270 30,250" fill="var(--accent-green)" stroke="var(--accent-green)" stroke-width="1.5"/>
+    <line x1="20" y1="250" x2="40" y2="250" stroke="var(--accent-green)" stroke-width="2"/>
+    <line x1="30" y1="270" x2="30" y2="320" stroke="var(--vss-color)" stroke-width="2"/>
+    <!-- Ground symbol -->
+    <line x1="15" y1="320" x2="45" y2="320" stroke="var(--vss-color)" stroke-width="2"/>
+    <line x1="20" y1="325" x2="40" y2="325" stroke="var(--vss-color)" stroke-width="1.5"/>
+    <line x1="25" y1="330" x2="35" y2="330" stroke="var(--vss-color)" stroke-width="1"/>
+    <text x="30" y="348" text-anchor="middle" font-size="10" font-weight="700" fill="var(--vss-color)">VSS (GND)</text>
+    <text x="70" y="265" font-size="10" font-weight="700" fill="var(--accent-green)">D2 (ESD)</text>
+
+    <!-- Note on 5V-Tolerant (FT) pins -->
+    <rect x="-15" y="130" width="130" height="34" rx="4" fill="var(--canvas-bg)" stroke="var(--accent-amber)" stroke-dasharray="3,3"/>
+    <text x="50" y="145" text-anchor="middle" font-size="8" font-weight="700" fill="var(--accent-amber)">Chân 5V-Tolerant (FT):</text>
+    <text x="50" y="157" text-anchor="middle" font-size="8" fill="var(--text-muted)">Không có D1 nối VDD</text>
+
+    <!-- Physical External Pin (PAD) -->
+    <g transform="translate(130, 150)">
+      <rect width="140" height="70" rx="8" fill="#0284c7" stroke="#0369a1" stroke-width="2"/>
+      <text x="70" y="30" text-anchor="middle" font-size="16" font-weight="900" fill="#ffffff">I/O PIN (PAD)</text>
+      <text x="70" y="48" text-anchor="middle" font-size="10" font-weight="600" fill="#e0f2fe">Chân kim loại vật lý</text>
+      <text x="70" y="62" text-anchor="middle" font-size="9" fill="#bae6fd">(PA0..PA15, PB0...)</text>
+    </g>
+  </g>
 </svg>

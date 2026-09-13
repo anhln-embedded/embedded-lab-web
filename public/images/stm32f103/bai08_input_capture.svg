@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" width="100%" height="100%">
+  <style>
+    :root {
+      --canvas-bg: #ffffff;
+      --canvas-border: #cbd5e1;
+      --card-bg: #f8fafc;
+      --card-border: #94a3b8;
+      --title-color: #0f172a;
+      --subtitle-color: #475569;
+      --text-primary: #0f172a;
+      --text-muted: #64748b;
+      --accent-blue: #0284c7;
+      --accent-green: #059669;
+      --accent-amber: #d97706;
+      --accent-red: #dc2626;
+      --accent-purple: #7c3aed;
+      --wire-line: #334155;
+    }
+    path { fill: none; }
+    text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    .mono { font-family: ui-monospace, Menlo, Consolas, monospace; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--wire-line)"/>
+    </marker>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--accent-blue)"/>
+    </marker>
+  </defs>
+
+  <rect width="920" height="400" rx="14" fill="var(--canvas-bg)" stroke="var(--canvas-border)" stroke-width="2"/>
+  <text x="460" y="36" text-anchor="middle" font-size="19" font-weight="700" fill="var(--title-color)">NGUYÊN LÝ HOẠT ĐỘNG KHỐI INPUT CAPTURE (TIMER)</text>
+  <text x="460" y="58" text-anchor="middle" font-size="12.5" fill="var(--subtitle-color)">Tự động chốt giá trị bộ đếm TIMx_CNT vào thanh ghi TIMx_CCR1 khi phát hiện cạnh xung</text>
+
+  <!-- Signal Waveform Panel -->
+  <g transform="translate(40, 80)">
+    <rect width="840" height="130" rx="8" fill="var(--card-bg)" stroke="var(--card-border)" stroke-width="1.5"/>
+    <text x="20" y="30" font-size="13" font-weight="700" fill="var(--accent-blue)">Tín hiệu ngõ vào (Input Pin PA6 / TIM3_CH1)</text>
+
+    <!-- Waveform line -->
+    <path d="M 50 95 L 200 95 L 200 45 L 600 45 L 600 95 L 800 95" stroke="var(--accent-blue)" stroke-width="3" stroke-linejoin="round"/>
+    
+    <!-- Rising edge marker -->
+    <line x1="200" y1="100" x2="200" y2="120" stroke="var(--accent-green)" stroke-width="2" stroke-dasharray="3,3"/>
+    <text x="200" y="118" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--accent-green)">▲ Cạnh lên (t1)</text>
+
+    <!-- Falling edge marker -->
+    <line x1="600" y1="100" x2="600" y2="120" stroke="var(--accent-red)" stroke-width="2" stroke-dasharray="3,3"/>
+    <text x="600" y="118" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--accent-red)">▲ Cạnh xuống (t2)</text>
+
+    <!-- Pulse width label -->
+    <line x1="205" y1="35" x2="595" y2="35" stroke="var(--wire-line)" stroke-width="1.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+    <rect x="330" y="24" width="140" height="22" rx="4" fill="var(--canvas-bg)" stroke="var(--wire-line)"/>
+    <text x="400" y="39" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--text-primary)">Độ rộng xung Δt = t2 - t1</text>
+  </g>
+
+  <!-- Hardware Latch Action Panels -->
+  <g transform="translate(60, 230)">
+    <rect width="360" height="140" rx="8" fill="var(--card-bg)" stroke="var(--accent-green)" stroke-width="1.5"/>
+    <text x="180" y="26" text-anchor="middle" font-size="13.5" font-weight="700" fill="var(--accent-green)">BƯỚC 1: BẮT CẠNH LÊN (RISING EDGE)</text>
+    <text x="20" y="52" font-size="12" fill="var(--text-primary)">1. Dò cạnh phát hiện điện áp tăng 0V → 3.3V</text>
+    <text x="20" y="74" font-size="12" fill="var(--text-primary)">2. Sao chép tức thời: <tspan font-weight="700" fill="var(--accent-blue)">CCR1 = TIMx_CNT (t1)</tspan></text>
+    <text x="20" y="96" font-size="12" fill="var(--text-primary)">3. Kéo cờ ngắt phần cứng: <tspan font-weight="700" fill="var(--accent-amber)">CC1IF = 1</tspan></text>
+    <text x="20" y="118" font-size="11.5" fill="var(--text-muted)">4. Đổi cấu hình bộ bắt cạnh sang Cạnh Xuống</text>
+  </g>
+
+  <g transform="translate(500, 230)">
+    <rect width="360" height="140" rx="8" fill="var(--card-bg)" stroke="var(--accent-red)" stroke-width="1.5"/>
+    <text x="180" y="26" text-anchor="middle" font-size="13.5" font-weight="700" fill="var(--accent-red)">BƯỚC 2: BẮT CẠNH XUỐNG (FALLING EDGE)</text>
+    <text x="20" y="52" font-size="12" fill="var(--text-primary)">1. Dò cạnh phát hiện điện áp tụt 3.3V → 0V</text>
+    <text x="20" y="74" font-size="12" fill="var(--text-primary)">2. Sao chép tức thời: <tspan font-weight="700" fill="var(--accent-blue)">CCR1 = TIMx_CNT (t2)</tspan></text>
+    <text x="20" y="96" font-size="12" fill="var(--text-primary)">3. Tính thời gian: <tspan font-weight="700" fill="var(--accent-purple)">Δt = t2 - t1 (us)</tspan></text>
+    <text x="20" y="118" font-size="11.5" fill="var(--text-muted)">4. Đổi cấu hình bộ bắt cạnh quay lại Cạnh Lên</text>
+  </g>
+</svg>

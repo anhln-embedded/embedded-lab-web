@@ -1,0 +1,204 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1140 660" width="100%" height="100%">
+
+    <style>
+      :root {
+        --canvas-bg: #ffffff;
+        --canvas-border: #cbd5e1;
+        --card-bg: #ffffff;
+        --card-border: #94a3b8;
+        --title-color: #0f172a;
+        --subtitle-color: #475569;
+        --text-primary: #0f172a;
+        --text-muted: #64748b;
+        --st-blue: #00205b;
+        --accent-blue: #0284c7;
+        --accent-green: #059669;
+        --accent-amber: #d97706;
+        --accent-red: #dc2626;
+        --accent-purple: #7c3aed;
+        --wire-line: #334155;
+        --bus-line: #0284c7;
+        --vdd-color: #dc2626;
+        --vss-color: #16a34a;
+        --logic-gate: #0284c7;
+      }
+      
+      path { fill: none; }
+      marker path { fill: inherit; }
+      polygon { fill: inherit; }
+      text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    </style>
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--wire-line)"/>
+      </marker>
+      <marker id="arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--bus-line)"/>
+      </marker>
+      <marker id="arrow-red" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--accent-red)"/>
+      </marker>
+      <marker id="arrow-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--accent-green)"/>
+      </marker>
+    </defs>
+
+  <rect width="1140" height="660" rx="12" fill="var(--canvas-bg)" stroke="var(--canvas-border)" stroke-width="2"/>
+
+  <!-- Top Header -->
+  <rect x="25" y="16" width="1090" height="64" rx="8" fill="var(--card-bg)" stroke="var(--card-border)" stroke-width="1.5"/>
+  <text x="45" y="42" font-size="17" font-weight="800" fill="var(--title-color)">STMicroelectronics RM0008 Reference Manual — Section 10</text>
+  <text x="45" y="64" font-size="13" font-weight="600" fill="var(--accent-blue)">Figure 19: External interrupt/event controller block diagram (Sơ đồ khối bộ điều khiển ngắt ngoài EXTI)</text>
+  <rect x="960" y="28" width="135" height="36" rx="6" fill="#00205b"/>
+  <text x="1027" y="51" text-anchor="middle" font-size="12" font-weight="800" fill="#ffffff">STM32F103</text>
+
+  <!-- Left: GPIO Pin Multiplexer (AFIO_EXTICR) -->
+  <g transform="translate(35, 100)">
+    <rect width="210" height="520" rx="8" fill="var(--card-bg)" stroke="var(--card-border)" stroke-width="1.5"/>
+    <text x="105" y="28" text-anchor="middle" font-size="13" font-weight="800" fill="var(--title-color)">I/O PORT MUX (AFIO)</text>
+    <text x="105" y="46" text-anchor="middle" font-size="11" fill="var(--text-muted)">AFIO_EXTICR1..4</text>
+
+    <!-- Source Ports -->
+    <g transform="translate(15, 65)">
+      <rect width="180" height="60" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-blue)" stroke-width="1.5"/>
+      <text x="90" y="24" text-anchor="middle" font-size="11" font-weight="700" fill="var(--title-color)">PAx, PBx, PCx, PDx...</text>
+      <text x="90" y="42" text-anchor="middle" font-size="10" fill="var(--text-muted)">16 chân mỗi Port (Pin 0..15)</text>
+    </g>
+
+    <!-- MUX Selection Logic -->
+    <g transform="translate(15, 145)">
+      <rect width="180" height="150" rx="6" fill="var(--canvas-bg)" stroke="var(--card-border)"/>
+      <text x="90" y="26" text-anchor="middle" font-size="11" font-weight="700" fill="var(--accent-amber)">QUY TẮC MUX EXTI:</text>
+      <text x="15" y="52" font-size="10" fill="var(--text-primary)">• Cùng số chân = Chung 1 Line</text>
+      <text x="15" y="74" font-size="10" fill="var(--accent-red)">• PA0, PB0, PC0 → EXTI0</text>
+      <text x="15" y="96" font-size="10" fill="var(--text-muted)">(Không thể dùng song song!)</text>
+      <text x="15" y="122" font-size="10" fill="var(--accent-blue)">• PA1, PB1, PC1 → EXTI1</text>
+      <text x="15" y="140" font-size="10" fill="var(--accent-blue)">• PA15, PB15 → EXTI15</text>
+    </g>
+
+    <!-- Other EXTI Lines -->
+    <g transform="translate(15, 315)">
+      <rect width="180" height="185" rx="6" fill="var(--canvas-bg)" stroke="var(--accent-purple)" stroke-width="1.5"/>
+      <text x="90" y="26" text-anchor="middle" font-size="11" font-weight="700" fill="var(--accent-purple)">EXTI NỘI BỘ KHÁC:</text>
+      <text x="15" y="55" font-size="10" fill="var(--text-primary)">• Line 16: PVD (Nguồn sụt)</text>
+      <text x="15" y="80" font-size="10" fill="var(--text-primary)">• Line 17: RTC Alarm (Báo thức)</text>
+      <text x="15" y="105" font-size="10" fill="var(--text-primary)">• Line 18: USB Wakeup</text>
+      <text x="15" y="130" font-size="10" fill="var(--text-primary)">• Line 19: Ethernet Wakeup</text>
+      <text x="90" y="165" text-anchor="middle" font-size="9" fill="var(--text-muted)">Tổng cộng 20 đường ngắt</text>
+    </g>
+  </g>
+
+  <!-- Middle: Edge Detector & Control Registers (X: 280 -> 680) -->
+  <g transform="translate(280, 100)">
+    <!-- Input Line from AFIO -->
+    <path d="M -35 120 L 20 120" fill="none" stroke="var(--bus-line)" stroke-width="2.5" marker-end="url(#arrow-blue)"/>
+    <text x="-15" y="112" font-size="10" font-weight="700" fill="var(--bus-line)">EXTI Line x</text>
+
+    <!-- Edge Detector Circuit -->
+    <rect x="20" y="70" width="190" height="100" rx="8" fill="var(--card-bg)" stroke="var(--accent-blue)" stroke-width="2"/>
+    <text x="115" y="96" text-anchor="middle" font-size="12" font-weight="800" fill="var(--accent-blue)">EDGE DETECTOR</text>
+    <text x="115" y="116" text-anchor="middle" font-size="10" font-weight="600" fill="var(--title-color)">Mạch Phát Hiện Cạnh Xung</text>
+
+    <!-- Trigger Selection Registers -->
+    <g transform="translate(20, 200)">
+      <!-- Rising Trigger -->
+      <rect width="190" height="48" rx="6" fill="var(--card-bg)" stroke="var(--accent-green)" stroke-width="1.5"/>
+      <text x="95" y="20" text-anchor="middle" font-size="10" font-weight="700" fill="var(--accent-green)">Rising Trigger Selection</text>
+      <text x="95" y="36" text-anchor="middle" font-size="11" font-weight="800" fill="var(--title-color)" class="mono">EXTI_RTSR</text>
+
+      <!-- Falling Trigger -->
+      <rect y="65" width="190" height="48" rx="6" fill="var(--card-bg)" stroke="var(--accent-red)" stroke-width="1.5"/>
+      <text x="95" y="85" text-anchor="middle" font-size="10" font-weight="700" fill="var(--accent-red)">Falling Trigger Selection</text>
+      <text x="95" y="101" text-anchor="middle" font-size="11" font-weight="800" fill="var(--title-color)" class="mono">EXTI_FTSR</text>
+    </g>
+
+    <!-- Trigger control lines into Edge Detector -->
+    <path d="M 115 200 L 115 170" fill="none" stroke="var(--wire-line)" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <!-- Software Interrupt Event Register (SWIER) -->
+    <g transform="translate(20, 345)">
+      <rect width="190" height="52" rx="6" fill="var(--card-bg)" stroke="var(--accent-purple)" stroke-width="1.5"/>
+      <text x="95" y="22" text-anchor="middle" font-size="10" font-weight="700" fill="var(--accent-purple)">Software Interrupt Event Reg</text>
+      <text x="95" y="40" text-anchor="middle" font-size="11" font-weight="800" fill="var(--title-color)" class="mono">EXTI_SWIER</text>
+    </g>
+
+    <!-- OR Gate Combining Hardware Edge & Software Trigger -->
+    <g transform="translate(250, 95)">
+      <path d="M -40 25 L 0 25" fill="none" stroke="var(--wire-line)" stroke-width="2" marker-end="url(#arrow)"/>
+      <path d="M -40 275 L 0 275 L 0 65 L 20 65" fill="none" stroke="var(--wire-line)" stroke-width="2"/>
+      
+      <!-- OR gate symbol box -->
+      <rect x="20" y="10" width="70" height="70" rx="8" fill="var(--card-bg)" stroke="var(--logic-gate)" stroke-width="2"/>
+      <text x="55" y="48" text-anchor="middle" font-size="16" font-weight="900" fill="var(--logic-gate)">OR</text>
+    </g>
+
+    <!-- Output from OR Gate splits into Interrupt Path (Top) and Event Path (Bottom) -->
+    <path d="M 340 140 L 375 140 L 375 60 L 410 60" fill="none" stroke="var(--wire-line)" stroke-width="2"/>
+    <circle cx="375" cy="140" r="4" fill="var(--title-color)"/>
+    <path d="M 375 140 L 375 320 L 410 320" fill="none" stroke="var(--wire-line)" stroke-width="2"/>
+  </g>
+
+  <!-- Right: Interrupt & Event Logic (X: 720 -> 1100) -->
+  <g transform="translate(720, 100)">
+    <!-- TOP PATH: INTERRUPT REQUEST TO NVIC -->
+    <rect x="0" y="0" width="160" height="48" rx="6" fill="var(--card-bg)" stroke="var(--accent-blue)" stroke-width="1.5"/>
+    <text x="80" y="20" text-anchor="middle" font-size="10" font-weight="700" fill="var(--accent-blue)">Interrupt Mask Reg</text>
+    <text x="80" y="38" text-anchor="middle" font-size="11" font-weight="800" fill="var(--title-color)" class="mono">EXTI_IMR</text>
+
+    <!-- AND Gate for Interrupt -->
+    <g transform="translate(60, 60)">
+      <rect width="60" height="60" rx="6" fill="var(--card-bg)" stroke="var(--accent-green)" stroke-width="2"/>
+      <text x="30" y="36" text-anchor="middle" font-size="14" font-weight="900" fill="var(--accent-green)">AND</text>
+      <line x1="20" y1="-12" x2="20" y2="0" stroke="var(--wire-line)" stroke-width="2"/>
+    </g>
+
+    <!-- Pending Request Register (PR) -->
+    <g transform="translate(160, 65)">
+      <path d="M -40 25 L 0 25" fill="none" stroke="var(--wire-line)" stroke-width="2" marker-end="url(#arrow)"/>
+      <rect width="180" height="50" rx="6" fill="var(--card-bg)" stroke="var(--accent-amber)" stroke-width="2"/>
+      <text x="90" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="var(--title-color)">Pending Request Register</text>
+      <text x="90" y="40" text-anchor="middle" font-size="11" font-weight="800" fill="var(--accent-amber)" class="mono">EXTI_PR (Ghi 1 để xóa!)</text>
+    </g>
+
+    <!-- Output to NVIC -->
+    <g transform="translate(200, 155)">
+      <path d="M 50 -40 L 50 0" fill="none" stroke="var(--accent-red)" stroke-width="2.5" marker-end="url(#arrow-red)"/>
+      <rect width="170" height="85" rx="8" fill="#00205b" stroke="#00a3e0" stroke-width="2"/>
+      <text x="85" y="28" text-anchor="middle" font-size="14" font-weight="900" fill="#ffffff">NVIC CONTROLLER</text>
+      <text x="85" y="48" text-anchor="middle" font-size="10" font-weight="600" fill="#38bdf8">Vector Ngắt Cortex-M3</text>
+      <text x="85" y="66" text-anchor="middle" font-size="9" fill="#94a3b8">EXTI0_IRQn .. EXTI15_10_IRQn</text>
+    </g>
+
+    <!-- BOTTOM PATH: EVENT REQUEST (WAKEUP WFE) -->
+    <g transform="translate(0, 260)">
+      <rect width="160" height="48" rx="6" fill="var(--card-bg)" stroke="var(--accent-purple)" stroke-width="1.5"/>
+      <text x="80" y="20" text-anchor="middle" font-size="10" font-weight="700" fill="var(--accent-purple)">Event Mask Reg</text>
+      <text x="80" y="38" text-anchor="middle" font-size="11" font-weight="800" fill="var(--title-color)" class="mono">EXTI_EMR</text>
+    </g>
+
+    <!-- AND Gate for Event -->
+    <g transform="translate(60, 320)">
+      <rect width="60" height="60" rx="6" fill="var(--card-bg)" stroke="var(--accent-purple)" stroke-width="2"/>
+      <text x="30" y="36" text-anchor="middle" font-size="14" font-weight="900" fill="var(--accent-purple)">AND</text>
+      <line x1="20" y1="-12" x2="20" y2="0" stroke="var(--wire-line)" stroke-width="2"/>
+    </g>
+
+    <!-- Pulse Generator -->
+    <g transform="translate(160, 325)">
+      <path d="M -40 25 L 0 25" fill="none" stroke="var(--wire-line)" stroke-width="2" marker-end="url(#arrow)"/>
+      <rect width="180" height="50" rx="6" fill="var(--card-bg)" stroke="var(--accent-blue)" stroke-width="1.5"/>
+      <text x="90" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="var(--title-color)">Pulse Generator</text>
+      <text x="90" y="38" text-anchor="middle" font-size="10" fill="var(--text-muted)">Tạo xung đánh thức CPU</text>
+    </g>
+
+    <!-- Event Output -->
+    <g transform="translate(200, 410)">
+      <path d="M 50 -35 L 50 0" fill="none" stroke="var(--accent-purple)" stroke-width="2.5" marker-end="url(#arrow)"/>
+      <rect width="170" height="75" rx="8" fill="var(--card-bg)" stroke="var(--accent-purple)" stroke-width="2"/>
+      <text x="85" y="28" text-anchor="middle" font-size="13" font-weight="800" fill="var(--accent-purple)">EVENT OUTPUT</text>
+      <text x="85" y="48" text-anchor="middle" font-size="10" fill="var(--title-color)">Thoát chế độ WFE (Sleep)</text>
+      <text x="85" y="64" text-anchor="middle" font-size="9" fill="var(--text-muted)">Không tốn chi phí ISR!</text>
+    </g>
+  </g>
+</svg>
