@@ -286,6 +286,133 @@ restore_app() {
     echo -e "${GREEN}=====================================================${NC}"
 }
 
+auto_deploy() {
+    INTERVAL="${1:-30}" # Mặc định kiểm tra mỗi 30 giây
+    REPO="anhln-embedded/embedded-lab-web"
+    BRANCH="master"
+
+    echo -e "${CYAN}=====================================================${NC}"
+    echo -e "${CYAN}   Embedded Lab Web - GitHub Actions Auto-Deploy     ${NC}"
+    echo -e "${CYAN}=====================================================${NC}"
+    echo -e "${GREEN}[ℹ] Giám sát GitHub Actions cho repo: ${REPO} (nhánh ${BRANCH})${NC}"
+    echo -e "${GREEN}[ℹ] Chu kỳ thăm dò: mỗi ${INTERVAL} giây${NC}"
+    echo -e "${YELLOW}[!] Nhấn Ctrl+C để dừng chế độ tự động.${NC}"
+    echo -e "${CYAN}-----------------------------------------------------${NC}"
+
+    LAST_LOCAL_HASH=$(git rev-parse HEAD 2>/dev/null || echo "")
+    echo -e "${GREEN}[✔] Commit hiện tại trên máy chủ: ${LAST_LOCAL_HASH:0:7}${NC}"
+
+    while true; do
+        # 1. Kiểm tra SHA mới nhất trên remote bằng git ls-remote (Không bị giới hạn GitHub API rate limit)
+        REMOTE_HASH=$(git ls-remote origin "refs/heads/${BRANCH}" 2>/dev/null | awk '{print $1}')
+
+        if [ -n "$REMOTE_HASH" ] && [ "$REMOTE_HASH" != "$LAST_LOCAL_HASH" ]; then
+            echo -e "\n${YELLOW}[🚀] Phát hiện commit mới trên GitHub: ${REMOTE_HASH:0:7}${NC}"
+            echo -e "${CYAN}[🔍] Đang kiểm tra trạng thái build của GitHub Actions cho commit này...${NC}"
+
+            # 2. Thăm dò GitHub Actions API xem workflow Docker Build đã hoàn thành chưa
+            API_URL="https://api.github.com/repos/${REPO}/actions/runs?head_sha=${REMOTE_HASH}&per_page=5"
+            RESP=$(curl -s "$API_URL" 2>/dev/null)
+
+            RUN_STATUS=""
+            RUN_CONCLUSION=""
+
+            if command -v jq >/dev/null 2>&1; then
+                RUN_STATUS=$(echo "$RESP" | jq -r '.workflow_runs[]? | select(.name | test("Docker"; "i")) | .status' 2>/dev/null | head -n 1)
+                RUN_CONCLUSION=$(echo "$RESP" | jq -r '.workflow_runs[]? | select(.name | test("Docker"; "i")) | .conclusion' 2>/dev/null | head -n 1)
+            elif command -v python3 >/dev/null 2>&1; then
+                RUN_STATUS=$(echo "$RESP" | python3 -c "import sys, json; data=json.load(sys.stdin); runs=[r for r in data.get('workflow_runs',[]) if 'docker' in r.get('name','').lower()]; print(runs[0].get('status','') if runs else '')" 2>/dev/null)
+                RUN_CONCLUSION=$(echo "$RESP" | python3 -c "import sys, json; data=json.load(sys.stdin); runs=[r for r in data.get('workflow_runs',[]) if 'docker' in r.get('name','').lower()]; print(runs[0].get('conclusion','') if runs else '')" 2>/dev/null)
+            else
+                RUN_STATUS=$(echo "$RESP" | grep -o '"status": *"[^"]*"' | head -n 1 | cut -d'"' -f4)
+                RUN_CONCLUSION=$(echo "$RESP" | grep -o '"conclusion": *"[^"]*"' | head -n 1 | cut -d'"' -f4)
+            fi
+
+            if [ "$RUN_STATUS" = "completed" ] && [ "$RUN_CONCLUSION" = "success" ]; then
+                echo -e "\n${GREEN}=====================================================${NC}"
+                echo -e "${GREEN}[🎉] GITHUB ACTIONS BUILD DOCKER IMAGE THÀNH CÔNG!${NC}"
+                echo -e "${GREEN}     Commit SHA: ${REMOTE_HASH:0:7}${NC}"
+                echo -e "${GREEN}     Tự động kéo image mới và reload container...${NC}"
+                echo -e "${GREEN}=====================================================${NC}\n"
+
+                git pull origin "$BRANCH" 2>/dev/null || true
+                pull_image
+                ensure_containers_up
+                sync_database
+
+                LAST_LOCAL_HASH="$REMOTE_HASH"
+                echo -e "\n${GREEN}[✔] Tự động cập nhật hoàn tất! Hệ thống đang chạy bản ${LAST_LOCAL_HASH:0:7}${NC}\n"
+            elif [ "$RUN_STATUS" = "completed" ] && [ "$RUN_CONCLUSION" = "failure" ]; then
+                echo -e "\n${RED}[❌] GitHub Actions build thất bại cho commit ${REMOTE_HASH:0:7}! Giữ nguyên phiên bản hiện tại.${NC}"
+                LAST_LOCAL_HASH="$REMOTE_HASH"
+            else
+                echo -ne "\r${YELLOW}[⏳] GitHub Actions đang build (${RUN_STATUS:-chờ trigger})... Đợi ${INTERVAL}s...   ${NC}"
+            fi
+        else
+            echo -ne "\r${CYAN}[✔] Hệ thống ổn định (${LAST_LOCAL_HASH:0:7}). Chờ commit mới từ GitHub Actions...   ${NC}"
+        fi
+
+        sleep "$INTERVAL"
+    done
+}
+
+install_autodeploy_service() {
+    echo -e "${CYAN}[⚙️] Đang cài đặt Auto-Deploy thành Systemd Service trên Linux...${NC}"
+    if [ "$(id -u)" -ne 0 ]; then
+        echo -e "${RED}[!] Vui lòng chạy lệnh này với quyền root hoặc sudo!${NC}"
+        echo -e "    ${YELLOW}sudo ./scripts/manage.sh install-service${NC}"
+        return 1
+    fi
+
+    SERVICE_FILE="/etc/systemd/system/embedded-lab-autodeploy.service"
+    cat > "$SERVICE_FILE" << EOF
+[Unit]
+Description=Embedded Lab Web Auto-Deploy Watcher (GitHub Actions)
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=${PROJECT_DIR}
+ExecStart=/bin/bash ${PROJECT_DIR}/scripts/manage.sh autodeploy 30
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    systemctl daemon-reload
+    systemctl enable embedded-lab-autodeploy.service
+    systemctl restart embedded-lab-autodeploy.service
+
+    echo -e "${GREEN}=====================================================${NC}"
+    echo -e "${GREEN}[✔] Cài đặt Service thành công!${NC}"
+    echo -e "${GREEN}    Tên service: embedded-lab-autodeploy.service${NC}"
+    echo -e "${GREEN}    Trạng thái: Đang chạy ngầm tự động 24/7${NC}"
+    echo -e "${CYAN}    Xem log thời gian thực: ${YELLOW}journalctl -u embedded-lab-autodeploy -f${NC}"
+    echo -e "${CYAN}    Dừng service: ${YELLOW}sudo systemctl stop embedded-lab-autodeploy${NC}"
+    echo -e "${GREEN}=====================================================${NC}"
+}
+
+uninstall_autodeploy_service() {
+    echo -e "${YELLOW}[-] Đang gỡ bỏ Auto-Deploy Systemd Service...${NC}"
+    if [ "$(id -u)" -ne 0 ]; then
+        echo -e "${RED}[!] Vui lòng chạy với quyền root hoặc sudo: sudo ./scripts/manage.sh uninstall-service${NC}"
+        return 1
+    fi
+
+    systemctl stop embedded-lab-autodeploy.service 2>/dev/null || true
+    systemctl disable embedded-lab-autodeploy.service 2>/dev/null || true
+    rm -f /etc/systemd/system/embedded-lab-autodeploy.service
+    systemctl daemon-reload
+
+    echo -e "${GREEN}[✔] Đã gỡ bỏ service thành công.${NC}"
+}
+
 show_menu() {
     print_header
     echo -e " Vui lòng chọn thao tác:"
@@ -297,9 +424,12 @@ show_menu() {
     echo -e " ${CYAN}6)${NC} Logs (Xem log ứng dụng web)"
     echo -e " ${GREEN}7)${NC} Backup (Sao lưu DB SQLite + Uploads + .env + .cloudflared)"
     echo -e " ${YELLOW}8)${NC} Restore (Khôi phục từ file backup)"
+    echo -e " ${GREEN}9)${NC} Auto-Deploy (Tự động theo dõi Git Actions & reload khi có build mới)"
+    echo -e " ${CYAN}10)${NC} Cài đặt Auto-Deploy Service (Chạy ngầm vĩnh viễn trên Linux)"
+    echo -e " ${YELLOW}11)${NC} Gỡ bỏ Auto-Deploy Service"
     echo -e " ${RED}0)${NC} Thoát"
     echo -e "${CYAN}-----------------------------------------------------${NC}"
-    read -p "Nhập lựa chọn của bạn [0-8]: " choice
+    read -p "Nhập lựa chọn của bạn [0-11]: " choice
     case $choice in
         1) start_app ;;
         2) stop_app ;;
@@ -312,6 +442,9 @@ show_menu() {
             read -p "Nhập đường dẫn file backup: " bfile
             restore_app "$bfile"
             ;;
+        9) auto_deploy ;;
+        10) install_autodeploy_service ;;
+        11) uninstall_autodeploy_service ;;
         0) exit 0 ;;
         *) echo -e "${RED}Lựa chọn không hợp lệ!${NC}" ;;
     esac
@@ -343,6 +476,15 @@ case "$1" in
         ;;
     restore)
         restore_app "$2"
+        ;;
+    autodeploy|watch)
+        auto_deploy "$2"
+        ;;
+    install-service|service)
+        install_autodeploy_service
+        ;;
+    uninstall-service)
+        uninstall_autodeploy_service
         ;;
     *)
         show_menu

@@ -51,3 +51,13 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: 🔔 Notify Build Complete
+        if: success()
+        run: |
+          echo "========================================================"
+          echo "🎉 Docker Image built and pushed successfully to GHCR!"
+          echo "Image: ghcr.io/${{ github.repository }}:latest"
+          echo "Commit: ${{ github.sha }}"
+          echo "Server Auto-Deploy watcher will detect this success."
+          echo "========================================================"
