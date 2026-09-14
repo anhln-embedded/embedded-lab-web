@@ -14,6 +14,11 @@ export interface PostComment {
 }
 
 export const POST_TYPE_META: Record<BlogPostType, { label: string; icon: string; badgeColor: string }> = {
+  tutorial: {
+    label: "Chuyên đề Kỹ thuật",
+    icon: "💻",
+    badgeColor: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+  },
   recruitment: {
     label: "Tuyển thành viên",
     icon: "📢",

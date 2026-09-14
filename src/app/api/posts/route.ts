@@ -51,7 +51,111 @@ export async function GET(request: Request) {
       },
     });
 
-    return NextResponse.json({ success: true, data: posts });
+    const includeTutorials = searchParams.get("includeTutorials") === "true";
+    let allItems: any[] = posts;
+
+    if (includeTutorials) {
+      try {
+        const tutorialWhere: any = {
+          draft: draft === "true" ? true : draft === "false" ? false : false,
+        };
+
+        if (search) {
+          tutorialWhere.OR = [
+            { title: { contains: search } },
+            { titleEn: { contains: search } },
+            { summary: { contains: search } },
+            { summaryEn: { contains: search } },
+          ];
+        }
+
+        const tutorialArticles = await prisma.tutorialArticle.findMany({
+          where: tutorialWhere,
+          include: {
+            topic: {
+              select: {
+                id: true,
+                title: true,
+                slug: true,
+                category: true,
+                categoryName: true,
+                coverImage: true,
+                author: true,
+                authorAvatar: true,
+                authorTitle: true,
+              },
+            },
+          },
+          orderBy: [
+            { createdAt: "desc" },
+            { order: "asc" },
+          ],
+          take: 40,
+        });
+
+        const mappedTutorials = tutorialArticles.map((art) => {
+          const rawSummary = art.summary || art.summaryEn || "";
+          const cleanExcerpt = rawSummary
+            ? rawSummary
+            : art.contentHtml
+              ? art.contentHtml.replace(/<[^>]*>?/gm, "").slice(0, 160) + "..."
+              : "Bài viết chuyên đề kỹ thuật chuyên sâu từ Lab PTIT.";
+
+          const topicSlug = art.topic?.slug || "embedded";
+          const topicTitle = art.topic?.title || "Chuyên đề";
+
+          return {
+            id: `tut-${art.id}`,
+            title: art.title,
+            slug: art.slug,
+            excerpt: cleanExcerpt,
+            contentHtml: art.contentHtml || "",
+            coverImage: art.topic?.coverImage || "/images/logo.png",
+            coverAlt: art.title,
+            postType: "tutorial",
+            tags: `${art.topic?.category || "embedded"}, ${art.topic?.slug || "tutorial"}, chuyen-de-ky-thuat, chia-se-ky-thuat`,
+            series: topicTitle,
+            seriesOrder: art.order,
+            readingTime: parseInt(art.readTime) || 8,
+            featured: art.order === 1,
+            pinned: false,
+            draft: art.draft,
+            authorName: art.authorName || art.topic?.author || "Embedded-AIoT Lab PTIT",
+            authorTitle: art.authorTitle || art.topic?.authorTitle || "Kỹ sư Nghiên cứu Embedded",
+            authorAvatar: art.authorAvatar || art.topic?.authorAvatar || "/images/logo.png",
+            views: 0,
+            likesCount: 0,
+            createdAt: art.createdAt,
+            updatedAt: art.updatedAt,
+            isTutorial: true,
+            url: `/tutorials/${topicSlug}/${art.slug}`,
+            topicSlug: topicSlug,
+            topicTitle: topicTitle,
+            comments: [],
+          };
+        });
+
+        let filteredTutorials = mappedTutorials;
+        if (postType && postType !== "all") {
+          filteredTutorials = filteredTutorials.filter(
+            (t) => t.postType === postType || (postType === "technical" && t.postType === "tutorial")
+          );
+        }
+        if (tag) {
+          filteredTutorials = filteredTutorials.filter((t) => t.tags.includes(tag));
+        }
+
+        allItems = [...posts, ...filteredTutorials].sort((a, b) => {
+          if (a.pinned && !b.pinned) return -1;
+          if (!a.pinned && b.pinned) return 1;
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+      } catch (tutErr) {
+        console.warn("Could not merge tutorial articles into posts:", tutErr);
+      }
+    }
+
+    return NextResponse.json({ success: true, data: allItems });
   } catch (error: any) {
     console.error("Error fetching posts:", error);
     return NextResponse.json(

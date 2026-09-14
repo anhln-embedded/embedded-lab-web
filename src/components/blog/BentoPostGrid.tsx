@@ -66,6 +66,8 @@ export function BentoPostGrid({ posts, onPostUpdated }: BentoPostGridProps) {
 
   const getTypeIcon = (type?: string) => {
     switch (type) {
+      case "tutorial":
+        return <Cpu className="w-3.5 h-3.5 text-emerald-400" />;
       case "recruitment":
         return <Megaphone className="w-3.5 h-3.5 text-rose-400" />;
       case "daily":
@@ -79,6 +81,8 @@ export function BentoPostGrid({ posts, onPostUpdated }: BentoPostGridProps) {
 
   const getTypeBadge = (type?: string) => {
     switch (type) {
+      case "tutorial":
+        return { label: "Chuyên Đề Kỹ Thuật", style: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400" };
       case "recruitment":
         return { label: "Tuyển Thành Viên", style: "border-rose-500/30 bg-rose-500/10 text-rose-400" };
       case "daily":
@@ -183,7 +187,7 @@ export function BentoPostGrid({ posts, onPostUpdated }: BentoPostGridProps) {
                 href={heroPost.url || `/blog/${heroPost.slug}`}
                 className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-accent text-white hover:bg-accent-hover transition-all"
               >
-                <span>Đọc tin</span>
+                <span>{heroPost.isTutorial ? "Đọc chuyên đề" : "Đọc tin"}</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />
               </Link>
             </div>

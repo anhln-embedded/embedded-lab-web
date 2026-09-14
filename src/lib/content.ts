@@ -1,7 +1,7 @@
 // Embedded-AIoT Lab (Electronics of PTIT) Content Layer
 // Complete technical data layer with 10 lab articles, 4 courses, 8 field atlas topics
 
-export type BlogPostType = "recruitment" | "daily" | "technical" | "event" | "general";
+export type BlogPostType = "recruitment" | "daily" | "technical" | "event" | "general" | "tutorial";
 
 export interface BlogPostData {
   _id: string;
@@ -32,6 +32,9 @@ export interface BlogPostData {
   url: string;
   contentHtml?: string;
   body: { raw: string; code?: string };
+  isTutorial?: boolean;
+  topicSlug?: string;
+  topicTitle?: string;
 }
 
 export interface LessonData {

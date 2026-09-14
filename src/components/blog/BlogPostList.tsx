@@ -18,6 +18,7 @@ import {
   Megaphone,
   FlaskConical,
   Zap,
+  Cpu,
   Trophy,
   RotateCcw,
   LayoutGrid,
@@ -44,7 +45,7 @@ export function BlogPostList({ posts: initialPosts, variant = "default", searchQ
 
   const loadFromApi = React.useCallback(async () => {
     try {
-      const res = await fetch("/api/posts");
+      const res = await fetch("/api/posts?includeTutorials=true");
       const json = await res.json();
       if (json.success && Array.isArray(json.data)) {
         const apiPosts: BlogPostData[] = json.data.map((p: any) => ({
@@ -68,11 +69,14 @@ export function BlogPostList({ posts: initialPosts, variant = "default", searchQ
           githubUrl: p.githubUrl,
           series: p.series,
           seriesOrder: p.seriesOrder,
-          url: `/blog/${p.slug}`,
+          url: p.url || `/blog/${p.slug}`,
           contentHtml: p.contentHtml,
           body: {
             raw: p.contentHtml || "",
           },
+          isTutorial: p.isTutorial,
+          topicSlug: p.topicSlug,
+          topicTitle: p.topicTitle,
         }));
         setDisplayPosts(apiPosts);
         return;
@@ -141,7 +145,9 @@ export function BlogPostList({ posts: initialPosts, variant = "default", searchQ
       (p) =>
         p.title?.toLowerCase().includes(q) ||
         p.excerpt?.toLowerCase().includes(q) ||
-        p.tags?.some((t) => t.toLowerCase().includes(q))
+        p.tags?.some((t) => t.toLowerCase().includes(q)) ||
+        p.series?.toLowerCase().includes(q) ||
+        (p as any).topicTitle?.toLowerCase().includes(q)
     );
   }, [sortedPosts, searchQuery]);
 
@@ -151,6 +157,14 @@ export function BlogPostList({ posts: initialPosts, variant = "default", searchQ
 
   const availableFilters = React.useMemo(() => {
     const filters = [
+      {
+        id: "tutorial",
+        label: "Chuyên đề Kỹ thuật",
+        icon: Cpu,
+        color: "bg-emerald-600 text-white shadow-md shadow-emerald-600/20",
+        iconColor: "text-emerald-400",
+        count: displayPosts.filter((p) => p.postType === "tutorial" || p.tags?.includes("chuyen-de-ky-thuat")).length,
+      },
       {
         id: "recruitment",
         label: "Tuyển thành viên",
