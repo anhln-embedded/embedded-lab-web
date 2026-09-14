@@ -49,6 +49,7 @@ export interface LessonData {
   contentHtmlEn?: string;
   contentMarkdown?: string;
   contentMarkdownEn?: string;
+  order?: number | string;
 }
 
 export interface CourseModule {
