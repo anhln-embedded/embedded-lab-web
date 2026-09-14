@@ -19,19 +19,24 @@ import {
   X,
   Loader2,
   FileText,
-  Send
+  Send,
+  Layers,
+  Microscope,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { Button } from "@/components/ui/Button";
 
 interface SearchResult {
-  type: "blog" | "course";
+  type: "tutorial" | "lesson" | "course" | "blog" | "research";
   title: string;
   description: string;
   url: string;
-  tags: string[];
+  tags?: string[];
   date?: string;
+  breadcrumb?: string;
+  matchField?: string;
+  matchSnippet?: string;
 }
 
 export default function HomePage() {
@@ -150,8 +155,10 @@ export default function HomePage() {
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setShowDropdown(false);
-    scrollToSlide("posts");
+    if (searchQuery.trim()) {
+      setShowDropdown(false);
+      window.location.href = `/search?q=${encodeURIComponent(searchQuery.trim())}`;
+    }
   };
 
   const handleClearSearch = () => {
@@ -302,42 +309,73 @@ export default function HomePage() {
                     </div>
                   ) : (
                     <div className="space-y-1.5">
-                      {searchResults.map((item, idx) => (
-                        <Link
-                          key={`${item.url}-${idx}`}
-                          href={item.url}
-                          onClick={() => setShowDropdown(false)}
-                          className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-bg-elevated transition-colors group"
-                        >
-                          <div className="w-7 h-7 rounded-lg bg-accent/10 border border-accent/20 text-accent flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:bg-accent group-hover:text-white transition-colors">
-                            <FileText className="w-3.5 h-3.5" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="text-xs sm:text-sm font-semibold text-text-primary group-hover:text-accent transition-colors truncate">
-                              {item.title}
-                            </h4>
-                            <p className="text-[11px] text-text-muted line-clamp-1 mt-0.5">
-                              {item.description}
-                            </p>
-                          </div>
-                          <ArrowRight className="w-3.5 h-3.5 text-text-muted group-hover:text-accent group-hover:translate-x-0.5 transition-all flex-shrink-0 mt-1" />
-                        </Link>
-                      ))}
+                      {searchResults.map((item, idx) => {
+                        let badgeLabel = dict.searchModal?.typeBlog || "Bản tin";
+                        let Icon = FileText;
+                        let badgeColor = "bg-amber-500/15 text-amber-400 border-amber-500/30";
+                        let iconColor = "text-amber-400 bg-amber-500/10 border-amber-500/20";
+
+                        if (item.type === "tutorial") {
+                          badgeLabel = dict.searchModal?.typeTutorial || "Chuyên đề";
+                          Icon = BookOpen;
+                          badgeColor = "bg-cyan-500/15 text-cyan-400 border-cyan-500/30";
+                          iconColor = "text-cyan-400 bg-cyan-500/10 border-cyan-500/20";
+                        } else if (item.type === "lesson") {
+                          badgeLabel = dict.searchModal?.typeLesson || "Bài giảng";
+                          Icon = GraduationCap;
+                          badgeColor = "bg-emerald-500/15 text-emerald-400 border-emerald-500/30";
+                          iconColor = "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
+                        } else if (item.type === "course") {
+                          badgeLabel = dict.searchModal?.typeCourse || "Khóa học";
+                          Icon = Layers;
+                          badgeColor = "bg-purple-500/15 text-purple-400 border-purple-500/30";
+                          iconColor = "text-purple-400 bg-purple-500/10 border-purple-500/20";
+                        } else if (item.type === "research") {
+                          badgeLabel = dict.searchModal?.typeResearch || "Nghiên cứu";
+                          Icon = Microscope;
+                          badgeColor = "bg-blue-500/15 text-blue-400 border-blue-500/30";
+                          iconColor = "text-blue-400 bg-blue-500/10 border-blue-500/20";
+                        }
+
+                        return (
+                          <Link
+                            key={`${item.url}-${idx}`}
+                            href={item.url}
+                            onClick={() => setShowDropdown(false)}
+                            className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-bg-elevated transition-colors group"
+                          >
+                            <div className={`w-8 h-8 rounded-xl border flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:bg-accent group-hover:text-white group-hover:border-accent transition-colors ${iconColor}`}>
+                              <Icon className="w-4 h-4" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5 mb-0.5">
+                                <h4 className="text-xs sm:text-sm font-semibold text-text-primary group-hover:text-accent transition-colors truncate">
+                                  {item.title}
+                                </h4>
+                                <span className={`px-2 py-0.2 text-[10px] font-semibold rounded-full border flex-shrink-0 ${badgeColor}`}>
+                                  {badgeLabel}
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-text-muted line-clamp-1">
+                                {item.matchSnippet || item.description}
+                              </p>
+                            </div>
+                            <ArrowRight className="w-3.5 h-3.5 text-text-muted group-hover:text-accent group-hover:translate-x-0.5 transition-all flex-shrink-0 mt-1.5" />
+                          </Link>
+                        );
+                      })}
                     </div>
                   )}
 
                   <div className="pt-2 mt-2 border-t border-border flex items-center justify-between text-[11px] text-text-muted">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowDropdown(false);
-                        scrollToSlide("posts");
-                      }}
+                    <Link
+                      href={`/search?q=${encodeURIComponent(searchQuery.trim())}`}
+                      onClick={() => setShowDropdown(false)}
                       className="text-accent hover:underline font-semibold flex items-center gap-1 cursor-pointer"
                     >
                       <span>{dict.home.viewAllResultsBelow}</span>
                       <ArrowRight className="w-3 h-3" />
-                    </button>
+                    </Link>
                     <span className="font-mono text-[10px]">{dict.home.pressEscToClose}</span>
                   </div>
                 </div>

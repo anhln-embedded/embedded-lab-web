@@ -3,16 +3,19 @@
 import * as React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { Search, X, Command, ArrowUp, ArrowDown, ArrowRight, FileText, GraduationCap, Loader2, Send, Microscope } from "lucide-react";
+import { Search, X, Command, ArrowUp, ArrowDown, ArrowRight, FileText, GraduationCap, Loader2, Send, Microscope, BookOpen, Layers } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
 interface SearchResult {
-  type: "blog" | "course" | "research";
+  type: "tutorial" | "lesson" | "course" | "blog" | "research";
   title: string;
   description: string;
   url: string;
-  tags: string[];
+  tags?: string[];
   date?: string;
+  breadcrumb?: string;
+  matchField?: string;
+  matchSnippet?: string;
 }
 
 export function SearchModal() {
@@ -272,10 +275,22 @@ export function SearchModal() {
                         "w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors mt-0.5",
                         isSelected
                           ? "bg-accent text-white"
-                          : "bg-accent/10 text-accent border border-accent/20"
+                          : result.type === "tutorial"
+                          ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
+                          : result.type === "lesson"
+                          ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                          : result.type === "course"
+                          ? "bg-purple-500/10 text-purple-400 border border-purple-500/20"
+                          : result.type === "research"
+                          ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                          : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
                       )}>
-                        {result.type === "course" ? (
+                        {result.type === "tutorial" ? (
+                          <BookOpen className="w-4 h-4" />
+                        ) : result.type === "lesson" ? (
                           <GraduationCap className="w-4 h-4" />
+                        ) : result.type === "course" ? (
+                          <Layers className="w-4 h-4" />
                         ) : result.type === "research" ? (
                           <Microscope className="w-4 h-4" />
                         ) : (
@@ -288,12 +303,23 @@ export function SearchModal() {
                           <h4 className="text-xs sm:text-sm font-semibold text-text-primary hover:text-accent transition-colors truncate">
                             {result.title}
                           </h4>
-                          <span className="px-2 py-0.2 text-[10px] font-semibold bg-accent/15 text-accent rounded-full flex-shrink-0">
-                            {result.type === "course" ? dict.searchModal.typeCourse : result.type === "research" ? dict.searchModal.typeResearch : dict.searchModal.typeBlog}
+                          <span className={cn(
+                            "px-2 py-0.2 text-[10px] font-semibold rounded-full flex-shrink-0",
+                            result.type === "tutorial" ? "bg-cyan-500/15 text-cyan-400" :
+                            result.type === "lesson" ? "bg-emerald-500/15 text-emerald-400" :
+                            result.type === "course" ? "bg-purple-500/15 text-purple-400" :
+                            result.type === "research" ? "bg-blue-500/15 text-blue-400" :
+                            "bg-amber-500/15 text-amber-400"
+                          )}>
+                            {result.type === "tutorial" ? (dict.searchModal?.typeTutorial || "Chuyên đề") :
+                             result.type === "lesson" ? (dict.searchModal?.typeLesson || "Bài giảng") :
+                             result.type === "course" ? dict.searchModal.typeCourse :
+                             result.type === "research" ? dict.searchModal.typeResearch :
+                             dict.searchModal.typeBlog}
                           </span>
                         </div>
                         <p className="text-[11px] text-text-muted line-clamp-1">
-                          {result.description}
+                          {result.matchSnippet || result.description}
                         </p>
                       </div>
 
@@ -304,6 +330,23 @@ export function SearchModal() {
                     </Link>
                   );
                 })}
+
+                {/* View full page search results */}
+                {query.trim() && (
+                  <div className="pt-2 mt-1 border-t border-border/60">
+                    <Link
+                      href={`/search?q=${encodeURIComponent(query.trim())}`}
+                      onClick={() => {
+                        setIsOpen(false);
+                        setQuery("");
+                      }}
+                      className="flex items-center justify-between p-2 rounded-xl text-xs font-semibold text-accent hover:bg-accent/10 transition-colors"
+                    >
+                      <span>Xem tất cả kết quả chi tiết &quot;{query}&quot; →</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                )}
               </div>
             )}
           </div>
