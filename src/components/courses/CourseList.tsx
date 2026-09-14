@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { CourseData, CourseCategory } from "@/lib/content";
-import { getAllCourses, COURSE_CATEGORIES, CourseCategoryMeta } from "@/lib/courses-store";
+import { getAllCourses, DEFAULT_LAB_COURSES, COURSE_CATEGORIES, CourseCategoryMeta } from "@/lib/courses-store";
 import { useAuth } from "@/context/AuthContext";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -144,14 +144,18 @@ interface CourseListProps {
 export function CourseList({ courses: initialCourses }: CourseListProps) {
   const { user } = useAuth();
   const { dict } = useLanguage();
-  const [displayCourses, setDisplayCourses] = React.useState<CourseData[]>(initialCourses || []);
+  const fallbackCourses = React.useMemo(() => {
+    return initialCourses && initialCourses.length > 0 ? initialCourses : DEFAULT_LAB_COURSES;
+  }, [initialCourses]);
+
+  const [displayCourses, setDisplayCourses] = React.useState<CourseData[]>(fallbackCourses);
   const [selectedCategory, setSelectedCategory] = React.useState<string>("all");
 
   const loadFromApi = React.useCallback(async () => {
     try {
       const res = await fetch("/api/courses");
       const json = await res.json();
-      if (json.success && Array.isArray(json.data)) {
+      if (json.success && Array.isArray(json.data) && json.data.length > 0) {
         const apiCourses: CourseData[] = json.data.map((c: any) => ({
           _id: c.id,
           title: c.title,
@@ -177,8 +181,9 @@ export function CourseList({ courses: initialCourses }: CourseListProps) {
     } catch (err) {
       console.warn("Could not fetch from SQLite API:", err);
     }
-    setDisplayCourses([]);
-  }, []);
+    // Nếu API lỗi hoặc chưa có dữ liệu, giữ fallbackCourses
+    setDisplayCourses(fallbackCourses);
+  }, [fallbackCourses]);
 
   React.useEffect(() => {
     loadFromApi();

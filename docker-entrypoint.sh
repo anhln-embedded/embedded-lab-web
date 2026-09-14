@@ -8,7 +8,13 @@ chmod -R 775 /app/prisma /app/public/uploads
 
 # Tự động đồng bộ schema SQLite với Prisma schema mới nhất (thêm cột mới, bảng mới mà không mất dữ liệu)
 echo "[Entrypoint] Kiểm tra và đồng bộ schema SQLite..."
-su-exec nextjs npx prisma db push --skip-generate || true
+export HOME=/tmp
+export DATABASE_URL="${DATABASE_URL:-file:/app/prisma/dev.db}"
+if [ -f "/app/node_modules/.bin/prisma" ]; then
+    /app/node_modules/.bin/prisma db push --skip-generate --accept-data-loss || true
+else
+    npx prisma db push --skip-generate --accept-data-loss || true
+fi
 chown -R nextjs:nodejs /app/prisma /app/public/uploads || true
 chmod -R 775 /app/prisma /app/public/uploads || true
 

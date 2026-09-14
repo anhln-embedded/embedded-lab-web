@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { ensureSqliteSchema } from "@/lib/db-auto-migrate";
+import { DEFAULT_LAB_COURSES } from "@/lib/courses-store";
 
 interface Params {
   params: Promise<{ id: string }>;
@@ -7,8 +9,10 @@ interface Params {
 
 // GET /api/courses/[id] - Get course detail by ID or Slug
 export async function GET(request: Request, { params }: Params) {
+  const { id } = await params;
+
   try {
-    const { id } = await params;
+    await ensureSqliteSchema();
 
     const course = await prisma.course.findFirst({
       where: {
@@ -27,6 +31,11 @@ export async function GET(request: Request, { params }: Params) {
     });
 
     if (!course) {
+      // Tìm trong static default courses
+      const staticCourse = DEFAULT_LAB_COURSES.find((c) => c._id === id || c.slug === id);
+      if (staticCourse) {
+        return NextResponse.json({ success: true, data: staticCourse });
+      }
       return NextResponse.json(
         { success: false, error: "Không tìm thấy khóa học" },
         { status: 404 }
@@ -35,6 +44,11 @@ export async function GET(request: Request, { params }: Params) {
 
     return NextResponse.json({ success: true, data: course });
   } catch (error: any) {
+    console.error("Error fetching course detail from database, trying fallback:", error);
+    const staticCourse = DEFAULT_LAB_COURSES.find((c) => c._id === id || c.slug === id);
+    if (staticCourse) {
+      return NextResponse.json({ success: true, data: staticCourse });
+    }
     return NextResponse.json(
       { success: false, error: "Failed to fetch course" },
       { status: 500 }

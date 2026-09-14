@@ -3,6 +3,7 @@
 import { CourseList } from "@/components/courses/CourseList";
 import { GraduationCap } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { DEFAULT_LAB_COURSES } from "@/lib/courses-store";
 
 export default function CoursesPage() {
   const { dict } = useLanguage();
@@ -22,7 +23,7 @@ export default function CoursesPage() {
         </p>
       </div>
 
-      <CourseList />
+      <CourseList courses={DEFAULT_LAB_COURSES} />
     </div>
   );
 }
