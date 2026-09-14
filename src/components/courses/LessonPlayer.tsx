@@ -36,21 +36,27 @@ import {
   ExternalLink,
   PanelRightClose,
   PanelRightOpen,
+  Languages,
 } from "lucide-react";
 import { parseVideoSource } from "@/lib/video-parser";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface LessonPlayerProps {
   course: CourseData;
   currentLesson: LessonData & {
     moduleTitle: string;
+    moduleTitleEn?: string;
     contentHtml?: string;
+    contentHtmlEn?: string;
+    contentMarkdown?: string;
+    contentMarkdownEn?: string;
     videoUrl?: string;
     codeSnippet?: string;
   };
-  allLessons: Array<LessonData & { moduleTitle: string }>;
+  allLessons: Array<LessonData & { moduleTitle: string; moduleTitleEn?: string }>;
   currentIndex: number;
-  prevLesson: (LessonData & { moduleTitle: string }) | null;
-  nextLesson: (LessonData & { moduleTitle: string }) | null;
+  prevLesson: (LessonData & { moduleTitle: string; moduleTitleEn?: string }) | null;
+  nextLesson: (LessonData & { moduleTitle: string; moduleTitleEn?: string }) | null;
 }
 
 export function LessonPlayer({
@@ -68,12 +74,27 @@ export function LessonPlayer({
   const [currentLessonState, setCurrentLessonState] = React.useState<
     LessonData & {
       moduleTitle: string;
+      moduleTitleEn?: string;
       contentHtml?: string;
+      contentHtmlEn?: string;
+      contentMarkdown?: string;
+      contentMarkdownEn?: string;
       videoUrl?: string;
       codeSnippet?: string;
     }
   >(currentLesson);
   const [isEditorOpen, setIsEditorOpen] = React.useState(false);
+
+  const { locale, toggleLocale } = useLanguage();
+  const isEn = locale === "en";
+
+  // Bilingual resolution with graceful fallback
+  const displayTitle = (isEn && currentLessonState.titleEn) ? currentLessonState.titleEn : currentLessonState.title;
+  const displayCourseTitle = (isEn && courseState.titleEn) ? courseState.titleEn : courseState.title;
+  const displayModuleTitle = (isEn && (currentLessonState as any).moduleTitleEn) ? (currentLessonState as any).moduleTitleEn : currentLessonState.moduleTitle;
+  const displaySummary = (isEn && currentLessonState.summaryEn) ? currentLessonState.summaryEn : currentLessonState.summary;
+  const displayContentHtml = (isEn && currentLessonState.contentHtmlEn) ? currentLessonState.contentHtmlEn : currentLessonState.contentHtml;
+  const isFallbackToVi = isEn && !currentLessonState.contentHtmlEn;
 
   const [completedLessons, setCompletedLessons] = React.useState<Set<string>>(new Set());
   const [isPlaying, setIsPlaying] = React.useState(false);
@@ -224,15 +245,25 @@ export function LessonPlayer({
               className="inline-flex items-center gap-1.5 text-text-muted hover:text-accent transition-colors font-semibold"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              <span>Khóa học: {courseState.title}</span>
+              <span>{isEn ? "Course:" : "Khóa học:"} {displayCourseTitle}</span>
             </Link>
             <span className="text-border">•</span>
             <span className="text-accent font-mono font-bold">
-              Bài {currentIndex + 1}/{allLessons.length}
+              {isEn ? "Lesson" : "Bài"} {currentIndex + 1}/{allLessons.length}
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
+            {/* Quick Language Toggle Button */}
+            <button
+              onClick={toggleLocale}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold border transition-all bg-bg-elevated hover:bg-bg-code text-text-secondary hover:text-accent border-border/80 shadow-sm"
+              title={isEn ? "Chuyển sang Tiếng Việt" : "Switch to English"}
+            >
+              <Languages className="w-3.5 h-3.5 text-accent" />
+              <span>{isEn ? "🇬🇧 EN" : "🇻🇳 VI"}</span>
+            </button>
+
             {isAuthorized && (
               <Button
                 size="sm"
@@ -397,20 +428,20 @@ export function LessonPlayer({
                   <div className="flex items-center gap-2.5 flex-wrap">
                     <span className="px-3 py-1 rounded-full text-[11px] font-mono font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 inline-flex items-center gap-1.5 shadow-sm">
                       <BookOpen className="w-3.5 h-3.5" />
-                      Bài Đọc Lý Thuyết & Thực Hành
+                      {isEn ? "Theory & Practical Reading" : "Bài Đọc Lý Thuyết & Thực Hành"}
                     </span>
                     <span className="px-2.5 py-1 rounded-full text-[11px] font-mono text-accent bg-accent/10 border border-accent/20 inline-flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5" />
-                      Thời lượng đọc: {currentLessonState.duration || "15 phút"}
+                      {isEn ? "Reading time:" : "Thời lượng đọc:"} {currentLessonState.duration || "15 phút"}
                     </span>
                   </div>
 
                   <h2 className="text-xl sm:text-2xl font-extrabold text-text-primary">
-                    {currentLessonState.title}
+                    {displayTitle}
                   </h2>
 
                   <p className="text-xs sm:text-sm text-text-secondary leading-relaxed max-w-2xl">
-                    {currentLessonState.summary || "Bài học này được biên soạn dưới dạng tài liệu giáo trình kỹ thuật chuyên sâu, sơ đồ mạch và mã nguồn mẫu bên dưới."}
+                    {displaySummary || (isEn ? "This lesson is compiled as deep-dive technical documentation, schematic diagrams and sample source code below." : "Bài học này được biên soạn dưới dạng tài liệu giáo trình kỹ thuật chuyên sâu, sơ đồ mạch và mã nguồn mẫu bên dưới.")}
                   </p>
 
                   <div className="pt-2 flex items-center gap-3 flex-wrap">
@@ -444,10 +475,10 @@ export function LessonPlayer({
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/60">
                 <div className="space-y-1">
                   <span className="text-xs font-mono font-bold text-accent uppercase tracking-wider block">
-                    {currentLessonState.moduleTitle}
+                    {displayModuleTitle}
                   </span>
                   <h1 className="text-xl sm:text-2xl font-extrabold text-text-primary">
-                    {currentLessonState.title}
+                    {displayTitle}
                   </h1>
                 </div>
 
@@ -518,11 +549,23 @@ export function LessonPlayer({
                 )}
               </div>
 
+              {/* Fallback Notice if English is not yet translated */}
+              {isFallbackToVi && (
+                <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs flex items-center gap-2.5 shadow-sm">
+                  <Languages className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                  <span>
+                    <strong>English version note:</strong> The English translation for this lesson is currently in progress. Displaying the original Vietnamese document below.
+                  </span>
+                </div>
+              )}
+
               {/* Lesson Summary */}
-              {currentLessonState.summary && (
+              {displaySummary && (
                 <div className="p-4 rounded-xl bg-accent-muted/40 border border-accent/20 text-xs text-text-secondary leading-relaxed space-y-1">
-                  <strong className="text-text-primary font-bold block mb-1">📌 Tóm tắt trọng tâm bài học:</strong>
-                  <p>{currentLessonState.summary}</p>
+                  <strong className="text-text-primary font-bold block mb-1">
+                    📌 {isEn ? "Lesson Summary & Key Objectives:" : "Tóm tắt trọng tâm bài học:"}
+                  </strong>
+                  <p>{displaySummary}</p>
                 </div>
               )}
             </div>
@@ -556,7 +599,7 @@ export function LessonPlayer({
                 <div className="flex items-center justify-between border-b border-border/60 pb-3">
                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-accent">
                     <BookOpen className="w-4 h-4" />
-                    <span>Giáo Trình Lý Thuyết & Kiến Trúc Hệ Thống</span>
+                    <span>{isEn ? "Theoretical Syllabus & System Architecture" : "Giáo Trình Lý Thuyết & Kiến Trúc Hệ Thống"}</span>
                   </div>
                   {isAuthorized && (
                     <button
@@ -564,15 +607,15 @@ export function LessonPlayer({
                       className="text-xs text-amber-500 hover:underline font-bold flex items-center gap-1"
                     >
                       <Edit3 className="w-3.5 h-3.5" />
-                      Sửa nội dung này
+                      {isEn ? "Edit this lesson" : "Sửa nội dung này"}
                     </button>
                   )}
                 </div>
 
-                {currentLessonState.contentHtml ? (
+                {displayContentHtml ? (
                   <div
                     className="prose prose-slate dark:prose-invert max-w-none text-xs sm:text-sm text-text-primary leading-relaxed space-y-4"
-                    dangerouslySetInnerHTML={{ __html: currentLessonState.contentHtml }}
+                    dangerouslySetInnerHTML={{ __html: displayContentHtml }}
                   />
                 ) : (
                   <div className="p-8 text-center space-y-3 rounded-2xl bg-bg-elevated/40 border border-dashed border-border">
@@ -603,7 +646,9 @@ export function LessonPlayer({
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-bg-panel hover:bg-bg-elevated text-text-secondary hover:text-accent hover:border-accent/40 text-xs font-bold transition-all shadow-sm"
                 >
                   <ChevronLeft className="h-4 w-4" />
-                  <span className="line-clamp-1">Bài trước: {prevLesson.title}</span>
+                  <span className="line-clamp-1">
+                    {isEn ? "Previous:" : "Bài trước:"} {(isEn && prevLesson.titleEn) ? prevLesson.titleEn : prevLesson.title}
+                  </span>
                 </Link>
               ) : (
                 <div />
@@ -614,7 +659,9 @@ export function LessonPlayer({
                   href={`/courses/${courseState.slug}/lesson/${nextLesson.slug}`}
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent text-white hover:bg-accent-hover text-xs font-bold transition-all shadow-md hover:scale-102"
                 >
-                  <span className="line-clamp-1">Bài tiếp theo: {nextLesson.title}</span>
+                  <span className="line-clamp-1">
+                    {isEn ? "Next:" : "Bài tiếp theo:"} {(isEn && nextLesson.titleEn) ? nextLesson.titleEn : nextLesson.title}
+                  </span>
                   <ChevronRight className="h-4 w-4" />
                 </Link>
               ) : (
@@ -657,13 +704,14 @@ export function LessonPlayer({
                   {courseState.curriculum.map((mod, mIdx) => (
                     <div key={mIdx} className="space-y-2">
                       <span className="text-[11px] font-bold text-text-muted uppercase block tracking-wider">
-                        {mod.module}
+                        {(isEn && (mod as any).moduleEn) ? (mod as any).moduleEn : mod.module}
                       </span>
                       <div className="space-y-1.5">
                         {mod.lessons.map((lesson) => {
                           const isCurrent = lesson.slug === currentLessonState.slug;
                           const isCompleted = completedLessons.has(lesson.slug);
                           const lessonHasVideo = lesson.hasVideo !== false && Boolean(parseVideoSource(lesson.videoUrl));
+                          const lessonTitle = (isEn && lesson.titleEn) ? lesson.titleEn : lesson.title;
                           return (
                             <Link
                               key={lesson.slug}
@@ -685,7 +733,7 @@ export function LessonPlayer({
                                 ) : (
                                   <FileText className={`h-3.5 w-3.5 flex-shrink-0 ${isCurrent ? "text-white" : "text-emerald-400/80"}`} />
                                 )}
-                                <span className="truncate">{lesson.title}</span>
+                                <span className="truncate">{lessonTitle}</span>
                               </div>
                               <span className="text-[10px] opacity-75 font-mono flex-shrink-0">
                                 {lesson.duration}

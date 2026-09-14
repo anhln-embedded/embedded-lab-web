@@ -49,8 +49,10 @@ export async function PUT(request: Request, { params }: Params) {
     const body = await request.json();
     const {
       title,
+      titleEn,
       slug,
       description,
+      descriptionEn,
       level,
       category,
       duration,
@@ -82,8 +84,10 @@ export async function PUT(request: Request, { params }: Params) {
       where: { id: existing.id },
       data: {
         title: title !== undefined ? title : existing.title,
+        titleEn: titleEn !== undefined ? titleEn : (existing as any).titleEn,
         slug: slug !== undefined ? slug : existing.slug,
         description: description !== undefined ? description : existing.description,
+        descriptionEn: descriptionEn !== undefined ? descriptionEn : (existing as any).descriptionEn,
         level: level !== undefined ? level : existing.level,
         category: category !== undefined ? category : existing.category,
         duration: duration !== undefined ? duration : existing.duration,
@@ -94,15 +98,21 @@ export async function PUT(request: Request, { params }: Params) {
         modules: {
           create: modules.map((mod: any, index: number) => ({
             module: mod.module || `Chương ${index + 1}`,
+            moduleEn: mod.moduleEn || null,
             order: index + 1,
             lessons: {
               create: (mod.lessons || []).map((les: any, lesIdx: number) => ({
                 title: les.title,
+                titleEn: les.titleEn || null,
                 slug: les.slug || `bai-${lesIdx + 1}`,
                 duration: les.duration || "20 phút",
                 free: les.free !== undefined ? les.free : true,
                 summary: les.summary || null,
+                summaryEn: les.summaryEn || null,
                 contentHtml: les.contentHtml || null,
+                contentHtmlEn: les.contentHtmlEn || null,
+                contentMarkdown: les.contentMarkdown || null,
+                contentMarkdownEn: les.contentMarkdownEn || null,
                 videoUrl: les.videoUrl || null,
                 codeSnippet: les.codeSnippet || null,
                 order: lesIdx + 1,

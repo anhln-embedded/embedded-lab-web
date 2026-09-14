@@ -34,8 +34,12 @@ export function InlineLessonEditorModal({
   onLessonUpdated,
 }: InlineLessonEditorModalProps) {
   const [title, setTitle] = useState(currentLesson.title);
+  const [titleEn, setTitleEn] = useState(currentLesson.titleEn || "");
   const [duration, setDuration] = useState(currentLesson.duration);
   
+  // Tab chỉnh sửa ngôn ngữ
+  const [editLang, setEditLang] = useState<"vi" | "en">("vi");
+
   // TÍCH CHỌN: Có kèm video hay không
   const [hasVideo, setHasVideo] = useState<boolean>(
     currentLesson.hasVideo !== undefined
@@ -44,11 +48,15 @@ export function InlineLessonEditorModal({
   );
   const [videoUrl, setVideoUrl] = useState(currentLesson.videoUrl || "");
   const [summary, setSummary] = useState(currentLesson.summary || "");
+  const [summaryEn, setSummaryEn] = useState(currentLesson.summaryEn || "");
   const [codeSnippet, setCodeSnippet] = useState(currentLesson.codeSnippet || "");
   
-  // Markdown content
+  // Markdown content (Việt & Anh)
   const [markdownContent, setMarkdownContent] = useState(
     currentLesson.contentMarkdown || currentLesson.contentHtml || ""
+  );
+  const [markdownContentEn, setMarkdownContentEn] = useState(
+    currentLesson.contentMarkdownEn || currentLesson.contentHtmlEn || ""
   );
 
   const [isSaving, setIsSaving] = useState(false);
@@ -57,6 +65,7 @@ export function InlineLessonEditorModal({
   // Sync state when currentLesson changes
   useEffect(() => {
     setTitle(currentLesson.title);
+    setTitleEn(currentLesson.titleEn || "");
     setDuration(currentLesson.duration);
     setHasVideo(
       currentLesson.hasVideo !== undefined
@@ -65,8 +74,10 @@ export function InlineLessonEditorModal({
     );
     setVideoUrl(currentLesson.videoUrl || "");
     setSummary(currentLesson.summary || "");
+    setSummaryEn(currentLesson.summaryEn || "");
     setCodeSnippet(currentLesson.codeSnippet || "");
     setMarkdownContent(currentLesson.contentMarkdown || currentLesson.contentHtml || "");
+    setMarkdownContentEn(currentLesson.contentMarkdownEn || currentLesson.contentHtmlEn || "");
     setStatusMsg(null);
   }, [currentLesson]);
 
@@ -78,25 +89,20 @@ export function InlineLessonEditorModal({
     if (type === "stm32") {
       tpl = `## 🎯 1. Mục Tiêu Bài Học
 - Hiểu rõ nguyên lý hoạt động khối ngoại vi.
-- Cấu hình các thanh ghi chức năng (Control & Status Registers).
-- Thực hành nạp firmware và đo kiểm tín hiệu xung nhịp.
+- Cấu hình và lập trình theo thanh ghi / thư viện chuẩn.
 
 ---
 
-## ⚡ 2. Bảng Thanh Ghi Cốt Lõi
-| Thanh Ghi | Offset | Chức Năng | Giá Trị Mặc Định |
-| :--- | :--- | :--- | :--- |
-| **CR1** | \`0x00\` | Cấu hình chế độ | \`0x00000000\` |
-| **SR**  | \`0x08\` | Cờ trạng thái phần cứng | \`0x000000C0\` |
-| **DR**  | \`0x0C\` | Bộ đệm truyền nhận | \`0x00000000\` |
-
-> [!NOTE]
-> Nhớ kích hoạt xung nhịp tại khối **RCC** trước khi truy xuất thanh ghi.
+## 💻 2. Mã Nguồn Mẫu
+\`\`\`c
+void Peripheral_Init(void) {
+    // Khởi tạo ngoại vi
+}
+\`\`\`
 `;
     } else {
-      tpl = `## 🎯 1. Mục Tiêu Khóa Học FreeRTOS
-- Cơ chế lập lịch ưu tiên và chuyển ngữ cảnh Task.
-- Quản lý đồng bộ luồng qua Queue và Semaphore.
+      tpl = `## 🚀 1. Giới Thiệu Khái Niệm
+- Tổng quan về cơ chế đồng bộ và quản lý Task.
 
 ---
 
@@ -111,17 +117,17 @@ void vSensorTask(void *pvParameters) {
 \`\`\`
 `;
     }
-    if (markdownContent.trim()) {
-      setMarkdownContent((prev) => prev + "\n\n" + tpl);
+    if (editLang === "en") {
+      setMarkdownContentEn((prev) => (prev.trim() ? prev + "\n\n" + tpl : tpl));
     } else {
-      setMarkdownContent(tpl);
+      setMarkdownContent((prev) => (prev.trim() ? prev + "\n\n" + tpl : tpl));
     }
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
-      setStatusMsg({ type: "error", text: "Vui lòng nhập tiêu đề bài học." });
+      setStatusMsg({ type: "error", text: "Vui lòng nhập tiêu đề bài học (Tiếng Việt)." });
       return;
     }
 
@@ -137,8 +143,9 @@ void vSensorTask(void *pvParameters) {
     setStatusMsg(null);
 
     try {
-      // Biên dịch Markdown sang HTML chuẩn Lab
-      const compiledHtml = markdownToLabHtml(markdownContent);
+      // Biên dịch Markdown sang HTML chuẩn Lab cho cả 2 ngôn ngữ
+      const compiledHtmlVi = markdownToLabHtml(markdownContent);
+      const compiledHtmlEn = markdownContentEn.trim() ? markdownToLabHtml(markdownContentEn) : undefined;
 
       // 1. Tạo bản sao curriculum mới với bài giảng được cập nhật
       const updatedCurriculum = course.curriculum.map((mod) => {
@@ -150,13 +157,17 @@ void vSensorTask(void *pvParameters) {
                 return {
                   ...les,
                   title: title.trim(),
+                  titleEn: titleEn.trim() || undefined,
                   duration: duration.trim() || "20 phút",
                   hasVideo,
                   videoUrl: hasVideo && videoUrl.trim() ? videoUrl.trim() : undefined,
                   summary: summary.trim() || undefined,
+                  summaryEn: summaryEn.trim() || undefined,
                   codeSnippet: codeSnippet.trim() || undefined,
-                  contentHtml: compiledHtml,
+                  contentHtml: compiledHtmlVi,
+                  contentHtmlEn: compiledHtmlEn,
                   contentMarkdown: markdownContent,
+                  contentMarkdownEn: markdownContentEn,
                 };
               }
               return les;
@@ -273,19 +284,66 @@ void vSensorTask(void *pvParameters) {
             </div>
           )}
 
-          {/* Thông tin cơ bản bài học */}
+          {/* TAB CHỌN NGÔN NGỮ SOẠN THẢO */}
+          <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-bg-elevated border border-border/80">
+            <button
+              type="button"
+              onClick={() => setEditLang("vi")}
+              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                editLang === "vi"
+                  ? "bg-accent text-white shadow-md"
+                  : "text-text-muted hover:text-text-primary hover:bg-bg-code"
+              }`}
+            >
+              <span>🇻🇳 Soạn Thảo Tiếng Việt</span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-black/20">Mặc định</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditLang("en")}
+              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                editLang === "en"
+                  ? "bg-accent text-white shadow-md"
+                  : "text-text-muted hover:text-text-primary hover:bg-bg-code"
+              }`}
+            >
+              <span>🇬🇧 Edit English Content</span>
+              {titleEn.trim() ? (
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300">✓ Đã có</span>
+              ) : (
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300">Chưa có</span>
+              )}
+            </button>
+          </div>
+
+          {/* Thông tin cơ bản bài học theo ngôn ngữ */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-2xl bg-bg-elevated/40 border border-border/80">
             <div className="sm:col-span-2">
               <label className="block text-[11px] font-bold text-text-secondary uppercase mb-1">
-                Tiêu đề bài học <span className="text-red-400">*</span>
+                {editLang === "vi" ? (
+                  <>Tiêu đề bài học (Tiếng Việt) <span className="text-red-400">*</span></>
+                ) : (
+                  <>Lesson Title (English) <span className="text-text-muted font-normal text-[10px]">(Tùy chọn)</span></>
+                )}
               </label>
-              <input
-                type="text"
-                required
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-3 py-1.5 rounded-xl bg-bg-panel border border-border text-xs font-semibold text-text-primary focus:outline-none focus:border-accent"
-              />
+              {editLang === "vi" ? (
+                <input
+                  type="text"
+                  required
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="VD: BÀI 01: TỔNG QUAN VÀ BLINK LED"
+                  className="w-full px-3 py-1.5 rounded-xl bg-bg-panel border border-border text-xs font-semibold text-text-primary focus:outline-none focus:border-accent"
+                />
+              ) : (
+                <input
+                  type="text"
+                  value={titleEn}
+                  onChange={(e) => setTitleEn(e.target.value)}
+                  placeholder="e.g. LESSON 01: STM32 OVERVIEW AND FIRST BLINK LED"
+                  className="w-full px-3 py-1.5 rounded-xl bg-bg-panel border border-border text-xs font-semibold text-text-primary focus:outline-none focus:border-accent"
+                />
+              )}
             </div>
 
             <div>
@@ -347,15 +405,25 @@ void vSensorTask(void *pvParameters) {
           {/* Tóm tắt bài học */}
           <div>
             <label className="block text-[11px] font-bold text-text-secondary mb-1">
-              Tóm tắt trọng tâm bài học (Hiển thị đầu bài):
+              {editLang === "vi" ? "Tóm tắt trọng tâm bài học (Tiếng Việt):" : "Lesson Summary & Key Points (English):"}
             </label>
-            <input
-              type="text"
-              value={summary}
-              onChange={(e) => setSummary(e.target.value)}
-              placeholder="Nêu ngắn gọn nội dung và mục tiêu cần đạt..."
-              className="w-full px-3 py-1.5 rounded-xl bg-bg-elevated/70 border border-border text-xs text-text-primary focus:outline-none focus:border-accent"
-            />
+            {editLang === "vi" ? (
+              <input
+                type="text"
+                value={summary}
+                onChange={(e) => setSummary(e.target.value)}
+                placeholder="Nêu ngắn gọn nội dung và mục tiêu cần đạt..."
+                className="w-full px-3 py-1.5 rounded-xl bg-bg-elevated/70 border border-border text-xs text-text-primary focus:outline-none focus:border-accent"
+              />
+            ) : (
+              <input
+                type="text"
+                value={summaryEn}
+                onChange={(e) => setSummaryEn(e.target.value)}
+                placeholder="Brief summary of key objectives in English..."
+                className="w-full px-3 py-1.5 rounded-xl bg-bg-elevated/70 border border-border text-xs text-text-primary focus:outline-none focus:border-accent"
+              />
+            )}
           </div>
 
           {/* Trình soạn thảo Markdown */}
@@ -363,7 +431,11 @@ void vSensorTask(void *pvParameters) {
             <div className="flex items-center justify-between flex-wrap gap-2">
               <label className="block text-xs font-bold text-text-primary flex items-center gap-1.5">
                 <BookOpen className="w-4 h-4 text-accent" />
-                Nội Dung Giáo Trình Bài Học (Soạn Thảo Bằng Markdown & Xem Trước Live):
+                <span>
+                  {editLang === "vi"
+                    ? "Nội Dung Giáo Trình Tiếng Việt (Markdown):"
+                    : "English Syllabus Content (Markdown):"}
+                </span>
               </label>
               <div className="flex items-center gap-1.5">
                 <span className="text-[11px] text-text-muted">Chèn mẫu:</span>
@@ -385,12 +457,23 @@ void vSensorTask(void *pvParameters) {
             </div>
 
             <div className="border border-border/80 rounded-2xl overflow-hidden shadow-inner">
-              <TechMarkdownEditor
-                value={markdownContent}
-                onChange={setMarkdownContent}
-                placeholder="Viết giáo trình bài học bằng Markdown tại đây... Hỗ trợ ## Tiêu đề, ```c Code, | Bảng |, > [!NOTE] Ghi chú..."
-                minHeight="320px"
-              />
+              {editLang === "vi" ? (
+                <TechMarkdownEditor
+                  key="editor-vi"
+                  value={markdownContent}
+                  onChange={setMarkdownContent}
+                  placeholder="Viết giáo trình bài học bằng Markdown Tiếng Việt tại đây... Hỗ trợ ## Tiêu đề, ```c Code, | Bảng |, > [!NOTE] Ghi chú..."
+                  minHeight="320px"
+                />
+              ) : (
+                <TechMarkdownEditor
+                  key="editor-en"
+                  value={markdownContentEn}
+                  onChange={setMarkdownContentEn}
+                  placeholder="Write lesson syllabus in English Markdown here... Support ## Headings, ```c Code, | Tables |, > [!NOTE] Alerts..."
+                  minHeight="320px"
+                />
+              )}
             </div>
           </div>
 

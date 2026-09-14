@@ -36,19 +36,24 @@ export interface BlogPostData {
 
 export interface LessonData {
   title: string;
+  titleEn?: string;
   slug: string;
   duration: string;
   free: boolean;
   hasVideo?: boolean;
   videoUrl?: string;
   summary?: string;
+  summaryEn?: string;
   codeSnippet?: string;
   contentHtml?: string;
+  contentHtmlEn?: string;
   contentMarkdown?: string;
+  contentMarkdownEn?: string;
 }
 
 export interface CourseModule {
   module: string;
+  moduleEn?: string;
   lessons: LessonData[];
 }
 
@@ -62,8 +67,10 @@ export type CourseCategory =
 export interface CourseData {
   _id: string;
   title: string;
+  titleEn?: string;
   slug: string;
   description: string;
+  descriptionEn?: string;
   category?: CourseCategory;
   level: "beginner" | "intermediate" | "advanced";
   duration: string;

@@ -19,10 +19,13 @@ function safeBase64Encode(str: string): string {
 
 export interface ParsedPost {
   title: string;
+  titleEn?: string;
   slug: string;
   readTime: string;
   summary: string;
+  summaryEn?: string;
   contentHtml: string;
+  contentHtmlEn?: string;
   codeSnippet: string;
   codeLang: string;
   codeFilename: string;
@@ -415,21 +418,25 @@ labMarkedInstance.use({
 
       if (isSvg) {
         return `
-        <figure class="my-6 text-center flex flex-col items-center justify-center">
-          <div class="inline-block max-w-full">
-            <img src="${src}" alt="${text || ""}" class="block dark:hidden rounded-2xl border border-border/80 shadow-lg max-h-[560px] mx-auto object-contain bg-bg-panel/40 p-1.5" loading="lazy" />
-            <img src="${darkSrc}" alt="${text || ""}" class="hidden dark:block rounded-2xl border border-border/80 shadow-lg max-h-[560px] mx-auto object-contain bg-bg-panel/40 p-1.5" loading="lazy" onerror="this.onerror=null; this.src='${src}';" />
+        <figure class="my-8 text-center flex flex-col items-center justify-center w-full">
+          <div class="w-full max-w-5xl mx-auto">
+            <a href="${src}" target="_blank" rel="noopener noreferrer" class="block w-full cursor-zoom-in group" title="Bấm để mở ảnh kích thước lớn">
+              <img src="${src}" alt="${text || ""}" class="block dark:hidden rounded-2xl border border-border/80 shadow-lg mx-auto bg-bg-panel/40 p-2 w-full h-auto transition-transform duration-200 group-hover:scale-[1.01]" style="width: 100%; height: auto;" loading="lazy" />
+              <img src="${darkSrc}" alt="${text || ""}" class="hidden dark:block rounded-2xl border border-border/80 shadow-lg mx-auto bg-bg-panel/40 p-2 w-full h-auto transition-transform duration-200 group-hover:scale-[1.01]" style="width: 100%; height: auto;" loading="lazy" onerror="this.onerror=null; this.src='${src}';" />
+            </a>
           </div>
-          ${text ? `<figcaption class="mt-2 text-xs text-text-muted italic font-medium flex items-center justify-center gap-1"><span>📷</span><span>${text}</span></figcaption>` : ""}
+          ${text ? `<figcaption class="mt-2.5 text-xs text-text-muted italic font-medium flex items-center justify-center gap-1.5 flex-wrap"><span>🔍 Bấm vào ảnh để xem kích thước lớn</span><span>•</span><span>📷 ${text}</span></figcaption>` : ""}
         </figure>\n`;
       }
 
       return `
-        <figure class="my-6 text-center flex flex-col items-center justify-center">
-          <div class="inline-block max-w-full">
-            <img src="${src}" alt="${text || ""}" class="rounded-2xl border border-border/80 shadow-lg max-h-[560px] mx-auto object-contain bg-bg-panel/40 p-1.5" loading="lazy" />
+        <figure class="my-8 text-center flex flex-col items-center justify-center w-full">
+          <div class="w-full max-w-5xl mx-auto">
+            <a href="${src}" target="_blank" rel="noopener noreferrer" class="block w-full cursor-zoom-in group" title="Bấm để mở ảnh kích thước lớn">
+              <img src="${src}" alt="${text || ""}" class="rounded-2xl border border-border/80 shadow-lg mx-auto bg-bg-panel/40 p-2 w-full h-auto transition-transform duration-200 group-hover:scale-[1.01]" style="width: 100%; height: auto;" loading="lazy" />
+            </a>
           </div>
-          ${text ? `<figcaption class="mt-2 text-xs text-text-muted italic font-medium flex items-center justify-center gap-1"><span>📷</span><span>${text}</span></figcaption>` : ""}
+          ${text ? `<figcaption class="mt-2.5 text-xs text-text-muted italic font-medium flex items-center justify-center gap-1.5 flex-wrap"><span>🔍 Bấm vào ảnh để xem kích thước lớn</span><span>•</span><span>📷 ${text}</span></figcaption>` : ""}
         </figure>\n`;
     }
   }
@@ -469,12 +476,12 @@ export function markdownToLabHtml(markdown: string): string {
     const heightMatch = attrs.match(/height\s*=\s*["']?\s*(\d+(?:px|%)?)/i);
     const height = heightMatch ? heightMatch[1] : "";
 
-    const styleParts = ["max-width: 100%", "height: auto"];
-    if (width) {
+    const styleParts = ["width: 100%", "max-width: 100%", "height: auto"];
+    if (width && width !== "100%") {
       const wCss = /^\d+$/.test(width) ? `${width}px` : width;
-      styleParts.unshift(`max-width: min(100%, ${wCss})`);
+      styleParts.push(`max-width: min(100%, ${wCss})`);
     }
-    if (height) {
+    if (height && height !== "100%") {
       const hCss = /^\d+$/.test(height) ? `${height}px` : height;
       styleParts.push(`max-height: ${hCss}`);
     }
@@ -485,17 +492,21 @@ export function markdownToLabHtml(markdown: string): string {
     let innerImgs = "";
     if (isSvg) {
       innerImgs = `
-    <img src="${src}" alt="${alt}" ${width ? `width="${width}"` : ""} ${height ? `height="${height}"` : ""} style="${styleParts.join("; ")}" class="block dark:hidden rounded-2xl border border-border/80 shadow-lg mx-auto object-contain bg-bg-panel/40 p-1.5" loading="lazy" />
-    <img src="${darkSrc}" alt="${alt}" ${width ? `width="${width}"` : ""} ${height ? `height="${height}"` : ""} style="${styleParts.join("; ")}" class="hidden dark:block rounded-2xl border border-border/80 shadow-lg mx-auto object-contain bg-bg-panel/40 p-1.5" loading="lazy" onerror="this.onerror=null; this.src='${src}';" />`;
+    <a href="${src}" target="_blank" rel="noopener noreferrer" class="block w-full cursor-zoom-in group" title="Bấm để xem ảnh kích thước lớn">
+      <img src="${src}" alt="${alt}" ${width ? `width="${width}"` : ""} ${height ? `height="${height}"` : ""} style="${styleParts.join("; ")}" class="block dark:hidden rounded-2xl border border-border/80 shadow-lg mx-auto bg-bg-panel/40 p-2 w-full h-auto transition-transform duration-200 group-hover:scale-[1.01]" loading="lazy" />
+      <img src="${darkSrc}" alt="${alt}" ${width ? `width="${width}"` : ""} ${height ? `height="${height}"` : ""} style="${styleParts.join("; ")}" class="hidden dark:block rounded-2xl border border-border/80 shadow-lg mx-auto bg-bg-panel/40 p-2 w-full h-auto transition-transform duration-200 group-hover:scale-[1.01]" loading="lazy" onerror="this.onerror=null; this.src='${src}';" />
+    </a>`;
     } else {
       innerImgs = `
-    <img src="${src}" alt="${alt}" ${width ? `width="${width}"` : ""} ${height ? `height="${height}"` : ""} style="${styleParts.join("; ")}" class="rounded-2xl border border-border/80 shadow-lg mx-auto object-contain bg-bg-panel/40 p-1.5" loading="lazy" />`;
+    <a href="${src}" target="_blank" rel="noopener noreferrer" class="block w-full cursor-zoom-in group" title="Bấm để xem ảnh kích thước lớn">
+      <img src="${src}" alt="${alt}" ${width ? `width="${width}"` : ""} ${height ? `height="${height}"` : ""} style="${styleParts.join("; ")}" class="rounded-2xl border border-border/80 shadow-lg mx-auto bg-bg-panel/40 p-2 w-full h-auto transition-transform duration-200 group-hover:scale-[1.01]" loading="lazy" />
+    </a>`;
     }
 
-    const html = `\n\n<figure class="my-6 text-center flex flex-col items-center justify-center">
-  <div class="inline-block max-w-full">${innerImgs}
+    const html = `\n\n<figure class="my-8 text-center flex flex-col items-center justify-center w-full">
+  <div class="w-full max-w-5xl mx-auto">${innerImgs}
   </div>
-  ${alt ? `<figcaption class="mt-2 text-xs text-text-muted italic font-medium flex items-center justify-center gap-1"><span>📷</span><span>${alt}</span></figcaption>` : ""}
+  ${alt ? `<figcaption class="mt-2.5 text-xs text-text-muted italic font-medium flex items-center justify-center gap-1.5 flex-wrap"><span>🔍 Bấm vào ảnh để xem kích thước lớn</span><span>•</span><span>📷 ${alt}</span></figcaption>` : ""}
 </figure>\n\n`;
 
     const token = `@@@LAB_IMG_TOKEN_${imgCounter++}@@@`;
@@ -620,18 +631,20 @@ export function parseSingleMarkdownArticle(
     const isSameTitle =
       rawNoAccent.includes(topicNoAccent) ||
       topicNoAccent.includes(rawNoAccent) ||
-      /^bài\s*\d+/i.test(rawH1);
+      /^(?:bài|lesson)\s*\d+/i.test(rawH1);
 
     if (rawH1 && !isGenericH1 && !isSameTitle) {
-      title = `Bài ${lessonOrder}: ${topicFromFilename} - ${rawH1}`;
-    } else if (rawH1 && !isGenericH1 && /^bài\s*\d+/i.test(rawH1)) {
+      title = rawH1;
+    } else if (rawH1 && !isGenericH1 && /^(?:bài|lesson)\s*\d+/i.test(rawH1)) {
       title = rawH1;
     } else if (topicFromFilename) {
-      title = `Bài ${lessonOrder}: ${topicFromFilename}`;
+      title = isEnglishMarkdownFile(sourceFilename)
+        ? `Lesson ${lessonOrder}: ${topicFromFilename}`
+        : `Bài ${lessonOrder}: ${topicFromFilename}`;
     }
   } else if (rawH1) {
-    if (!rawH1.toLowerCase().startsWith("bài")) {
-      title = `Bài ${lessonOrder}: ${rawH1}`;
+    if (!/^(?:bài|lesson)\s*\d+/i.test(rawH1)) {
+      title = isEnglishMarkdownFile(sourceFilename) ? `Lesson ${lessonOrder}: ${rawH1}` : `Bài ${lessonOrder}: ${rawH1}`;
     } else {
       title = rawH1;
     }
@@ -737,3 +750,124 @@ export function parseMultiMarkdownArticles(rawText: string): ParsedPost[] {
   // 3. Mặc định: Coi toàn bộ nội dung là 1 bài học hoàn chỉnh
   return [parseSingleMarkdownArticle(rawText.trim(), 1)];
 }
+
+export interface BilingualParsedLesson {
+  lessonNumber: number;
+  slug: string;
+  duration: string;
+  codeSnippet?: string;
+  codeLang?: string;
+  codeFilename?: string;
+
+  // Vietnamese
+  title: string;
+  summary?: string;
+  contentHtml?: string;
+  contentMarkdown?: string;
+  filenameVi?: string;
+
+  // English
+  titleEn?: string;
+  summaryEn?: string;
+  contentHtmlEn?: string;
+  contentMarkdownEn?: string;
+  filenameEn?: string;
+
+  status: "both" | "vi_only" | "en_only";
+}
+
+/**
+ * Trích xuất số thứ tự bài từ tên tệp (VD: 'Bai 01...', 'Lesson 02...', '03-timer.md')
+ */
+export function extractLessonOrder(filename: string, defaultIdx: number): number {
+  const match = filename.match(/(?:bai|lesson|chuong|chapter|part|phan|session)\s*0*(\d+)/i)
+    || filename.match(/^0*(\d+)[._\s-]/)
+    || filename.match(/(\d+)/);
+  if (match && match[1]) {
+    return parseInt(match[1], 10);
+  }
+  return defaultIdx;
+}
+
+/**
+ * Kiểm tra tệp có phải là phiên bản tiếng Anh không
+ */
+export function isEnglishMarkdownFile(filename: string): boolean {
+  const lower = filename.toLowerCase();
+  return (
+    lower.includes(".en.") ||
+    lower.endsWith(".en.md") ||
+    lower.includes("_en.") ||
+    lower.includes("-en.") ||
+    lower.includes("(en)") ||
+    lower.startsWith("lesson") ||
+    lower.startsWith("chapter") ||
+    lower.includes("/en/") ||
+    lower.includes("\\en\\")
+  );
+}
+
+/**
+ * Ghép cặp tự động danh sách các tệp Markdown tiếng Việt và tiếng Anh
+ */
+export function pairBilingualMarkdownFiles(
+  files: Array<{ name: string; content: string }>
+): BilingualParsedLesson[] {
+  // Nhóm các file theo số thứ tự bài
+  const map = new Map<number, { vi?: { name: string; content: string }; en?: { name: string; content: string } }>();
+
+  files.forEach((f, idx) => {
+    const order = extractLessonOrder(f.name, idx + 1);
+    const isEn = isEnglishMarkdownFile(f.name);
+    const entry = map.get(order) || {};
+
+    if (isEn) {
+      entry.en = f;
+    } else {
+      entry.vi = f;
+    }
+    map.set(order, entry);
+  });
+
+  // Chuyển Map thành mảng bài học song ngữ đã sắp xếp theo thứ tự bài
+  const sortedOrders = Array.from(map.keys()).sort((a, b) => a - b);
+
+  return sortedOrders.map((order) => {
+    const pair = map.get(order)!;
+    const parsedVi = pair.vi ? parseSingleMarkdownArticle(pair.vi.content, order, pair.vi.name) : null;
+    const parsedEn = pair.en ? parseSingleMarkdownArticle(pair.en.content, order, pair.en.name) : null;
+
+    let status: "both" | "vi_only" | "en_only" = "both";
+    if (parsedVi && !parsedEn) status = "vi_only";
+    else if (!parsedVi && parsedEn) status = "en_only";
+
+    const mainParsed = parsedVi || parsedEn!;
+    const slug = parsedVi?.slug || parsedEn?.slug || `bai-${order}`;
+
+    return {
+      lessonNumber: order,
+      slug,
+      duration: mainParsed.readTime || "15 phút",
+      codeSnippet: parsedVi?.codeSnippet || parsedEn?.codeSnippet || undefined,
+      codeLang: parsedVi?.codeLang || parsedEn?.codeLang || "c",
+      codeFilename: parsedVi?.codeFilename || parsedEn?.codeFilename || "main.c",
+
+      // Vietnamese
+      title: parsedVi?.title || (parsedEn ? `Bài ${order}: ${parsedEn.title}` : `Bài ${order}`),
+      summary: parsedVi?.summary || undefined,
+      contentHtml: parsedVi?.contentHtml || undefined,
+      contentMarkdown: pair.vi?.content || undefined,
+      filenameVi: pair.vi?.name,
+
+      // English
+      titleEn: parsedEn?.title || undefined,
+      summaryEn: parsedEn?.summary || undefined,
+      contentHtmlEn: parsedEn?.contentHtml || undefined,
+      contentMarkdownEn: pair.en?.content || undefined,
+      filenameEn: pair.en?.name,
+
+      status,
+    };
+  });
+}
+

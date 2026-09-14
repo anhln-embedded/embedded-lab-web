@@ -41,25 +41,28 @@ model Post {
 }
 
 model Course {
-  id          String         @id @default(cuid())
-  title       String
-  slug        String         @unique
-  description String
-  level       String         @default("intermediate") // beginner, intermediate, advanced
-  category    String         @default("embedded-rtos") // embedded-rtos, embedded-linux, tinyml, fpga, pcb-hardware
-  duration    String         @default("6 hours")
-  price       String         @default("free") // free, paid
-  thumbnail   String?        @default("/images/logo.png")
-  githubRepo  String?
-  featured    Boolean        @default(false)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  modules     CourseModule[]
+  id            String         @id @default(cuid())
+  title         String
+  titleEn       String?
+  slug          String         @unique
+  description   String
+  descriptionEn String?
+  level         String         @default("intermediate") // beginner, intermediate, advanced
+  category      String         @default("embedded-rtos") // embedded-rtos, embedded-linux, tinyml, fpga, pcb-hardware
+  duration      String         @default("6 hours")
+  price         String         @default("free") // free, paid
+  thumbnail     String?        @default("/images/logo.png")
+  githubRepo    String?
+  featured      Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  modules       CourseModule[]
 }
 
 model CourseModule {
   id        String   @id @default(cuid())
   module    String   // Module title
+  moduleEn  String?  // Module title in English
   order     Int      @default(0)
   courseId  String
   course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
@@ -67,18 +70,23 @@ model CourseModule {
 }
 
 model Lesson {
-  id          String       @id @default(cuid())
-  title       String
-  slug        String
-  duration    String       @default("15 min")
-  free        Boolean      @default(true)
-  summary     String?
-  contentHtml String?      // Rich HTML Lesson content
-  videoUrl    String?
-  codeSnippet String?
-  order       Int          @default(0)
-  moduleId    String
-  module      CourseModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  id                String       @id @default(cuid())
+  title             String
+  titleEn           String?
+  slug              String
+  duration          String       @default("15 min")
+  free              Boolean      @default(true)
+  summary           String?
+  summaryEn         String?
+  contentHtml       String?      // Rich HTML Lesson content (Vietnamese)
+  contentHtmlEn     String?      // Rich HTML Lesson content (English)
+  contentMarkdown   String?      // Raw markdown (Vietnamese)
+  contentMarkdownEn String?      // Raw markdown (English)
+  videoUrl          String?
+  codeSnippet       String?
+  order             Int          @default(0)
+  moduleId          String
+  module            CourseModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
 }
 
 model Comment {
@@ -146,10 +154,13 @@ model TutorialTopic {
 model TutorialArticle {
   id            String               @id @default(cuid())
   title         String
+  titleEn       String?
   slug          String
   readTime      String               @default("10 phút")
   summary       String?
-  contentHtml   String?              // Rich HTML
+  summaryEn     String?
+  contentHtml   String?              // Rich HTML (Vietnamese)
+  contentHtmlEn String?              // Rich HTML (English)
   codeSnippet   String?
   codeLang      String?              @default("c")
   codeFilename  String?              @default("main.c")

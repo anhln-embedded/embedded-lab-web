@@ -22,7 +22,13 @@ import {
   Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { parseMultiMarkdownArticles, parseSingleMarkdownArticle, ParsedPost } from "@/lib/markdown-importer";
+import {
+  parseMultiMarkdownArticles,
+  parseSingleMarkdownArticle,
+  pairBilingualMarkdownFiles,
+  isEnglishMarkdownFile,
+  ParsedPost
+} from "@/lib/markdown-importer";
 import { CodeSnippetView } from "@/components/ui/CodeSnippetView";
 
 interface SmartMarkdownImporterModalProps {
@@ -122,11 +128,11 @@ export function SmartMarkdownImporterModal({
     mdFiles.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" }));
 
     try {
-      const results: LoadedFileItem[] = [];
+      const rawFiles: Array<{ name: string; content: string }> = [];
 
       for (let idx = 0; idx < mdFiles.length; idx++) {
         const file = mdFiles[idx];
-        setProgressText(`Đang xử lý bài ${idx + 1}/${mdFiles.length}: ${file.name}...`);
+        setProgressText(`Đang nạp file ${idx + 1}/${mdFiles.length}: ${file.name}...`);
 
         // Tạm nghỉ 4ms để trình duyệt cập nhật UI mượt mà, không bị khóa luồng
         await new Promise((resolve) => setTimeout(resolve, 4));
@@ -137,11 +143,36 @@ export function SmartMarkdownImporterModal({
           reader.readAsText(file, "UTF-8");
         });
 
-        const post = parseSingleMarkdownArticle(content, idx + 1, file.name);
-        results.push({
-          filename: file.name,
-          post,
-        });
+        rawFiles.push({ name: file.name, content });
+      }
+
+      const hasBilingual = rawFiles.some((f) => isEnglishMarkdownFile(f.name));
+
+      let results: LoadedFileItem[] = [];
+      if (hasBilingual) {
+        setProgressText("Đang phân tích và tự động ghép cặp bài học song ngữ (VI + EN)...");
+        const paired = pairBilingualMarkdownFiles(rawFiles);
+        results = paired.map((p) => ({
+          filename: p.filenameVi || p.filenameEn || `bai-${p.lessonNumber}.md`,
+          post: {
+            title: p.title,
+            titleEn: p.titleEn,
+            slug: p.slug,
+            readTime: p.duration,
+            summary: p.summary || "",
+            summaryEn: p.summaryEn,
+            contentHtml: p.contentHtml || "",
+            contentHtmlEn: p.contentHtmlEn,
+            codeSnippet: p.codeSnippet || "",
+            codeLang: p.codeLang || "c",
+            codeFilename: p.codeFilename || "main.c",
+          },
+        }));
+      } else {
+        results = rawFiles.map((f, idx) => ({
+          filename: f.name,
+          post: parseSingleMarkdownArticle(f.content, idx + 1, f.name),
+        }));
       }
 
       setLoadedFiles(results);
@@ -471,8 +502,13 @@ export function SmartMarkdownImporterModal({
                               {idx + 1}
                             </span>
                             <div className="min-w-0">
-                              <p className="text-xs font-bold truncate leading-tight">
-                                {post.title}
+                              <p className="text-xs font-bold truncate leading-tight flex items-center gap-1.5">
+                                <span className="truncate">{post.title}</span>
+                                {post.titleEn && (
+                                  <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono font-normal flex-shrink-0">
+                                    VI+EN
+                                  </span>
+                                )}
                               </p>
                               <p className="text-[10px] text-text-muted font-mono truncate mt-0.5">
                                 {post.readTime} {sourceFileName ? `• ${sourceFileName}` : ""}

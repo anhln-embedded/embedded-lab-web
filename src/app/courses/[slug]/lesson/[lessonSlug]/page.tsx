@@ -42,13 +42,19 @@ export default function CourseLessonPage({ params }: LessonPageProps) {
             url: `/courses/${c.slug}`,
             curriculum: (c.modules || []).map((m: any) => ({
               module: m.module,
+              moduleEn: m.moduleEn || undefined,
               lessons: (m.lessons || []).map((l: any) => ({
                 title: l.title,
+                titleEn: l.titleEn || undefined,
                 slug: l.slug,
                 duration: l.duration || "20 phút",
                 free: l.free !== undefined ? l.free : true,
                 summary: l.summary || "",
+                summaryEn: l.summaryEn || "",
                 contentHtml: l.contentHtml || "",
+                contentHtmlEn: l.contentHtmlEn || "",
+                contentMarkdown: l.contentMarkdown || "",
+                contentMarkdownEn: l.contentMarkdownEn || "",
                 videoUrl: l.videoUrl || undefined,
                 codeSnippet: l.codeSnippet || undefined,
               })),
@@ -112,15 +118,9 @@ export default function CourseLessonPage({ params }: LessonPageProps) {
   }
 
   // Flatten all lessons
-  const allLessons: Array<{
-    title: string;
-    slug: string;
-    duration: string;
-    free: boolean;
-    summary?: string;
+  const allLessons: Array<LessonData & {
     moduleTitle: string;
-    codeSnippet?: string;
-    videoUrl?: string;
+    moduleTitleEn?: string;
   }> = [];
 
   for (const mod of course.curriculum) {
@@ -128,6 +128,7 @@ export default function CourseLessonPage({ params }: LessonPageProps) {
       allLessons.push({
         ...lesson,
         moduleTitle: mod.module,
+        moduleTitleEn: mod.moduleEn,
       });
     }
   }

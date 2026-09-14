@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { parseSingleMarkdownArticle } from "../src/lib/markdown-importer";
+import { parseSingleMarkdownArticle, pairBilingualMarkdownFiles } from "../src/lib/markdown-importer";
 
 const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 
@@ -100,79 +100,114 @@ async function main() {
     }
   }
 
-  // Biên dịch lại 26 bài học với URL ảnh mới
-  console.log("\n=== BIÊN DỊCH VÀ CẬP NHẬT 26 BÀI HỌC VỚI URL ẢNH THẬT ===");
+  // Biên dịch lại 26 bài học với URL ảnh mới và hỗ trợ song ngữ VI / EN
+  console.log("\n=== BIÊN DỊCH VÀ CẬP NHẬT 26 BÀI HỌC (SONG NGỮ VI/EN) VỚI URL ẢNH THẬT ===");
 
   const mdDir = "F:\\Advance_C\\stm32f103c8";
-  const files = fs.readdirSync(mdDir)
-    .filter((f) => f.startsWith("Bai ") && f.endsWith(".md"))
-    .sort((a, b) => {
-      const numA = parseInt(a.match(/Bai\s*(\d+)/)?.[1] || "0", 10);
-      const numB = parseInt(b.match(/Bai\s*(\d+)/)?.[1] || "0", 10);
-      return numA - numB;
-    });
+  const rawFiles = fs.readdirSync(mdDir)
+    .filter((f) => f.endsWith(".md"))
+    .map((f) => ({
+      name: f,
+      content: fs.readFileSync(path.join(mdDir, f), "utf-8"),
+    }));
+
+  const pairedLessons = pairBilingualMarkdownFiles(rawFiles);
+  const sortedEntries = Object.entries(urlMap).sort((a, b) => b[0].length - a[0].length);
 
   const parsedLessons: any[] = [];
 
-  for (let i = 0; i < files.length; i++) {
-    const filename = files[i];
-    const filePath = path.join(mdDir, filename);
-    const content = fs.readFileSync(filePath, "utf-8");
+  for (const item of pairedLessons) {
+    let contentHtml = item.contentHtml || "";
+    let contentHtmlEn = item.contentHtmlEn || "";
 
-    const order = i + 1;
-    const parsed = parseSingleMarkdownArticle(content, order, filename);
-
-    let contentHtml = parsed.contentHtml;
-
-    // Sắp xếp các tên file theo độ dài giảm dần để các file _dark.svg, _light.svg được thay thế trước file gốc
-    const sortedEntries = Object.entries(urlMap).sort((a, b) => b[0].length - a[0].length);
-
-    // Thay thế toàn bộ các link ảnh cục bộ hoặc /images/stm32f103/ bằng live URL /uploads/...
+    // Thay thế toàn bộ các link ảnh cục bộ bằng live URL /uploads/...
     for (const [svgName, liveUrl] of sortedEntries) {
-      // Thay thế các biến thể
-      contentHtml = contentHtml.split(`/images/stm32f103/${svgName}`).join(liveUrl);
-      contentHtml = contentHtml.split(`/images/${svgName}`).join(liveUrl);
-      contentHtml = contentHtml.split(`images/${svgName}`).join(liveUrl);
-      contentHtml = contentHtml.split(`"${svgName}"`).join(`"${liveUrl}"`);
+      if (contentHtml) {
+        contentHtml = contentHtml.split(`/images/stm32f103/${svgName}`).join(liveUrl);
+        contentHtml = contentHtml.split(`/images/${svgName}`).join(liveUrl);
+        contentHtml = contentHtml.split(`images/${svgName}`).join(liveUrl);
+        contentHtml = contentHtml.split(`"${svgName}"`).join(`"${liveUrl}"`);
+      }
+      if (contentHtmlEn) {
+        contentHtmlEn = contentHtmlEn.split(`/images/stm32f103/${svgName}`).join(liveUrl);
+        contentHtmlEn = contentHtmlEn.split(`/images/${svgName}`).join(liveUrl);
+        contentHtmlEn = contentHtmlEn.split(`images/${svgName}`).join(liveUrl);
+        contentHtmlEn = contentHtmlEn.split(`"${svgName}"`).join(`"${liveUrl}"`);
+      }
     }
 
     parsedLessons.push({
-      order,
-      title: parsed.title,
-      slug: parsed.slug,
-      duration: order <= 5 ? "20 phút" : "25 phút",
-      free: order <= 5,
-      summary: parsed.summary,
-      contentHtml: contentHtml,
-      codeSnippet: parsed.codeSnippet || null,
-      codeLang: parsed.codeLang || "c",
-      codeFilename: parsed.codeFilename || "main.c",
+      order: item.lessonNumber,
+      title: item.title,
+      titleEn: item.titleEn || null,
+      slug: item.slug,
+      duration: item.duration,
+      free: item.lessonNumber <= 5,
+      summary: item.summary || null,
+      summaryEn: item.summaryEn || null,
+      contentHtml: contentHtml || null,
+      contentHtmlEn: contentHtmlEn || null,
+      contentMarkdown: item.contentMarkdown || null,
+      contentMarkdownEn: item.contentMarkdownEn || null,
+      codeSnippet: item.codeSnippet || null,
+      codeLang: item.codeLang || "c",
+      codeFilename: item.codeFilename || "main.c",
     });
 
-    console.log(`  ✓ Đã cập nhật ảnh cho Bài ${order}: ${parsed.title}`);
+    console.log(
+      `  ✓ Bài ${item.lessonNumber} [${item.status}]: ${item.title}${
+        item.titleEn ? ` | EN: ${item.titleEn}` : ""
+      }`
+    );
   }
 
-  // 5 Modules
+  // 5 Modules với song ngữ VI / EN
   const moduleDefs = [
-    { title: "Học phần 1: Nền Tảng ARM Cortex-M3 & Ngoại Vi Cơ Bản", range: [1, 5] },
-    { title: "Học phần 2: Hệ Thống Định Thời Timers, PWM & Xử Lý Tín Hiệu ADC", range: [6, 12] },
-    { title: "Học phần 3: Các Chuẩn Giao Tiếp Nối Tiếp Công Nghiệp & DMA Controller", range: [13, 17] },
-    { title: "Học phần 4: Tiết Kiệm Năng Lượng & Hệ Điều Hành Thời Gian Thực FreeRTOS", range: [18, 22] },
-    { title: "Học phần 5: Giao Thức Nâng Cao (CAN Bus, USB FS) & Chuyên Gia Firmware", range: [23, 26] },
+    {
+      title: "Học phần 1: Nền Tảng ARM Cortex-M3 & Ngoại Vi Cơ Bản",
+      titleEn: "Module 1: ARM Cortex-M3 Core Architecture & Basic Peripherals",
+      range: [1, 5],
+    },
+    {
+      title: "Học phần 2: Hệ Thống Định Thời Timers, PWM & Xử Lý Tín Hiệu ADC",
+      titleEn: "Module 2: Timers, PWM & ADC Signal Processing",
+      range: [6, 12],
+    },
+    {
+      title: "Học phần 3: Các Chuẩn Giao Tiếp Nối Tiếp Công Nghiệp & DMA Controller",
+      titleEn: "Module 3: Industrial Serial Interfaces & DMA Controller",
+      range: [13, 17],
+    },
+    {
+      title: "Học phần 4: Tiết Kiệm Năng Lượng & Hệ Điều Hành Thời Gian Thực FreeRTOS",
+      titleEn: "Module 4: Low Power Modes & FreeRTOS Multitasking",
+      range: [18, 22],
+    },
+    {
+      title: "Học phần 5: Giao Thức Nâng Cao (CAN Bus, USB FS) & Chuyên Gia Firmware",
+      titleEn: "Module 5: Advanced Protocols (CAN Bus, USB FS) & Expert Debugging",
+      range: [23, 26],
+    },
   ];
 
   const modules = moduleDefs.map((def, mIdx) => ({
     module: def.title,
+    moduleEn: def.titleEn,
     order: mIdx + 1,
     lessons: parsedLessons
       .filter((l) => l.order >= def.range[0] && l.order <= def.range[1])
       .map((l, lIdx) => ({
         title: l.title,
+        titleEn: l.titleEn,
         slug: l.slug,
         duration: l.duration,
         free: l.free,
         summary: l.summary,
+        summaryEn: l.summaryEn,
         contentHtml: l.contentHtml,
+        contentHtmlEn: l.contentHtmlEn,
+        contentMarkdown: l.contentMarkdown,
+        contentMarkdownEn: l.contentMarkdownEn,
         codeSnippet: l.codeSnippet,
         order: lIdx + 1,
       })),
@@ -182,9 +217,12 @@ async function main() {
 
   const payload = JSON.stringify({
     title: "Lập Trình STM32F103 Chuyên Sâu: ARM Cortex-M3 Bare-Metal & SPL",
+    titleEn: "Deep-Dive STM32F103 Programming: ARM Cortex-M3 Bare-Metal & SPL",
     slug: "lap-trinh-stm32f103-chuyen-sau",
     description:
       "Khóa học toàn diện 26 bài học thực chiến STM32F103 (Blue Pill) từ kiến trúc thanh ghi Cortex-M3, Bit-Banding, Clock Tree, GPIO, Timer PWM/Encoder, ADC, DMA, các chuẩn giao tiếp UART/I2C/SPI/CAN, USB Device, FreeRTOS đa nhiệm thời gian thực và Custom ISP Bootloader.",
+    descriptionEn:
+      "Comprehensive 26-lesson masterclass for STM32F103 (Blue Pill) from Cortex-M3 register architecture, Bit-Banding, Clock Tree, GPIO, Timer PWM/Encoder, ADC, DMA, UART/I2C/SPI/CAN communications, USB Device, real-time multitasking FreeRTOS to Custom ISP Bootloader.",
     level: "intermediate",
     category: "embedded-rtos",
     duration: "26 bài học (30 giờ)",
