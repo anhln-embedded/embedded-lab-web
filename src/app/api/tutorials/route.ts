@@ -34,12 +34,15 @@ export async function GET() {
         id: a.id,
         slug: a.slug,
         title: a.title,
+        titleEn: (a as any).titleEn || undefined,
         order: a.order,
         readTime: a.readTime,
         draft: a.draft ?? false,
         updatedAt: a.updatedAt.toISOString().split("T")[0],
         summary: a.summary || "",
+        summaryEn: (a as any).summaryEn || undefined,
         contentHtml: a.contentHtml || "",
+        contentHtmlEn: (a as any).contentHtmlEn || undefined,
         codeSnippet: a.codeSnippet
           ? {
               code: a.codeSnippet,

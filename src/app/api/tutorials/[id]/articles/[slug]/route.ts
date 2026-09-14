@@ -51,10 +51,13 @@ export async function GET(request: Request, { params }: RouteParams) {
       data: {
         id: article.id,
         title: article.title,
+        titleEn: (article as any).titleEn || undefined,
         slug: article.slug,
         readTime: article.readTime,
         summary: article.summary,
+        summaryEn: (article as any).summaryEn || undefined,
         contentHtml: article.contentHtml,
+        contentHtmlEn: (article as any).contentHtmlEn || undefined,
         codeSnippet: article.codeSnippet,
         codeLang: article.codeLang,
         codeFilename: article.codeFilename,

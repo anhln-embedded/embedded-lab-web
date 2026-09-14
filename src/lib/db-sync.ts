@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { ensureSqliteSchema } from "@/lib/db-auto-migrate";
 
 let isSchemaEnsured = false;
 
@@ -10,7 +11,28 @@ export async function ensureTutorialSchema() {
   if (isSchemaEnsured) return;
 
   try {
+    // Luôn gọi ensureSqliteSchema trước để tự động thêm tất cả cột mới cho toàn bộ schema
+    await ensureSqliteSchema();
+
     // 1. Thêm các cột mới cho TutorialArticle nếu chưa tồn tại
+    try {
+      await prisma.$executeRawUnsafe(
+        `ALTER TABLE "TutorialArticle" ADD COLUMN "titleEn" TEXT`
+      );
+    } catch {}
+
+    try {
+      await prisma.$executeRawUnsafe(
+        `ALTER TABLE "TutorialArticle" ADD COLUMN "summaryEn" TEXT`
+      );
+    } catch {}
+
+    try {
+      await prisma.$executeRawUnsafe(
+        `ALTER TABLE "TutorialArticle" ADD COLUMN "contentHtmlEn" TEXT`
+      );
+    } catch {}
+
     try {
       await prisma.$executeRawUnsafe(
         `ALTER TABLE "TutorialArticle" ADD COLUMN "authorName" TEXT DEFAULT 'Embedded-AIoT Lab PTIT'`
