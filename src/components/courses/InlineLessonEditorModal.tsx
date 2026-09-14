@@ -205,13 +205,17 @@ void vSensorTask(void *pvParameters) {
       const updatedLessonObj: LessonData & { moduleTitle: string } = {
         ...currentLesson,
         title: title.trim(),
+        titleEn: titleEn.trim() || undefined,
         duration: duration.trim() || "20 phút",
         hasVideo,
         videoUrl: hasVideo && videoUrl.trim() ? videoUrl.trim() : undefined,
         summary: summary.trim() || undefined,
+        summaryEn: summaryEn.trim() || undefined,
         codeSnippet: codeSnippet.trim() || undefined,
-        contentHtml: compiledHtml,
+        contentHtml: compiledHtmlVi,
+        contentHtmlEn: compiledHtmlEn,
         contentMarkdown: markdownContent,
+        contentMarkdownEn: markdownContentEn,
       };
 
       const updatedCourseObj: CourseData = {

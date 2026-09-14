@@ -2,7 +2,7 @@
 
 import React, { use, useEffect, useState } from "react";
 import Link from "next/link";
-import { getCourseBySlug as getStaticCourseBySlug, CourseData } from "@/lib/content";
+import { getCourseBySlug as getStaticCourseBySlug, CourseData, LessonData } from "@/lib/content";
 import { getCourseBySlug as getDynamicCourseBySlug } from "@/lib/courses-store";
 import { LessonPlayer } from "@/components/courses/LessonPlayer";
 import { ArrowLeft, BookOpen } from "lucide-react";

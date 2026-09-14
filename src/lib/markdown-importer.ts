@@ -792,7 +792,8 @@ export function extractLessonOrder(filename: string, defaultIdx: number): number
 /**
  * Kiểm tra tệp có phải là phiên bản tiếng Anh không
  */
-export function isEnglishMarkdownFile(filename: string): boolean {
+export function isEnglishMarkdownFile(filename?: string): boolean {
+  if (!filename) return false;
   const lower = filename.toLowerCase();
   return (
     lower.includes(".en.") ||
