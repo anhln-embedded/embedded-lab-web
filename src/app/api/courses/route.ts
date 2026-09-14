@@ -31,14 +31,13 @@ export async function GET(request: Request) {
       },
     });
 
-    if (!courses || courses.length === 0) {
-      return NextResponse.json({ success: true, data: DEFAULT_LAB_COURSES });
-    }
-
-    return NextResponse.json({ success: true, data: courses });
+    return NextResponse.json({ success: true, data: courses || [] });
   } catch (error: any) {
-    console.error("Error fetching courses from database, falling back to static:", error);
-    return NextResponse.json({ success: true, data: DEFAULT_LAB_COURSES });
+    console.error("Error fetching courses from database:", error);
+    return NextResponse.json(
+      { success: false, error: error.message || "Failed to fetch courses" },
+      { status: 500 }
+    );
   }
 }
 

@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { CourseData, CourseCategory } from "@/lib/content";
-import { getAllCourses, DEFAULT_LAB_COURSES, COURSE_CATEGORIES, CourseCategoryMeta } from "@/lib/courses-store";
+import { getAllCourses, COURSE_CATEGORIES, CourseCategoryMeta } from "@/lib/courses-store";
 import { useAuth } from "@/context/AuthContext";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -137,6 +137,29 @@ export function CourseCard({ course }: CourseCardProps) {
   );
 }
 
+function CourseCardSkeleton() {
+  return (
+    <Card variant="default" className="flex flex-col h-full bg-bg-panel border border-border/80 rounded-2xl overflow-hidden animate-pulse">
+      <div className="aspect-video mb-4 rounded-xl bg-bg-code border border-border flex items-center justify-center">
+        <GraduationCap className="h-12 w-12 text-text-muted/20" />
+      </div>
+      <div className="flex flex-col flex-1 p-3 space-y-3">
+        <div className="flex gap-2">
+          <div className="h-4 w-16 bg-border/60 rounded" />
+          <div className="h-4 w-12 bg-border/40 rounded" />
+        </div>
+        <div className="h-5 w-3/4 bg-border/70 rounded" />
+        <div className="h-3.5 w-full bg-border/30 rounded" />
+        <div className="h-3.5 w-4/5 bg-border/30 rounded" />
+        <div className="pt-4 border-t border-border/40 flex justify-between items-center mt-auto">
+          <div className="h-3.5 w-16 bg-border/30 rounded" />
+          <div className="h-8 w-24 bg-border/50 rounded-lg" />
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 interface CourseListProps {
   courses?: CourseData[];
 }
@@ -144,18 +167,15 @@ interface CourseListProps {
 export function CourseList({ courses: initialCourses }: CourseListProps) {
   const { user } = useAuth();
   const { dict } = useLanguage();
-  const fallbackCourses = React.useMemo(() => {
-    return initialCourses && initialCourses.length > 0 ? initialCourses : DEFAULT_LAB_COURSES;
-  }, [initialCourses]);
-
-  const [displayCourses, setDisplayCourses] = React.useState<CourseData[]>(fallbackCourses);
+  const [displayCourses, setDisplayCourses] = React.useState<CourseData[]>(initialCourses || []);
+  const [isLoading, setIsLoading] = React.useState<boolean>(!initialCourses || initialCourses.length === 0);
   const [selectedCategory, setSelectedCategory] = React.useState<string>("all");
 
   const loadFromApi = React.useCallback(async () => {
     try {
       const res = await fetch("/api/courses");
       const json = await res.json();
-      if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+      if (json.success && Array.isArray(json.data)) {
         const apiCourses: CourseData[] = json.data.map((c: any) => ({
           _id: c.id,
           title: c.title,
@@ -180,10 +200,10 @@ export function CourseList({ courses: initialCourses }: CourseListProps) {
       }
     } catch (err) {
       console.warn("Could not fetch from SQLite API:", err);
+    } finally {
+      setIsLoading(false);
     }
-    // Nếu API lỗi hoặc chưa có dữ liệu, giữ fallbackCourses
-    setDisplayCourses(fallbackCourses);
-  }, [fallbackCourses]);
+  }, []);
 
   React.useEffect(() => {
     loadFromApi();
@@ -267,8 +287,14 @@ export function CourseList({ courses: initialCourses }: CourseListProps) {
         </div>
       )}
 
-      {/* Course Grid or Empty State */}
-      {filteredCourses.length === 0 ? (
+      {/* Course Grid, Skeletons or Empty State */}
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <CourseCardSkeleton />
+          <CourseCardSkeleton />
+          <CourseCardSkeleton />
+        </div>
+      ) : filteredCourses.length === 0 ? (
         <div className="text-center py-16 px-6 border border-border/80 rounded-3xl bg-bg-panel/70 backdrop-blur-xl shadow-xl max-w-2xl mx-auto space-y-4">
           <div className="w-16 h-16 rounded-3xl bg-accent-muted border border-accent/20 flex items-center justify-center mx-auto text-3xl shadow-inner">
             🎓
