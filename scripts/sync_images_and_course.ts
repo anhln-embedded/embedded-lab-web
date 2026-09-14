@@ -104,12 +104,43 @@ async function main() {
   console.log("\n=== BIÊN DỊCH VÀ CẬP NHẬT 26 BÀI HỌC (SONG NGỮ VI/EN) VỚI URL ẢNH THẬT ===");
 
   const mdDir = "F:\\Advance_C\\stm32f103c8";
-  const rawFiles = fs.readdirSync(mdDir)
-    .filter((f) => f.endsWith(".md"))
-    .map((f) => ({
-      name: f,
-      content: fs.readFileSync(path.join(mdDir, f), "utf-8"),
-    }));
+  const viDir = path.join(mdDir, "vi");
+  const enDir = path.join(mdDir, "en");
+
+  const rawFiles: Array<{ name: string; content: string }> = [];
+
+  if (fs.existsSync(viDir)) {
+    fs.readdirSync(viDir)
+      .filter((f) => f.endsWith(".md"))
+      .forEach((f) => {
+        rawFiles.push({
+          name: `vi/${f}`,
+          content: fs.readFileSync(path.join(viDir, f), "utf-8"),
+        });
+      });
+  }
+
+  if (fs.existsSync(enDir)) {
+    fs.readdirSync(enDir)
+      .filter((f) => f.endsWith(".md"))
+      .forEach((f) => {
+        rawFiles.push({
+          name: `en/${f}`,
+          content: fs.readFileSync(path.join(enDir, f), "utf-8"),
+        });
+      });
+  }
+
+  if (rawFiles.length === 0) {
+    fs.readdirSync(mdDir)
+      .filter((f) => f.endsWith(".md") && !f.toLowerCase().includes("readme"))
+      .forEach((f) => {
+        rawFiles.push({
+          name: f,
+          content: fs.readFileSync(path.join(mdDir, f), "utf-8"),
+        });
+      });
+  }
 
   const pairedLessons = pairBilingualMarkdownFiles(rawFiles);
   const sortedEntries = Object.entries(urlMap).sort((a, b) => b[0].length - a[0].length);
@@ -125,12 +156,14 @@ async function main() {
       if (contentHtml) {
         contentHtml = contentHtml.split(`/images/stm32f103/${svgName}`).join(liveUrl);
         contentHtml = contentHtml.split(`/images/${svgName}`).join(liveUrl);
+        contentHtml = contentHtml.split(`../images/${svgName}`).join(liveUrl);
         contentHtml = contentHtml.split(`images/${svgName}`).join(liveUrl);
         contentHtml = contentHtml.split(`"${svgName}"`).join(`"${liveUrl}"`);
       }
       if (contentHtmlEn) {
         contentHtmlEn = contentHtmlEn.split(`/images/stm32f103/${svgName}`).join(liveUrl);
         contentHtmlEn = contentHtmlEn.split(`/images/${svgName}`).join(liveUrl);
+        contentHtmlEn = contentHtmlEn.split(`../images/${svgName}`).join(liveUrl);
         contentHtmlEn = contentHtmlEn.split(`images/${svgName}`).join(liveUrl);
         contentHtmlEn = contentHtmlEn.split(`"${svgName}"`).join(`"${liveUrl}"`);
       }

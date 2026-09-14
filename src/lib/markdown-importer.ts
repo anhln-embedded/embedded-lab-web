@@ -794,17 +794,18 @@ export function extractLessonOrder(filename: string, defaultIdx: number): number
  */
 export function isEnglishMarkdownFile(filename?: string): boolean {
   if (!filename) return false;
-  const lower = filename.toLowerCase();
+  const lower = filename.toLowerCase().replace(/\\/g, "/");
+  const base = lower.split("/").pop() || lower;
   return (
+    lower.startsWith("en/") ||
+    lower.includes("/en/") ||
+    base.startsWith("lesson") ||
+    base.startsWith("chapter") ||
     lower.includes(".en.") ||
     lower.endsWith(".en.md") ||
     lower.includes("_en.") ||
     lower.includes("-en.") ||
-    lower.includes("(en)") ||
-    lower.startsWith("lesson") ||
-    lower.startsWith("chapter") ||
-    lower.includes("/en/") ||
-    lower.includes("\\en\\")
+    lower.includes("(en)")
   );
 }
 

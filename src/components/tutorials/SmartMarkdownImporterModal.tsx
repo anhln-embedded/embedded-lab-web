@@ -143,7 +143,8 @@ export function SmartMarkdownImporterModal({
           reader.readAsText(file, "UTF-8");
         });
 
-        rawFiles.push({ name: file.name, content });
+        const relativePath = (file as any).webkitRelativePath || file.name;
+        rawFiles.push({ name: relativePath, content });
       }
 
       const hasBilingual = rawFiles.some((f) => isEnglishMarkdownFile(f.name));
