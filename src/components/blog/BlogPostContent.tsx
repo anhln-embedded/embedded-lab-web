@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { cn, siteConfig, formatDate, getTagColor } from "@/lib/utils";
 import { BlogPostData, getRelatedPosts, getPostsBySeries } from "@/lib/content";
+import { renderAllMermaidDiagrams } from "@/components/ui/MermaidInitializer";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -136,6 +137,15 @@ export function BlogPostContent({ post }: BlogPostContentProps) {
   // Check if content is HTML (from Google Docs Editor)
   const isHtml = post.contentHtml || (post.body?.raw && post.body.raw.includes("<"));
   const htmlContent = post.contentHtml || (post.body && post.body.raw) || "";
+
+  // Tự động render sơ đồ Mermaid trong bài viết Blog
+  React.useEffect(() => {
+    if (!htmlContent) return;
+    const timer = setTimeout(() => {
+      renderAllMermaidDiagrams();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [htmlContent]);
 
   return (
     <article className="min-h-screen pb-20">

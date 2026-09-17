@@ -94,6 +94,7 @@ export const viewport: Viewport = {
 
 import { AuthProvider } from "@/context/AuthContext";
 import { LanguageProvider } from "@/context/LanguageContext";
+import { MermaidInitializer } from "@/components/ui/MermaidInitializer";
 
 export default function RootLayout({
   children,
@@ -133,6 +134,7 @@ export default function RootLayout({
             <Header />
             <main className="flex-1 min-h-[calc(100vh-4.5rem)] w-full max-w-full">{children}</main>
             <Footer />
+            <MermaidInitializer />
           </AuthProvider>
         </LanguageProvider>
       </body>

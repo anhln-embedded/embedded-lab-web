@@ -9,6 +9,7 @@ import { InlineLessonEditorModal } from "./InlineLessonEditorModal";
 import { CourseTableOfContents } from "./CourseTableOfContents";
 import { ReadingRewardTracker } from "@/components/gamification/ReadingRewardTracker";
 import { extractHeadingsFromContent } from "@/lib/markdown-importer";
+import { renderAllMermaidDiagrams } from "@/components/ui/MermaidInitializer";
 import { CodeSnippetView } from "@/components/ui/CodeSnippetView";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -175,6 +176,15 @@ export function LessonPlayer({
   const headings = React.useMemo(() => {
     if (!displayContentHtml) return [];
     return extractHeadingsFromContent(displayContentHtml);
+  }, [displayContentHtml]);
+
+  // Tự động vẽ sơ đồ thuật toán Mermaid trong nội dung bài học
+  React.useEffect(() => {
+    if (!displayContentHtml) return;
+    const timer = setTimeout(() => {
+      renderAllMermaidDiagrams();
+    }, 100);
+    return () => clearTimeout(timer);
   }, [displayContentHtml]);
 
   // Fullscreen change listener & Keyboard Shortcuts (F = Fullscreen)

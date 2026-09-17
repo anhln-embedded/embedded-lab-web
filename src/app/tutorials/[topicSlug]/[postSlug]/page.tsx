@@ -12,6 +12,7 @@ import { ArticleHistoryModal } from "@/components/tutorials/ArticleHistoryModal"
 import { TopCVArticleEditor } from "@/components/tutorials/TopCVArticleEditor";
 import { TutorialComments } from "@/components/tutorials/TutorialComments";
 import { markdownToLabHtml, extractHeadingsFromContent } from "@/lib/markdown-importer";
+import { renderAllMermaidDiagrams } from "@/components/ui/MermaidInitializer";
 import { safeStorage } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -165,6 +166,15 @@ export default function TutorialPostDetailPage({ params }: PageProps) {
     document.addEventListener("click", handleGlobalCopy);
     return () => document.removeEventListener("click", handleGlobalCopy);
   }, []);
+
+  // Tự động kích hoạt render Mermaid khi mở bài viết hoặc cập nhật nội dung
+  useEffect(() => {
+    if (!topic) return;
+    const timer = setTimeout(() => {
+      renderAllMermaidDiagrams();
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [editableContentHtml, resolvedParams.postSlug, topic]);
 
 
   const toggleLeftSidebar = () => {

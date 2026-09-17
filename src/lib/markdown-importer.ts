@@ -264,15 +264,54 @@ labMarkedInstance.use({
     code({ text, lang: rawLang }) {
       const lang = (rawLang || "").toLowerCase().trim();
       if (lang === "mermaid") {
+        const b64Code = safeBase64Encode(text);
+        const uniqueId = `mermaid_${Math.random().toString(36).substring(2, 8)}`;
         return `
-          <div class="my-6 rounded-2xl border border-accent/40 bg-bg-panel overflow-hidden shadow-xl">
-            <div class="flex items-center justify-between px-4 py-2.5 bg-bg-elevated border-b border-border text-xs">
-              <div class="flex items-center gap-2 font-bold text-accent">
-                <span class="text-base">⚡</span>
-                <span>Sơ Đồ Thuật Toán & Luồng Xử Lý (Mermaid Flowchart)</span>
+          <div class="lab-mermaid-card my-5 rounded-2xl border border-border/80 dark:border-accent/40 bg-bg-panel overflow-hidden shadow-sm group transition-all" data-mermaid-id="${uniqueId}">
+            <div class="lab-mermaid-header flex items-center justify-between px-3.5 py-2 bg-slate-50/90 dark:bg-bg-elevated border-b border-border text-xs select-none">
+              <div class="flex items-center gap-1.5 font-bold text-accent">
+                <span class="text-sm animate-pulse">⚡</span>
+                <span class="text-[11px] sm:text-xs">Sơ Đồ Thuật Toán & Luồng Xử Lý</span>
+              </div>
+              <div class="flex items-center gap-1 sm:gap-1.5">
+                <button
+                  type="button"
+                  data-mermaid-fullscreen="${uniqueId}"
+                  class="lab-mermaid-fullscreen-btn px-2 py-1 rounded-lg bg-white hover:bg-slate-100 dark:bg-bg-panel dark:hover:bg-bg-elevated border border-border text-[11px] font-bold text-text-muted hover:text-accent transition-all flex items-center gap-1 cursor-pointer"
+                  title="Xem toàn màn hình / Phóng to"
+                >
+                  <span>🔍</span>
+                  <span class="hidden sm:inline">Phóng to</span>
+                </button>
+                <button
+                  type="button"
+                  data-mermaid-toggle="${uniqueId}"
+                  class="lab-mermaid-toggle-btn px-2 py-1 rounded-lg bg-white hover:bg-slate-100 dark:bg-bg-panel dark:hover:bg-bg-elevated border border-border text-[11px] font-bold text-text-muted hover:text-accent transition-all flex items-center gap-1 cursor-pointer"
+                  title="Chuyển đổi giữa xem Sơ đồ và Mã nguồn"
+                >
+                  <span class="lab-toggle-icon">📝</span>
+                  <span class="lab-toggle-text hidden sm:inline">Mã nguồn</span>
+                </button>
+                <button
+                  type="button"
+                  data-lab-code="${b64Code}"
+                  class="lab-copy-btn px-2 py-1 rounded-lg bg-white hover:bg-accent hover:text-white dark:bg-bg-panel dark:hover:bg-accent dark:hover:text-white border border-border text-[11px] font-bold transition-all flex items-center gap-1 cursor-pointer shadow-xs"
+                  title="Sao chép toàn bộ mã Mermaid"
+                >
+                  <span>📋</span>
+                  <span class="lab-copy-label hidden sm:inline">Sao chép</span>
+                </button>
               </div>
             </div>
-            <div class="p-4 sm:p-5 bg-[#0b101b] overflow-x-auto text-xs font-mono text-cyan-300 leading-relaxed border-b border-border/40">
+            <div class="lab-mermaid-viewport relative p-4 sm:p-6 bg-white overflow-x-auto max-h-[420px] flex items-center justify-center border-b border-border/40">
+              <div class="lab-mermaid-diagram w-full flex justify-center items-center max-w-[580px] mx-auto" data-raw-code="${b64Code}" id="${uniqueId}">
+                <div class="lab-mermaid-loading flex items-center gap-2 py-6 text-xs font-medium text-text-muted">
+                  <div class="w-3.5 h-3.5 border-2 border-accent border-t-transparent rounded-full animate-spin"></div>
+                  <span>Đang dựng sơ đồ...</span>
+                </div>
+              </div>
+            </div>
+            <div class="lab-mermaid-code-view hidden p-3 sm:p-4 bg-slate-900 dark:bg-[#070b14] overflow-x-auto text-xs font-mono text-cyan-300 leading-relaxed border-b border-border/40">
               <pre class="m-0 p-0 bg-transparent"><code>${escapeHtml(text)}</code></pre>
             </div>
           </div>\n`;
