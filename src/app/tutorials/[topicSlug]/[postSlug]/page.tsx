@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use, useState, useEffect } from "react";
+import React, { use, useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { TUTORIAL_TOPICS, TutorialTopic, TutorialPost } from "@/lib/tutorials-data";
@@ -53,13 +53,42 @@ interface PageProps {
   }>;
 }
 
+/**
+ * Thanh tiến độ đọc bài viết được cô lập để tối ưu hiệu năng:
+ * Việc cuộn trang sẽ KHÔNG làm re-render toàn bộ cấu trúc bài viết và sơ đồ bên dưới
+ */
+function TopReadingProgressBar() {
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (totalHeight > 0) {
+        const progress = Math.min(100, Math.max(0, (window.scrollY / totalHeight) * 100));
+        setScrollProgress(progress);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  return (
+    <div className="fixed top-0 left-0 w-full h-1 bg-transparent z-50 pointer-events-none">
+      <div
+        className="h-full bg-accent transition-all duration-150 shadow-sm"
+        style={{ width: `${scrollProgress}%` }}
+      />
+    </div>
+  );
+}
+
 export default function TutorialPostDetailPage({ params }: PageProps) {
   const resolvedParams = use(params);
   const { user } = useAuth();
 
   const [topic, setTopic] = useState<TutorialTopic | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
-  const [scrollProgress, setScrollProgress] = useState(0);
 
   // Chế độ ẩn/hiện 2 cột bên cạnh để mở rộng không gian đọc bài viết
   const [showLeftSidebar, setShowLeftSidebar] = useState(true);
@@ -112,20 +141,6 @@ export default function TutorialPostDetailPage({ params }: PageProps) {
     });
   };
 
-  // Theo dõi tiến độ cuộn trang (Top Reading Progress Bar)
-  useEffect(() => {
-    const handleScroll = () => {
-      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
-      if (totalHeight > 0) {
-        const progress = Math.min(100, Math.max(0, (window.scrollY / totalHeight) * 100));
-        setScrollProgress(progress);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   // Đọc cấu hình ẩn/hiện cột từ safeStorage nếu có
   useEffect(() => {
     try {
@@ -167,13 +182,14 @@ export default function TutorialPostDetailPage({ params }: PageProps) {
     return () => document.removeEventListener("click", handleGlobalCopy);
   }, []);
 
-  // Tự động kích hoạt render Mermaid khi mở bài viết hoặc cập nhật nội dung
+  // Tự động kích hoạt render Mermaid ngay lập tức khi mở bài viết hoặc cập nhật nội dung
   useEffect(() => {
     if (!topic) return;
-    const timer = setTimeout(() => {
+    renderAllMermaidDiagrams();
+    const frameId = requestAnimationFrame(() => {
       renderAllMermaidDiagrams();
-    }, 150);
-    return () => clearTimeout(timer);
+    });
+    return () => cancelAnimationFrame(frameId);
   }, [editableContentHtml, resolvedParams.postSlug, topic]);
 
 
@@ -243,6 +259,21 @@ export default function TutorialPostDetailPage({ params }: PageProps) {
       setHasLiveChanges(false);
     }
   }, [currentPost?.slug, currentPost?.updatedAt]);
+
+  // Render HTML và trích xuất Headings cho Table of Contents (Luôn gọi Hook ở đầu component)
+  const rawContent = editableContentHtml || currentPost?.contentHtml || "";
+  const renderedContentHtml = useMemo(() => {
+    if (!rawContent) return "";
+    const isAlreadyLabHtml =
+      rawContent.includes("lab-code-card") ||
+      rawContent.includes("<h2 id=") ||
+      rawContent.includes("<table class=");
+    return isAlreadyLabHtml ? rawContent : markdownToLabHtml(rawContent);
+  }, [rawContent]);
+
+  const headings = useMemo(() => {
+    return extractHeadingsFromContent(renderedContentHtml);
+  }, [renderedContentHtml]);
 
   const handleSaveLiveChanges = async () => {
     if (!currentPost || !topic) return;
@@ -324,24 +355,10 @@ export default function TutorialPostDetailPage({ params }: PageProps) {
   const isFocusMode = !showLeftSidebar && !showRightSidebar;
 
 
-  // Render HTML và trích xuất Headings cho Table of Contents
-  const rawContent = editableContentHtml || currentPost.contentHtml || "";
-  const isAlreadyLabHtml =
-    rawContent.includes("lab-code-card") ||
-    rawContent.includes("<h2 id=") ||
-    rawContent.includes("<table class=");
-  const renderedContentHtml = isAlreadyLabHtml ? rawContent : markdownToLabHtml(rawContent);
-  const headings = extractHeadingsFromContent(renderedContentHtml);
-
   return (
     <div className="relative min-h-screen w-full max-w-full">
-      {/* --- TOP READING PROGRESS BAR (1 Single Accent Color) --- */}
-      <div className="fixed top-0 left-0 w-full h-1 bg-transparent z-50 pointer-events-none">
-        <div
-          className="h-full bg-accent transition-all duration-150 shadow-sm"
-          style={{ width: `${scrollProgress}%` }}
-        />
-      </div>
+      {/* --- TOP READING PROGRESS BAR (1 Single Accent Color, Isolated Component) --- */}
+      <TopReadingProgressBar />
 
       {/* Floating Buttons when Sidebars are collapsed on Desktop (LearningVN Style) */}
       <div className="hidden lg:block">

@@ -265,7 +265,12 @@ labMarkedInstance.use({
       const lang = (rawLang || "").toLowerCase().trim();
       if (lang === "mermaid") {
         const b64Code = safeBase64Encode(text);
-        const uniqueId = `mermaid_${Math.random().toString(36).substring(2, 8)}`;
+        let hashVal = 5381;
+        for (let i = 0; i < text.length; i++) {
+          hashVal = ((hashVal << 5) + hashVal) + text.charCodeAt(i);
+          hashVal |= 0;
+        }
+        const uniqueId = `mermaid_${Math.abs(hashVal).toString(36)}`;
         return `
           <div class="lab-mermaid-card my-5 rounded-2xl border border-border/80 dark:border-accent/40 bg-bg-panel overflow-hidden shadow-sm group transition-all" data-mermaid-id="${uniqueId}">
             <div class="lab-mermaid-header flex items-center justify-between px-3.5 py-2 bg-slate-50/90 dark:bg-bg-elevated border-b border-border text-xs select-none">

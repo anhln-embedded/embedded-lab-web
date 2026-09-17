@@ -85,8 +85,78 @@ async function getMermaidInstance() {
   return mermaidModule;
 }
 
+// Bộ nhớ đệm SVG (RAM + SessionStorage) giúp dựng sơ đồ ngay lập tức (0ms) từ lần thứ nhất
+const svgMemoryCache = new Map<string, string>();
+
+function getQuickHash(str: string): string {
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) + hash) + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash).toString(36);
+}
+
+function getCachedSvg(code: string): string | null {
+  if (svgMemoryCache.has(code)) return svgMemoryCache.get(code)!;
+  if (typeof window !== "undefined") {
+    try {
+      const stored = sessionStorage.getItem(`lab_mermaid_cache_${getQuickHash(code)}`);
+      if (stored) {
+        svgMemoryCache.set(code, stored);
+        return stored;
+      }
+    } catch {}
+  }
+  return null;
+}
+
+function setCachedSvg(code: string, svg: string) {
+  svgMemoryCache.set(code, svg);
+  if (typeof window !== "undefined") {
+    try {
+      sessionStorage.setItem(`lab_mermaid_cache_${getQuickHash(code)}`, svg);
+    } catch {}
+  }
+}
+
+// Tự động tải trước thư viện Mermaid ngay từ khi trình duyệt nạp script (Eager Preload)
+if (typeof window !== "undefined") {
+  getMermaidInstance();
+}
+
+function styleDiagramSvg(el: HTMLElement) {
+  const svgEl = el.querySelector("svg");
+  if (svgEl) {
+    svgEl.style.maxWidth = "min(100%, 580px)";
+    svgEl.style.maxHeight = "360px";
+    svgEl.style.height = "auto";
+    svgEl.style.display = "block";
+    svgEl.style.margin = "0 auto";
+    svgEl.style.cursor = "zoom-in";
+    svgEl.setAttribute("title", "Click vào sơ đồ để phóng to toàn màn hình");
+    svgEl.classList.add("transition-transform", "duration-200", "hover:scale-[1.01]");
+  }
+
+  // Tự động bổ sung nút Phóng to vào header của card nếu chưa có
+  const parentCard = el.closest(".lab-mermaid-card");
+  if (parentCard) {
+    const headerActions = parentCard.querySelector(".lab-mermaid-header div:last-child");
+    if (headerActions && !headerActions.querySelector(".lab-mermaid-fullscreen-btn")) {
+      const fsBtn = document.createElement("button");
+      fsBtn.type = "button";
+      fsBtn.className = "lab-mermaid-fullscreen-btn px-2 py-1 rounded-lg bg-white hover:bg-slate-100 dark:bg-bg-panel dark:hover:bg-bg-elevated border border-border text-[11px] font-bold text-text-muted hover:text-accent transition-all flex items-center gap-1 cursor-pointer";
+      fsBtn.title = "Xem toàn màn hình / Phóng to";
+      fsBtn.innerHTML = `<span>🔍</span><span class="hidden sm:inline">Phóng to</span>`;
+      headerActions.insertBefore(fsBtn, headerActions.firstChild);
+    }
+  }
+}
+
 /**
- * Tự động tìm và render toàn bộ sơ đồ Mermaid trong trang với kích thước cân đối và nền sáng trang nhã
+ * Tự động tìm và dựng toàn bộ sơ đồ Mermaid trong trang:
+ * - Áp dụng Cache tức thời 0ms nếu đã có sẵn SVG
+ * - Dựng song song (Promise.all) tất cả sơ đồ chưa dựng để hoàn tất ngay khi nạp trang
  */
 export async function renderAllMermaidDiagrams(rootElement?: HTMLElement | Document | null) {
   if (typeof window === "undefined") return;
@@ -97,15 +167,16 @@ export async function renderAllMermaidDiagrams(rootElement?: HTMLElement | Docum
   upgradeLegacyMermaidBlocks(root);
 
   // 2. Tìm tất cả các container sơ đồ chưa render
-  const pendingElements = root.querySelectorAll<HTMLElement>(".lab-mermaid-diagram:not([data-processed='true'])");
+  const pendingElements = Array.from(
+    root.querySelectorAll<HTMLElement>(".lab-mermaid-diagram:not([data-processed='true'])")
+  );
   if (pendingElements.length === 0) return;
 
-  const mermaid = await getMermaidInstance();
-  if (!mermaid) return;
+  const uncachedItems: Array<{ el: HTMLElement; sanitized: string; uniqueId: string }> = [];
 
+  // 3. Quét nhanh: nếu đã có trong Cache -> Gán SVG ngay lập tức 0ms không độ trễ
   for (let i = 0; i < pendingElements.length; i++) {
     const el = pendingElements[i];
-    el.setAttribute("data-processed", "true");
 
     let rawCode = "";
     const b64 = el.getAttribute("data-raw-code");
@@ -122,61 +193,52 @@ export async function renderAllMermaidDiagrams(rootElement?: HTMLElement | Docum
     const sanitized = sanitizeMermaidCode(rawCode);
     if (!sanitized) continue;
 
-    const uniqueId = `mermaid_svg_${Date.now()}_${i}_${Math.random().toString(36).substring(2, 7)}`;
-
-    try {
-      const { svg } = await mermaid.render(uniqueId, sanitized);
-      el.innerHTML = svg;
-
-      // Căn chỉnh SVG kích thước vừa vặn trong bài viết
-      const svgEl = el.querySelector("svg");
-      if (svgEl) {
-        svgEl.style.maxWidth = "min(100%, 580px)";
-        svgEl.style.maxHeight = "360px";
-        svgEl.style.height = "auto";
-        svgEl.style.display = "block";
-        svgEl.style.margin = "0 auto";
-        svgEl.style.cursor = "zoom-in";
-        svgEl.setAttribute("title", "Click vào sơ đồ để phóng to toàn màn hình");
-        svgEl.classList.add("transition-transform", "duration-200", "hover:scale-[1.01]");
-      }
-
-      // Tự động bổ sung nút Phóng to vào header của card nếu chưa có
-      const parentCard = el.closest(".lab-mermaid-card");
-      if (parentCard) {
-        const headerActions = parentCard.querySelector(".lab-mermaid-header div:last-child");
-        if (headerActions && !headerActions.querySelector(".lab-mermaid-fullscreen-btn")) {
-          const fsBtn = document.createElement("button");
-          fsBtn.type = "button";
-          fsBtn.className = "lab-mermaid-fullscreen-btn px-2 py-1 rounded-lg bg-white hover:bg-slate-100 dark:bg-bg-panel dark:hover:bg-bg-elevated border border-border text-[11px] font-bold text-text-muted hover:text-accent transition-all flex items-center gap-1 cursor-pointer";
-          fsBtn.title = "Xem toàn màn hình / Phóng to";
-          fsBtn.innerHTML = `<span>🔍</span><span class="hidden sm:inline">Phóng to</span>`;
-          headerActions.insertBefore(fsBtn, headerActions.firstChild);
-        }
-      }
-    } catch (renderError: any) {
-      console.warn(`[Mermaid] Lỗi render sơ đồ ${uniqueId}:`, renderError);
-
-      // Khi gặp lỗi cú pháp, hiển thị thông báo thân thiện và cho phép xem mã nguồn
-      el.innerHTML = `
-        <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-300 text-xs flex flex-col gap-1.5 w-full text-center">
-          <div class="font-bold flex items-center justify-center gap-1.5 text-amber-600 dark:text-amber-400">
-            <span>⚠️</span>
-            <span>Không thể vẽ sơ đồ do lỗi cú pháp Mermaid</span>
-          </div>
-          <p class="text-[11px] text-text-muted">Nhấn nút <strong>"Mã nguồn"</strong> ở trên để xem chi tiết cú pháp.</p>
-        </div>
-      `;
-
-      // Tự động mở khung xem mã nguồn nếu có
-      const parentCard = el.closest(".lab-mermaid-card");
-      if (parentCard) {
-        const codeView = parentCard.querySelector(".lab-mermaid-code-view");
-        if (codeView) {
-          codeView.classList.remove("hidden");
-        }
-      }
+    const cachedSvg = getCachedSvg(sanitized);
+    if (cachedSvg) {
+      el.setAttribute("data-processed", "true");
+      el.innerHTML = cachedSvg;
+      styleDiagramSvg(el);
+    } else {
+      const uniqueId = `mermaid_svg_${getQuickHash(sanitized)}_${i}`;
+      uncachedItems.push({ el, sanitized, uniqueId });
     }
+  }
+
+  // 4. Nếu có sơ đồ mới chưa nạp cache -> Dựng đồng thời (Promise.all) song song toàn bộ
+  if (uncachedItems.length > 0) {
+    const mermaid = await getMermaidInstance();
+    if (!mermaid) return;
+
+    await Promise.all(
+      uncachedItems.map(async ({ el, sanitized, uniqueId }) => {
+        el.setAttribute("data-processed", "true");
+        try {
+          const { svg } = await mermaid.render(uniqueId, sanitized);
+          setCachedSvg(sanitized, svg);
+          el.innerHTML = svg;
+          styleDiagramSvg(el);
+        } catch (renderError: any) {
+          console.warn(`[Mermaid] Lỗi render sơ đồ ${uniqueId}:`, renderError);
+          el.innerHTML = `
+            <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-300 text-xs flex flex-col gap-1.5 w-full text-center">
+              <div class="font-bold flex items-center justify-center gap-1.5 text-amber-600 dark:text-amber-400">
+                <span>⚠️</span>
+                <span>Không thể vẽ sơ đồ do lỗi cú pháp Mermaid</span>
+              </div>
+              <p class="text-[11px] text-text-muted">Nhấn nút <strong>"Mã nguồn"</strong> ở trên để xem chi tiết cú pháp.</p>
+            </div>
+          `;
+
+          const parentCard = el.closest(".lab-mermaid-card");
+          if (parentCard) {
+            const codeView = parentCard.querySelector(".lab-mermaid-code-view");
+            if (codeView) {
+              codeView.classList.remove("hidden");
+            }
+          }
+        }
+      })
+    );
   }
 }
 
@@ -378,10 +440,11 @@ export function MermaidInitializer() {
   };
 
   useEffect(() => {
-    // Render ngay khi đường dẫn trang thay đổi
-    const timer = setTimeout(() => {
+    // Render ngay lập tức khi component mount hoặc đường dẫn trang thay đổi
+    renderAllMermaidDiagrams();
+    const frameId = requestAnimationFrame(() => {
       renderAllMermaidDiagrams();
-    }, 150);
+    });
 
     // Lắng nghe sự kiện click các nút chức năng trên Mermaid Card
     const handleCardActions = (e: MouseEvent) => {
@@ -446,9 +509,35 @@ export function MermaidInitializer() {
       }
     };
 
-    // Theo dõi thay đổi DOM để hỗ trợ Live Preview / Dynamic Content
-    const domObserver = new MutationObserver(() => {
-      renderAllMermaidDiagrams();
+    // Theo dõi thay đổi DOM có chọn lọc và debounce để không bao giờ lag giao diện
+    let mutationTimer: any = null;
+    const domObserver = new MutationObserver((mutations) => {
+      let shouldRender = false;
+      for (const m of mutations) {
+        if (m.addedNodes.length > 0) {
+          for (let i = 0; i < m.addedNodes.length; i++) {
+            const node = m.addedNodes[i];
+            if (node instanceof HTMLElement) {
+              if (
+                node.classList.contains("lab-mermaid-diagram") ||
+                node.classList.contains("lab-mermaid-card") ||
+                node.querySelector?.(".lab-mermaid-diagram, .lab-mermaid-card")
+              ) {
+                shouldRender = true;
+                break;
+              }
+            }
+          }
+        }
+        if (shouldRender) break;
+      }
+
+      if (shouldRender) {
+        clearTimeout(mutationTimer);
+        mutationTimer = setTimeout(() => {
+          renderAllMermaidDiagrams();
+        }, 30);
+      }
     });
 
     domObserver.observe(document.body, {
@@ -479,7 +568,8 @@ export function MermaidInitializer() {
     window.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      clearTimeout(timer);
+      cancelAnimationFrame(frameId);
+      clearTimeout(mutationTimer);
       domObserver.disconnect();
       themeObserver.disconnect();
       document.removeEventListener("click", handleCardActions);
