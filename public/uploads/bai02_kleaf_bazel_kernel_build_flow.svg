@@ -1,0 +1,166 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1050 680" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #0f172a; }
+      .card { fill: #1e293b; stroke: #334155; stroke-width: 1.5; rx: 12px; }
+      .card-accent { fill: #1e293b; stroke: #38bdf8; stroke-width: 2; rx: 12px; }
+      .card-warn { fill: #1e293b; stroke: #f59e0b; stroke-width: 2; rx: 12px; }
+      .card-success { fill: #1e293b; stroke: #22c55e; stroke-width: 2; rx: 12px; }
+      
+      .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 20px; font-weight: 800; fill: #f8fafc; text-anchor: middle; }
+      .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; fill: #94a3b8; text-anchor: middle; }
+      .section-hdr { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; font-weight: 700; }
+      .node-txt { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 600; fill: #f1f5f9; }
+      .node-desc { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; fill: #94a3b8; }
+      .code-txt { font-family: "JetBrains Mono", "SF Mono", Consolas, monospace; font-size: 11px; fill: #38bdf8; }
+      .badge-txt { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 10px; font-weight: bold; }
+      
+      .inner-box { fill: #0b1120; stroke-width: 1; rx: 6px; }
+      .arrow { stroke: #38bdf8; stroke-width: 2; fill: none; }
+      .arrow-dash { stroke: #94a3b8; stroke-width: 1.5; stroke-dasharray: 4,4; fill: none; }
+    </style>
+    <marker id="arr" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#22c55e" />
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1050" height="680" class="bg" rx="16" />
+
+  <!-- Main Title -->
+  <text x="525" y="38" class="title">QUY TRÌNH BIÊN DỊCH ANDROID KERNEL VÀ DDK MODULE BẰNG GOOGLE KLEAF / BAZEL</text>
+  <text x="525" y="62" class="subtitle">Cơ Chế Cô Lập Sandbox, Hermetic Toolchain, Khớp Vermagic &amp; SCM Stamping Chuyên Sâu</text>
+
+  <!-- COLUMN 1: INPUT & MANIFEST -->
+  <g transform="translate(30, 85)">
+    <rect width="280" height="560" class="card" />
+    <text x="20" y="28" class="section-hdr" fill="#38bdf8">1. SOURCE REPOSITORY &amp; CONFIG</text>
+
+    <!-- Sub 1: Manifest Repo -->
+    <rect x="15" y="45" width="250" height="95" class="inner-box" stroke="#334155" />
+    <text x="25" y="65" class="node-txt">Repo Manifest (GKI + RPi4)</text>
+    <text x="25" y="82" class="node-desc">• common-android17-6.18-lts</text>
+    <text x="25" y="98" class="node-desc">• manifest_brcm_rpi.xml</text>
+    <text x="25" y="114" class="node-desc">• locked-manifest.xml (rev pinned)</text>
+    <text x="25" y="130" class="code-txt">Commit: 7a9131c1065a...</text>
+
+    <!-- Sub 2: Kernel Source Tree -->
+    <rect x="15" y="155" width="250" height="105" class="inner-box" stroke="#334155" />
+    <text x="25" y="175" class="node-txt">Kernel Source (common/)</text>
+    <text x="25" y="192" class="node-desc">• Linux Base: 6.18.38</text>
+    <text x="25" y="208" class="node-desc">• arch/arm64/configs/</text>
+    <text x="25" y="224" class="node-desc">  android_rpi4_defconfig</text>
+    <text x="25" y="240" class="node-desc">• CONFIG_LOCALVERSION="-v8"</text>
+    <text x="25" y="254" class="node-desc">• CONFIG_MODVERSIONS=y</text>
+
+    <!-- Sub 3: Out-of-tree Module Source -->
+    <rect x="15" y="275" width="250" height="120" class="inner-box" stroke="#f59e0b" />
+    <text x="25" y="295" class="node-txt" fill="#fbbf24">DDK Module Source (labs/)</text>
+    <text x="25" y="312" class="node-desc">• hello_android.c (init / exit)</text>
+    <text x="25" y="328" class="node-desc">• BUILD.bazel (ddk_module rule)</text>
+    <text x="25" y="344" class="node-desc">• deps: //common:all_headers</text>
+    <text x="25" y="360" class="code-txt">module_init(hello_android_init);</text>
+    <text x="25" y="376" class="code-txt">MODULE_LICENSE("GPL");</text>
+
+    <!-- Sub 4: SCM Stamping Meta -->
+    <rect x="15" y="410" width="250" height="130" class="inner-box" stroke="#ec4899" />
+    <text x="25" y="430" class="node-txt" fill="#f472b6">SCM Stamping Control</text>
+    <text x="25" y="447" class="node-desc">Tránh suffix -maybe-dirty</text>
+    <text x="25" y="463" class="node-desc">• common/workspace_status.json</text>
+    <text x="25" y="480" class="code-txt">{"SCMVERSION":</text>
+    <text x="25" y="495" class="code-txt"> "-g7a9131c1065a"}</text>
+    <text x="25" y="515" class="node-desc">Bắt buộc dùng cờ: --config=stamp</text>
+  </g>
+
+  <!-- Flow 1 to 2 -->
+  <line x1="310" y1="200" x2="350" y2="200" class="arrow" marker-end="url(#arr)" />
+  <line x1="310" y1="330" x2="350" y2="330" class="arrow" marker-end="url(#arr)" />
+
+  <!-- COLUMN 2: BAZEL & KLEAF HERMETIC ENGINE -->
+  <g transform="translate(355, 85)">
+    <rect width="360" height="560" class="card-accent" />
+    <text x="20" y="28" class="section-hdr" fill="#38bdf8">2. GOOGLE KLEAF / BAZEL BUILD ENGINE</text>
+
+    <!-- Sandbox Container -->
+    <rect x="15" y="45" width="330" height="495" class="inner-box" stroke="#0284c7" />
+    <text x="25" y="68" class="node-txt" fill="#38bdf8">Hermetic Build Sandbox (/tmp/bazel-sandbox)</text>
+    <text x="25" y="85" class="node-desc">Cô lập tuyệt đối khỏi môi trường Host OS (Ubuntu 22.04)</text>
+
+    <!-- Hermetic Toolchain -->
+    <rect x="25" y="98" width="310" height="75" fill="#1e293b" rx="6" stroke="#475569" />
+    <text x="35" y="118" class="node-txt">Hermetic Clang / LLVM Prebuilts</text>
+    <text x="35" y="135" class="node-desc">• Clang 18+ Target: aarch64-linux-gnu</text>
+    <text x="35" y="152" class="node-desc">• llvm-objcopy, llvm-readelf, ld.lld (Không dùng gcc host)</text>
+
+    <!-- Rule 1: kernel_build -->
+    <rect x="25" y="185" width="310" height="110" fill="#1e293b" rx="6" stroke="#475569" />
+    <text x="35" y="205" class="node-txt">Target: //common:rpi4 (kernel_build)</text>
+    <text x="35" y="222" class="node-desc">• Sinh nhân Linux vmlinux, Image, DTB</text>
+    <text x="35" y="238" class="node-desc">• Xuất ra Module.symvers (bảng CRC Symbol)</text>
+    <text x="35" y="254" class="node-desc">• Bổ sung regulatory.db qua vendor/brcm</text>
+    <text x="35" y="272" class="code-txt">tools/bazel build //common:rpi4</text>
+
+    <!-- Rule 2: ddk_module -->
+    <rect x="25" y="308" width="310" height="120" fill="#1e293b" rx="6" stroke="#f59e0b" />
+    <text x="35" y="328" class="node-txt" fill="#fbbf24">Target: //labs:hello_android (ddk_module)</text>
+    <text x="35" y="345" class="node-desc">• Nạp kernel_build = "//common:rpi4"</text>
+    <text x="35" y="361" class="node-desc">• Mount symlink: Module.symvers &amp; headers</text>
+    <text x="35" y="377" class="node-desc">• Chạy Kbuild out-of-tree trong sandbox</text>
+    <text x="35" y="393" class="node-desc">• Ghép Vermagic và nhúng CRC Symbol</text>
+    <text x="35" y="411" class="code-txt">out = "hello_android.ko"</text>
+
+    <!-- SCM & Vermagic Synthesis -->
+    <rect x="25" y="440" width="310" height="90" fill="#1e293b" rx="6" stroke="#22c55e" />
+    <text x="35" y="460" class="node-txt" fill="#4ade80">Tổng Hợp Vermagic Module</text>
+    <text x="35" y="478" class="node-desc">BASE (6.18.38) + SCM (-g7a9131c1065a) + LOCAL (-v8)</text>
+    <text x="35" y="496" class="code-txt">vermagic=6.18.38-g7a9131c1065a-v8</text>
+    <text x="35" y="512" class="node-desc">Flags: SMP preempt mod_unload modversions aarch64</text>
+  </g>
+
+  <!-- Flow 2 to 3 -->
+  <line x1="715" y1="240" x2="755" y2="240" class="arrow" marker-end="url(#arr-green)" />
+  <line x1="715" y1="410" x2="755" y2="410" class="arrow" marker-end="url(#arr-green)" />
+
+  <!-- COLUMN 3: DEPLOYMENT & VERIFICATION -->
+  <g transform="translate(760, 85)">
+    <rect width="260" height="560" class="card-success" />
+    <text x="20" y="28" class="section-hdr" fill="#4ade80">3. TARGET BOARD EXECUTION</text>
+
+    <!-- Artifact 1: Kernel Image -->
+    <rect x="15" y="45" width="230" height="95" class="inner-box" stroke="#16a34a" />
+    <text x="25" y="65" class="node-txt">Kernel Artifacts</text>
+    <text x="25" y="82" class="node-desc">• Image / Image.gz</text>
+    <text x="25" y="98" class="node-desc">• bcm2711-rpi-4-b.dtb</text>
+    <text x="25" y="114" class="node-desc">• overlays/*.dtbo</text>
+    <text x="25" y="130" class="node-desc">Được nạp vào phân vùng Boot</text>
+
+    <!-- Artifact 2: Module file -->
+    <rect x="15" y="155" width="230" height="110" class="inner-box" stroke="#16a34a" />
+    <text x="25" y="175" class="node-txt">hello_android.ko</text>
+    <text x="25" y="192" class="node-desc">Chép sang Raspberry Pi 4:</text>
+    <text x="25" y="210" class="code-txt">adb push hello_android.ko</text>
+    <text x="25" y="226" class="code-txt">  /data/local/tmp/</text>
+    <text x="25" y="246" class="node-desc">File ELF 64-bit LSB relocatable</text>
+
+    <!-- Insmod & Checks -->
+    <rect x="15" y="280" width="230" height="145" class="inner-box" stroke="#16a34a" />
+    <text x="25" y="300" class="node-txt">Kiểm Tra Đối Soát Khi Nạp</text>
+    <text x="25" y="318" class="node-desc">1. uname -r == vermagic?</text>
+    <text x="25" y="334" class="node-desc">   6.18.38-g7a9131c1065a-v8 (✓)</text>
+    <text x="25" y="350" class="node-desc">2. CRC Symbols trong .symvers (✓)</text>
+    <text x="25" y="366" class="node-desc">3. Chữ ký (Signature):</text>
+    <text x="25" y="382" class="node-desc">   sig_enforce=0 → Taint cảnh báo</text>
+    <text x="25" y="398" class="node-desc">   sig_enforce=1 → Bắt buộc có key</text>
+
+    <!-- Execution log -->
+    <rect x="15" y="440" width="230" height="100" class="inner-box" stroke="#22c55e" />
+    <text x="25" y="460" class="node-txt" fill="#4ade80">Kernel Ring Buffer (dmesg)</text>
+    <text x="25" y="478" class="code-txt" font-size="10">taints kernel (out-of-tree)</text>
+    <text x="25" y="494" class="code-txt" font-size="10">signature missing warning</text>
+    <text x="25" y="512" class="code-txt" fill="#86efac" font-weight="bold">hello_android: Hello</text>
+    <text x="25" y="526" class="code-txt" fill="#86efac" font-weight="bold">Android Kernel!</text>
+  </g>
+</svg>

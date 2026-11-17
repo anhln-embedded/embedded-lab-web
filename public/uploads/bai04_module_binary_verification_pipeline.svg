@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1020 560" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #0f172a; }
+      .stage-card { fill: #1e293b; stroke: #334155; stroke-width: 1.5; rx: 10px; }
+      .stage-pass { fill: #1e293b; stroke: #22c55e; stroke-width: 2; rx: 10px; }
+      .stage-fail { fill: #450a0a; stroke: #ef4444; stroke-width: 1.5; rx: 6px; }
+      
+      .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 20px; font-weight: 800; fill: #f8fafc; text-anchor: middle; }
+      .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; fill: #94a3b8; text-anchor: middle; }
+      .stage-hdr { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; font-weight: 700; fill: #ffffff; }
+      .stage-desc { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; fill: #cbd5e1; }
+      .code-txt { font-family: "JetBrains Mono", "SF Mono", Consolas, monospace; font-size: 10px; fill: #38bdf8; }
+      
+      .arrow-blue { stroke: #38bdf8; stroke-width: 2; fill: none; }
+      .arrow-red { stroke: #ef4444; stroke-width: 2; fill: none; }
+      .arrow-green { stroke: #22c55e; stroke-width: 2; fill: none; }
+    </style>
+    <marker id="arr-b" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+    </marker>
+    <marker id="arr-r" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#ef4444" />
+    </marker>
+    <marker id="arr-g" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#22c55e" />
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1020" height="560" class="bg" rx="16" />
+
+  <!-- Title -->
+  <text x="510" y="38" class="title">CHUỖI KIỂM SOÁT TƯƠNG THÍCH NHỊ PHÂN KHI NẠP KERNEL MODULE VÀO ANDROID</text>
+  <text x="510" y="62" class="subtitle">Quy Trình Thẩm Định 3 Tầng: Vermagic String, MODVERSIONS Symbol CRC &amp; Chính Sách Ký Số Chữ Ký</text>
+
+  <!-- TRIGGER: INSMOD -->
+  <g transform="translate(35, 95)">
+    <rect width="160" height="110" class="stage-card" stroke="#38bdf8" />
+    <text x="15" y="25" font-family="sans-serif" font-size="11" font-weight="bold" fill="#38bdf8">LỆNH NGƯỜI DÙNG</text>
+    <text x="15" y="48" class="stage-hdr">insmod hello.ko</text>
+    <text x="15" y="70" class="stage-desc">• Chạy trong ADB Root</text>
+    <text x="15" y="88" class="stage-desc">• Gọi syscall init_module()</text>
+  </g>
+
+  <!-- Arrow 0 to 1 -->
+  <line x1="195" y1="150" x2="230" y2="150" class="arrow-blue" marker-end="url(#arr-b)" />
+
+  <!-- CHECK 1: VERMAGIC -->
+  <g transform="translate(235, 95)">
+    <rect width="210" height="240" class="stage-card" stroke="#60a5fa" />
+    <text x="15" y="25" font-family="sans-serif" font-size="11" font-weight="bold" fill="#60a5fa">RÀO CẢN SỐ 01</text>
+    <text x="15" y="46" class="stage-hdr">Kiểm Tra Vermagic</text>
+    <text x="15" y="68" class="code-txt">strings hello.ko |</text>
+    <text x="15" y="84" class="code-txt">  grep vermagic=</text>
+    <text x="15" y="106" class="stage-desc">So với <tspan class="code-txt">uname -r</tspan>:</text>
+    <text x="15" y="124" class="code-txt" fill="#93c5fd">6.18.38-g7a9131c1065a-v8</text>
+
+    <!-- Branch fail -->
+    <rect x="12" y="145" width="186" height="75" class="stage-fail" />
+    <text x="20" y="165" font-family="sans-serif" font-size="10.5" font-weight="bold" fill="#fca5a5">KHÔNG KHỚP ❌</text>
+    <text x="20" y="183" font-size="9.5" fill="#fecaca">Lỗi: Exec format error</text>
+    <text x="20" y="200" font-size="9.5" fill="#fecaca">(Dính -maybe-dirty)</text>
+  </g>
+
+  <!-- Arrow 1 to 2 -->
+  <line x1="445" y1="150" x2="480" y2="150" class="arrow-blue" marker-end="url(#arr-b)" />
+
+  <!-- CHECK 2: MODVERSIONS -->
+  <g transform="translate(485, 95)">
+    <rect width="225" height="240" class="stage-card" stroke="#f59e0b" />
+    <text x="15" y="25" font-family="sans-serif" font-size="11" font-weight="bold" fill="#fbbf24">RÀO CẢN SỐ 02</text>
+    <text x="15" y="46" class="stage-hdr">Kiểm Tra MODVERSIONS</text>
+    <text x="15" y="68" class="stage-desc">Kiểm tra mã băm CRC 32-bit</text>
+    <text x="15" y="86" class="stage-desc">của từng hàm kernel gọi tới:</text>
+    <text x="15" y="106" class="code-txt">• _printk (0x27e4e138)</text>
+    <text x="15" y="124" class="code-txt">• module_layout (CRC...)</text>
+
+    <!-- Branch fail -->
+    <rect x="12" y="145" width="201" height="75" class="stage-fail" />
+    <text x="20" y="165" font-family="sans-serif" font-size="10.5" font-weight="bold" fill="#fca5a5">LỆCH MÃ BĂM CRC ❌</text>
+    <text x="20" y="183" font-size="9.5" fill="#fecaca">Lỗi: disagrees about</text>
+    <text x="20" y="200" font-size="9.5" fill="#fecaca">version of symbol</text>
+  </g>
+
+  <!-- Arrow 2 to 3 -->
+  <line x1="710" y1="150" x2="745" y2="150" class="arrow-blue" marker-end="url(#arr-b)" />
+
+  <!-- CHECK 3: SIGNATURE & EXECUTION -->
+  <g transform="translate(750, 95)">
+    <rect width="235" height="240" class="stage-pass" />
+    <text x="15" y="25" font-family="sans-serif" font-size="11" font-weight="bold" fill="#4ade80">RÀO CẢN SỐ 03 &amp; THỰC THI</text>
+    <text x="15" y="46" class="stage-hdr">Chữ Ký &amp; Cấp Phép</text>
+    <text x="15" y="68" class="stage-desc">• sig_enforce = N (Non-strict)</text>
+    <text x="15" y="86" class="stage-desc">• Ghi nhận Taint: [O] Out-of-tree</text>
+    <text x="15" y="104" class="stage-desc">• Ghi nhận Taint: [E] Unsigned</text>
+
+    <!-- Success Box -->
+    <rect x="12" y="125" width="211" height="95" fill="#064e3b" rx="6" stroke="#22c55e" />
+    <text x="20" y="148" font-family="sans-serif" font-size="11" font-weight="bold" fill="#86efac">KHỞI CHẠY THÀNH CÔNG! ✓</text>
+    <text x="20" y="168" class="code-txt" fill="#ffffff" font-size="9.5">hello_android_init()</text>
+    <text x="20" y="186" class="code-txt" fill="#86efac" font-size="9.5">pr_info: Hello Android</text>
+    <text x="20" y="202" class="code-txt" fill="#86efac" font-size="9.5">Kernel! SoC BCM2711</text>
+  </g>
+
+  <!-- LOWER EXPLANATION BAR -->
+  <g transform="translate(35, 360)">
+    <rect width="950" height="170" class="stage-card" stroke="#3b82f6" />
+    <text x="25" y="30" class="stage-hdr" fill="#93c5fd">TỔNG KẾT NGUYÊN TẮC BẢO VỆ NHỊ PHÂN CỦA ANDROID GKI KERNEL:</text>
+    <text x="25" y="58" class="stage-desc">1. <tspan font-weight="bold" fill="#f8fafc">Vermagic</tspan> bảo vệ tính tương thích ở cấp độ tên bản phát hành nhân và kiến trúc CPU.</text>
+    <text x="25" y="82" class="stage-desc">2. <tspan font-weight="bold" fill="#f8fafc">CONFIG_MODVERSIONS</tspan> bảo vệ tính tương thích ở cấp độ định nghĩa cấu trúc dữ liệu (`struct`). Bất kỳ thay đổi nào trong `defconfig` làm thay đổi kích thước của struct đều làm lệch CRC và bị nhân chặn đứng.</text>
+    <text x="25" y="106" class="stage-desc">3. <tspan font-weight="bold" fill="#f8fafc">Module Signature (Ký số)</tspan> bảo vệ hệ điều hành khỏi các rootkit độc hại chèn vào nhân trong môi trường sản phẩm thương mại.</text>
+    <text x="25" y="130" class="stage-desc">4. Trong môi trường nghiên cứu/lab, thông báo <tspan class="code-txt">taints kernel</tspan> và <tspan class="code-txt">signature missing</tspan> là hoàn toàn bình thường, chứng minh module đã nạp thành công vào nhân.</text>
+  </g>
+</svg>

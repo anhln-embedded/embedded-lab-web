@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1020 540" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #0b1120; }
+      .box-pf { fill: #1e1b4b; stroke: #6366f1; stroke-width: 2; rx: 12px; }
+      .box-k { fill: #064e3b; stroke: #10b981; stroke-width: 2; rx: 12px; }
+      
+      .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 20px; font-weight: 800; fill: #f8fafc; text-anchor: middle; }
+      .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; fill: #94a3b8; text-anchor: middle; }
+      .col-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 15px; font-weight: 700; }
+      
+      .inner-card { fill: #0f172a; stroke-width: 1; rx: 6px; }
+      .node-hdr { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 700; fill: #ffffff; }
+      .node-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; fill: #cbd5e1; }
+      .code-line { font-family: "JetBrains Mono", "SF Mono", Consolas, monospace; font-size: 10.5px; fill: #38bdf8; }
+      
+      .arrow-out { stroke: #f59e0b; stroke-width: 2.5; fill: none; }
+    </style>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#f59e0b" />
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1020" height="540" class="bg" rx="16" />
+
+  <!-- Main Title -->
+  <text x="510" y="38" class="title">PHÂN TÁCH CÂY MÃ NGUỒN: ANDROID PLATFORM TREE VS KERNEL TREE</text>
+  <text x="510" y="62" class="subtitle">Hai Hệ Thống Độc Lập Về Repo Manifest, Bộ Công Cụ Biên Dịch Và Sản Phẩm Đầu Ra Trong AOSP</text>
+
+  <!-- LEFT: ANDROID PLATFORM TREE -->
+  <g transform="translate(35, 85)">
+    <rect width="455" height="425" class="box-pf" />
+    <text x="25" y="32" class="col-title" fill="#a5b4fc">1. ANDROID PLATFORM SOURCE TREE</text>
+    <text x="25" y="52" font-family="sans-serif" font-size="11" fill="#c7d2fe">Dung lượng: ~300 GB • Build Tool: Soong (Android.bp) / Kati</text>
+
+    <!-- Source Origin -->
+    <rect x="20" y="68" width="415" height="95" class="inner-card" stroke="#4338ca" />
+    <text x="32" y="90" class="node-hdr">Repo Manifest &amp; Phân Nhánh:</text>
+    <text x="32" y="110" class="code-line">• URL: android.googlesource.com/platform/manifest</text>
+    <text x="32" y="128" class="code-line">• Branch: android-17.0.0_r1 (Platform Release)</text>
+    <text x="32" y="146" class="code-line">• Local Manifest: raspberry-vanilla/android_local_manifest</text>
+
+    <!-- Component Content -->
+    <rect x="20" y="175" width="415" height="115" class="inner-card" stroke="#4338ca" />
+    <text x="32" y="197" class="node-hdr">Thành Phần Chứa Bên Trong:</text>
+    <text x="32" y="217" class="node-body">• Android Framework (Java/Kotlin, system_server, ART)</text>
+    <text x="32" y="235" class="node-body">• Stable AIDL Interfaces (`hardware/interfaces/`)</text>
+    <text x="32" y="253" class="node-body">• Cấu hình thiết bị &amp; SELinux Policy (`device/brcm/rpi4/`)</text>
+    <text x="32" y="271" class="node-body">• Ứng dụng hệ thống &amp; Trình khởi tạo `init`, `ueventd`</text>
+
+    <!-- Artifacts Output -->
+    <rect x="20" y="302" width="415" height="95" fill="#1e1b4b" rx="6" stroke="#818cf8" />
+    <text x="32" y="324" class="node-hdr" fill="#c7d2fe">Sản Phẩm Đầu Ra (Build Artifacts):</text>
+    <text x="32" y="344" class="code-line" fill="#818cf8">• system.img (Android Framework &amp; Apps)</text>
+    <text x="32" y="362" class="code-line" fill="#818cf8">• vendor.img (HAL Binaries &amp; Proprietary Blobs)</text>
+    <text x="32" y="380" class="code-line" fill="#818cf8">• product.img &amp; system_ext.img</text>
+  </g>
+
+  <!-- RIGHT: ANDROID KERNEL TREE -->
+  <g transform="translate(530, 85)">
+    <rect width="455" height="425" class="box-k" />
+    <text x="25" y="32" class="col-title" fill="#6ee7b7">2. ANDROID KERNEL SOURCE TREE</text>
+    <text x="25" y="52" font-family="sans-serif" font-size="11" fill="#a7f3d0">Dung lượng: ~40 GB • Build Tool: Google Kleaf / Bazel</text>
+
+    <!-- Source Origin -->
+    <rect x="20" y="68" width="415" height="95" class="inner-card" stroke="#047857" />
+    <text x="32" y="90" class="node-hdr">Repo Manifest &amp; Phân Nhánh:</text>
+    <text x="32" y="110" class="code-line">• URL: android.googlesource.com/kernel/manifest</text>
+    <text x="32" y="128" class="code-line">• Branch: common-android17-6.18-lts (GKI LTS)</text>
+    <text x="32" y="146" class="code-line">• Local Manifest: raspberry-vanilla/android_kernel_manifest</text>
+
+    <!-- Component Content -->
+    <rect x="20" y="175" width="415" height="115" class="inner-card" stroke="#047857" />
+    <text x="32" y="197" class="node-hdr">Thành Phần Chứa Bên Trong:</text>
+    <text x="32" y="217" class="node-body">• Linux Kernel 6.18 LTS Source (`common/`)</text>
+    <text x="32" y="235" class="node-body">• Broadcom RPi4 SoC Driver &amp; Defconfig (`android_rpi4_defconfig`)</text>
+    <text x="32" y="253" class="node-body">• Cây thiết bị Device Tree Source (`*.dts`, `*.dtbo`)</text>
+    <text x="32" y="271" class="node-body">• Kleaf Bazel Rules &amp; Hermetic Prebuilt Clang Toolchain</text>
+
+    <!-- Artifacts Output -->
+    <rect x="20" y="302" width="415" height="95" fill="#064e3b" rx="6" stroke="#34d399" />
+    <text x="32" y="324" class="node-hdr" fill="#a7f3d0">Sản Phẩm Đầu Ra (Build Artifacts):</text>
+    <text x="32" y="344" class="code-line" fill="#34d399">• Image / Image.gz (Nhân Linux 64-bit)</text>
+    <text x="32" y="362" class="code-line" fill="#34d399">• bcm2711-rpi-4-b.dtb &amp; overlays/*.dtbo</text>
+    <text x="32" y="380" class="code-line" fill="#34d399">• hello_android.ko &amp; Module.symvers</text>
+  </g>
+</svg>

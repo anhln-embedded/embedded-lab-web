@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1020 540" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #0b1120; }
+      .center-card { fill: #1e1b4b; stroke: #6366f1; stroke-width: 2; rx: 12px; }
+      .branch-card { fill: #1e293b; stroke: #334155; stroke-width: 1.5; rx: 8px; }
+      
+      .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 20px; font-weight: 800; fill: #f8fafc; text-anchor: middle; }
+      .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; fill: #94a3b8; text-anchor: middle; }
+      .cat-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12.5px; font-weight: 700; fill: #ffffff; }
+      .cat-desc { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; fill: #cbd5e1; }
+      .code-line { font-family: "JetBrains Mono", "SF Mono", Consolas, monospace; font-size: 10.5px; fill: #38bdf8; }
+      
+      .conn-line { stroke: #6366f1; stroke-width: 2; stroke-dasharray: 4,4; fill: none; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1020" height="540" class="bg" rx="16" />
+
+  <!-- Main Title -->
+  <text x="510" y="38" class="title">CÂY THU THẬP DẤU VẾT HỆ THỐNG ANDROID &amp; KERNEL (OS FINGERPRINTING TREE)</text>
+  <text x="510" y="62" class="subtitle">5 Nhóm Dữ Liệu Khảo Sát Bắt Buộc Để Tái Tạo Môi Trường Build BSP Tương Thích Nhị Phân 100%</text>
+
+  <!-- Central Hub: ADB Shell -->
+  <g transform="translate(370, 85)">
+    <rect width="280" height="70" class="center-card" />
+    <text x="140" y="32" font-family="sans-serif" font-size="14" font-weight="bold" fill="#a5b4fc" text-anchor="middle">ADB ROOT SHELL ACCESS</text>
+    <text x="140" y="52" class="code-line" text-anchor="middle">adb root &amp;&amp; adb shell</text>
+  </g>
+
+  <!-- Branch 1: Android Build Properties (Top Left) -->
+  <g transform="translate(30, 185)">
+    <rect width="450" height="150" class="branch-card" stroke="#3b82f6" />
+    <text x="20" y="26" class="cat-title" fill="#60a5fa">1. ANDROID BUILD PROPERTIES (getprop)</text>
+    <text x="20" y="48" class="code-line">• ro.build.fingerprint: raspberry/rpi4/rpi4:17/...:userdebug</text>
+    <text x="20" y="68" class="code-line">• ro.build.version.release: 17 (SDK 36 / AOSP)</text>
+    <text x="20" y="88" class="code-line">• ro.product.device: rpi4</text>
+    <text x="20" y="108" class="code-line">• ro.build.type: userdebug (Cần thiết để adb root)</text>
+    <text x="20" y="132" class="cat-desc" fill="#94a3b8">→ Dùng để xác định nhánh AOSP Platform Manifest tương ứng</text>
+  </g>
+
+  <!-- Branch 2: Kernel Identity (Top Right) -->
+  <g transform="translate(540, 185)">
+    <rect width="450" height="150" class="branch-card" stroke="#10b981" />
+    <text x="20" y="26" class="cat-title" fill="#34d399">2. KERNEL IDENTITY &amp; RELEASE (uname / /proc/version)</text>
+    <text x="20" y="48" class="code-line">• uname -r: 6.18.38-g7a9131c1065a-v8</text>
+    <text x="20" y="68" class="code-line">• Base Version: 6.18.38 (Linux Kernel LTS)</text>
+    <text x="20" y="88" class="code-line">• SCM Git Hash: g7a9131c1065a → Commit 7a9131c1065a...</text>
+    <text x="20" y="108" class="code-line">• Local Version: -v8 (ARMv8 64-bit Architecture)</text>
+    <text x="20" y="132" class="cat-desc" fill="#94a3b8">→ Quyết định bắt buộc cho chuỗi vermagic khi biên dịch module</text>
+  </g>
+
+  <!-- Branch 3: Kernel Configuration (Bottom Left) -->
+  <g transform="translate(30, 355)">
+    <rect width="300" height="160" class="branch-card" stroke="#f59e0b" />
+    <text x="15" y="24" class="cat-title" fill="#fbbf24">3. KERNEL CONFIG (/proc/config.gz)</text>
+    <text x="15" y="46" class="code-line">CONFIG_MODULES=y</text>
+    <text x="15" y="66" class="code-line">CONFIG_MODVERSIONS=y (CRC Check)</text>
+    <text x="15" y="86" class="code-line">CONFIG_MODULE_SIG=y (Sign Support)</text>
+    <text x="15" y="106" class="code-line">CONFIG_LEDS_CLASS=y</text>
+    <text x="15" y="126" class="code-line">CONFIG_LEDS_GPIO=y</text>
+    <text x="15" y="146" class="cat-desc" font-size="10">→ Đối chiếu với android_rpi4_defconfig</text>
+  </g>
+
+  <!-- Branch 4: Security Policy (Bottom Middle) -->
+  <g transform="translate(355, 355)">
+    <rect width="310" height="160" class="branch-card" stroke="#ec4899" />
+    <text x="15" y="24" class="cat-title" fill="#f472b6">4. SECURITY &amp; MODULE POLICIES</text>
+    <text x="15" y="46" class="code-line">getenforce → Enforcing</text>
+    <text x="15" y="66" class="code-line">modules_disabled → 0 (Cho phép nạp)</text>
+    <text x="15" y="86" class="code-line">sig_enforce → N (Chưa ép ký số cứng)</text>
+    <text x="15" y="106" class="cat-desc">• Module chưa ký sẽ kích hoạt cờ Taint</text>
+    <text x="15" y="124" class="cat-desc">• SELinux Enforcing bắt buộc khai báo</text>
+    <text x="15" y="142" class="cat-desc">  đầy đủ Type Enforcement cho AIDL HAL</text>
+  </g>
+
+  <!-- Branch 5: Hardware Nodes (Bottom Right) -->
+  <g transform="translate(690, 355)">
+    <rect width="300" height="160" class="branch-card" stroke="#a855f7" />
+    <text x="15" y="24" class="cat-title" fill="#c084fc">5. PERIPHERAL SYSFS NODES</text>
+    <text x="15" y="46" class="code-line">/sys/class/leds/ (LED Subsystem)</text>
+    <text x="15" y="66" class="code-line">/sys/class/gpio/ (Legacy Sysfs)</text>
+    <text x="15" y="86" class="code-line">/dev/gpiochip* (Modern Char Dev)</text>
+    <text x="15" y="106" class="code-line">/sys/bus/spi/devices/ (SPI Bus)</text>
+    <text x="15" y="126" class="code-line">/sys/bus/i2c/devices/ (I2C Bus)</text>
+    <text x="15" y="146" class="cat-desc" font-size="10">→ Kiểm tra trạng thái Device Tree có sẵn</text>
+  </g>
+
+  <!-- Connectors from Center to Branches -->
+  <line x1="420" y1="155" x2="255" y2="185" class="conn-line" />
+  <line x1="600" y1="155" x2="765" y2="185" class="conn-line" />
+  <line x1="380" y1="155" x2="180" y2="355" class="conn-line" />
+  <line x1="510" y1="155" x2="510" y2="355" class="conn-line" />
+  <line x1="640" y1="155" x2="840" y2="355" class="conn-line" />
+</svg>

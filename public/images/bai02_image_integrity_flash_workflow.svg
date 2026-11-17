@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 480" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #0f172a; }
+      .step-card { fill: #1e293b; stroke: #334155; stroke-width: 1.5; rx: 10px; }
+      .step-pass { fill: #1e293b; stroke: #22c55e; stroke-width: 2; rx: 10px; }
+      .step-fail { fill: #1e293b; stroke: #ef4444; stroke-width: 2; rx: 10px; }
+      
+      .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 20px; font-weight: 800; fill: #f8fafc; text-anchor: middle; }
+      .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; fill: #94a3b8; text-anchor: middle; }
+      .step-num { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; font-weight: 800; fill: #38bdf8; }
+      .step-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; font-weight: 700; fill: #ffffff; }
+      .step-desc { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; fill: #cbd5e1; }
+      .code-font { font-family: "JetBrains Mono", "SF Mono", Consolas, monospace; font-size: 10.5px; fill: #38bdf8; }
+      
+      .inner-well { fill: #0b1120; stroke-width: 1; rx: 6px; }
+      .arrow-line { stroke: #38bdf8; stroke-width: 2; fill: none; }
+      .arrow-red { stroke: #ef4444; stroke-width: 2; fill: none; }
+    </style>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+    </marker>
+    <marker id="arr-red" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#ef4444" />
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1000" height="480" class="bg" rx="16" />
+
+  <!-- Title -->
+  <text x="500" y="38" class="title">QUY TRÌNH KIỂM CHUẨN MÃ BĂM SHA-256 &amp; NẠP HỆ ĐIỀU HÀNH AOSP</text>
+  <text x="500" y="62" class="subtitle">Xác Minh Toàn Vẹn Bản ROM, Ghi Thẻ MicroSD Và Kích Hoạt Cầu Nối Gỡ Lỗi ADB Không Dây</text>
+
+  <!-- STEP 1: DOWNLOAD -->
+  <g transform="translate(30, 85)">
+    <rect width="210" height="230" class="step-card" />
+    <text x="15" y="25" class="step-num">BƯỚC 01</text>
+    <text x="15" y="45" class="step-title">Tải Tệp Tin Ảnh ROM</text>
+    <text x="15" y="65" class="step-desc">• Bản build: KonstaKANG</text>
+    <text x="15" y="82" class="step-desc">  AOSP 17 (30/10/2026)</text>
+    <text x="15" y="99" class="step-desc">• Thiết bị: Raspberry Pi 4</text>
+
+    <rect x="12" y="115" width="186" height="100" class="inner-well" stroke="#334155" />
+    <text x="20" y="135" class="step-desc" fill="#94a3b8">Nguồn tải chính thức:</text>
+    <text x="20" y="152" class="code-font">konstakang.com</text>
+    <text x="20" y="172" class="step-desc" fill="#94a3b8">Kích thước file zip:</text>
+    <text x="20" y="190" class="step-desc" font-weight="bold" fill="#f8fafc">~1.2 GB (Compressed)</text>
+  </g>
+
+  <!-- Arrow 1 to 2 -->
+  <line x1="240" y1="200" x2="275" y2="200" class="arrow-line" marker-end="url(#arr-blue)" />
+
+  <!-- STEP 2: SHA256 VERIFY -->
+  <g transform="translate(280, 85)">
+    <rect width="240" height="230" class="step-card" stroke="#f59e0b" />
+    <text x="15" y="25" class="step-num" fill="#fbbf24">BƯỚC 02</text>
+    <text x="15" y="45" class="step-title">Tính Toán Mã Băm SHA256</text>
+    
+    <rect x="12" y="60" width="216" height="75" class="inner-well" stroke="#f59e0b" />
+    <text x="20" y="80" class="code-font" font-size="9.5">sha256sum AOSP17-*.zip</text>
+    <text x="20" y="100" class="step-desc" fill="#fde68a">Mã chuẩn: 9c02408206...</text>
+    <text x="20" y="120" class="step-desc" fill="#fde68a">cfa522f52a945c5f87deb709</text>
+
+    <!-- Branching Decisions -->
+    <text x="15" y="155" class="step-desc" font-weight="bold">Kiểm tra kết quả so sánh:</text>
+    
+    <rect x="12" y="165" width="100" height="50" fill="#450a0a" rx="4" stroke="#ef4444" />
+    <text x="22" y="185" class="code-font" fill="#fca5a5">Sai lệch ❌</text>
+    <text x="22" y="202" font-size="9" fill="#fca5a5">HỦY BỎ NGAY</text>
+
+    <rect x="125" y="165" width="103" height="50" fill="#064e3b" rx="4" stroke="#22c55e" />
+    <text x="135" y="185" class="code-font" fill="#86efac">Khớp 100% ✓</text>
+    <text x="135" y="202" font-size="9" fill="#86efac">TIẾP TỤC GHI</text>
+  </g>
+
+  <!-- Arrow 2 to 3 -->
+  <line x1="520" y1="200" x2="555" y2="200" class="arrow-line" marker-end="url(#arr-blue)" />
+
+  <!-- STEP 3: FLASH -->
+  <g transform="translate(560, 85)">
+    <rect width="210" height="230" class="step-card" />
+    <text x="15" y="25" class="step-num">BƯỚC 03</text>
+    <text x="15" y="45" class="step-title">Ghi Thẻ Nhớ MicroSD</text>
+    <text x="15" y="65" class="step-desc">• Raspberry Pi Imager</text>
+    <text x="15" y="82" class="step-desc">• Thẻ Class 10 U3 A2</text>
+    <text x="15" y="99" class="step-desc">• Dung lượng: ≥ 16 GB</text>
+
+    <rect x="12" y="115" width="186" height="100" class="inner-well" stroke="#334155" />
+    <text x="20" y="135" class="step-desc" fill="#94a3b8">Tiến trình ghi dữ liệu:</text>
+    <text x="20" y="155" class="step-desc" font-weight="bold" fill="#38bdf8">Writing 100%</text>
+    <text x="20" y="175" class="step-desc" font-weight="bold" fill="#22c55e">Verifying 100%</text>
+    <text x="20" y="195" class="step-desc" fill="#cbd5e1">Eject thẻ an toàn</text>
+  </g>
+
+  <!-- Arrow 3 to 4 -->
+  <line x1="770" y1="200" x2="805" y2="200" class="arrow-line" marker-end="url(#arr-blue)" />
+
+  <!-- STEP 4: FIRST BOOT & ADB -->
+  <g transform="translate(810, 85)">
+    <rect width="160" height="230" class="step-pass" />
+    <text x="15" y="25" class="step-num" fill="#4ade80">BƯỚC 04</text>
+    <text x="15" y="45" class="step-title">Boot &amp; Bật ADB</text>
+    <text x="15" y="65" class="step-desc">• Cấp nguồn RPi4</text>
+    <text x="15" y="82" class="step-desc">• Mở Developer</text>
+    <text x="15" y="99" class="step-desc">• Bật Network ADB</text>
+
+    <rect x="10" y="115" width="140" height="100" class="inner-well" stroke="#16a34a" />
+    <text x="18" y="135" class="step-desc" fill="#86efac">Lệnh kết nối Host:</text>
+    <text x="18" y="155" class="code-font" font-size="9.5">adb connect</text>
+    <text x="18" y="172" class="code-font" font-size="9.5">&lt;IP_BOARD&gt;:5555</text>
+    <text x="18" y="195" class="code-font" fill="#4ade80">device (READY)</text>
+  </g>
+
+  <!-- LOWER PANEL: SUMMARY CHECKLIST -->
+  <g transform="translate(30, 335)">
+    <rect width="940" height="120" class="step-card" stroke="#3b82f6" />
+    <text x="20" y="28" class="step-title" fill="#93c5fd">TỔNG KẾT NGUYÊN TẮC AN TOÀN TRƯỚC KHI THỰC HIỆN BSP AUDIT:</text>
+    <text x="20" y="55" class="step-desc">1. Tuyệt đối không giải nén bằng phần mềm lỗi làm méo dạng file `.img` nguyên gốc.</text>
+    <text x="20" y="75" class="step-desc">2. Sử dụng nguồn Type-C chuẩn 5V / 3A chính hãng để tránh hiện tượng sụt áp (Undervoltage warning) gây treo nhân Linux giữa chừng.</text>
+    <text x="20" y="95" class="step-desc">3. Giữ cố định địa chỉ IP tĩnh (Static DHCP) cho Raspberry Pi 4 trên router để phiên gỡ lỗi ADB không bị ngắt kết nối.</text>
+  </g>
+</svg>

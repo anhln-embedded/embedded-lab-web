@@ -648,3 +648,41 @@ body {
 .prose tr:hover td {
   background-color: rgba(255, 255, 255, 0.02);
 }
+
+/* ============================================
+   KATEX & MATH FORMULAS ENHANCEMENTS
+   ============================================ */
+.lab-math-block {
+  margin: 1.5rem 0;
+  padding: 1rem 1.25rem;
+  border-radius: 1rem;
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border);
+  overflow-x: auto;
+  max-width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.lab-math-block .katex-display {
+  margin: 0 !important;
+  padding: 0.25rem 0;
+  text-align: center;
+  max-width: 100%;
+}
+
+.lab-math-inline {
+  display: inline-block;
+  padding: 0 0.2rem;
+  font-size: 1em;
+  vertical-align: baseline;
+}
+
+.dark .katex {
+  color: #f1f5f9;
+}
+
+.dark .katex-html {
+  color: inherit;
+}

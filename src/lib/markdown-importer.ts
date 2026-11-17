@@ -5,6 +5,7 @@
 
 import { highlightCodeWithLineNumbers } from "./syntax-highlighter";
 import { Marked } from "marked";
+import katex from "katex";
 
 function safeBase64Encode(str: string): string {
   try {
@@ -486,6 +487,67 @@ labMarkedInstance.use({
   }
 });
 
+export function renderKaTeXSafe(formula: string, displayMode: boolean): string {
+  try {
+    return katex.renderToString(formula.trim(), {
+      displayMode,
+      throwOnError: false,
+      output: "htmlAndMathml",
+    });
+  } catch (err) {
+    console.warn("[markdownToLabHtml] Lỗi parse KaTeX:", err);
+    return formula;
+  }
+}
+
+/**
+ * Biên dịch bất kỳ công thức LaTeX còn sót lại ($...$ hoặc $$...$$) trong chuỗi HTML
+ * Bỏ qua an toàn mọi thẻ code, pre, script, svg
+ */
+export function compileMathInHtml(html: string): string {
+  if (!html || !html.includes("$")) return html;
+
+  // Bảo vệ code blocks và inline code
+  const codeTokens: Record<string, string> = {};
+  let codeCounter = 0;
+
+  let protectedHtml = html.replace(/(<pre\b[^>]*>[\s\S]*?<\/pre>|<code\b[^>]*>[\s\S]*?<\/code>)/gi, (match) => {
+    const token = `@@@LAB_HTML_CODE_PROTECT_${codeCounter++}@@@`;
+    codeTokens[token] = match;
+    return token;
+  });
+
+  // Xử lý block math $$...$$
+  protectedHtml = protectedHtml.replace(/\$\$([\s\S]+?)\$\$/g, (_match, formula) => {
+    const rendered = renderKaTeXSafe(formula, true);
+    return `<div class="lab-math-block my-5 py-3 px-4 bg-slate-50/80 dark:bg-bg-elevated/40 rounded-2xl border border-border/80 overflow-x-auto text-center flex justify-center items-center select-text shadow-xs">${rendered}</div>`;
+  });
+
+  // Xử lý inline math $...$
+  protectedHtml = protectedHtml.replace(/(?<!\\)\$([^\s$](?:[^$\n]*?[^\s$])?)\$(?!\d)/g, (_match, formula) => {
+    const rendered = renderKaTeXSafe(formula, false);
+    return `<span class="lab-math-inline px-1 py-0.5 rounded select-text">${rendered}</span>`;
+  });
+
+  // Tách khối thẻ <p> nếu chứa <div class="lab-math-block
+  protectedHtml = protectedHtml.replace(/<p>([\s\S]*?)<div class="lab-math-block ([\s\S]*?)<\/div>([\s\S]*?)<\/p>/gi, (_match, before, inner, after) => {
+    const beforePart = before.trim() ? `<p>${before.trim()}</p>` : "";
+    const blockPart = `<div class="lab-math-block ${inner}</div>`;
+    const afterPart = after.trim() ? `<p>${after.trim()}</p>` : "";
+    return `${beforePart}\n${blockPart}\n${afterPart}`.trim();
+  });
+
+  // Dọn dẹp <p><div ...></div></p>
+  protectedHtml = protectedHtml.replace(/<p>\s*(<div class="lab-math-block[\s\S]*?<\/div>)\s*<\/p>/gi, "$1");
+
+  // Khôi phục code blocks
+  Object.keys(codeTokens).forEach((token) => {
+    protectedHtml = protectedHtml.replaceAll(token, codeTokens[token]);
+  });
+
+  return protectedHtml;
+}
+
 /**
  * Chuyển đổi Markdown thô thành HTML chuẩn phong cách Lab bằng thư viện Marked (GFM)
  * Hỗ trợ 100% cú pháp CommonMark / GitHub Flavored Markdown:
@@ -572,12 +634,65 @@ export function markdownToLabHtml(markdown: string): string {
   // Loại bỏ đường dẫn cục bộ file:/// và chuyển thành anchor sạch
   preprocessed = preprocessed.replace(/\(file:\/\/\/[^\)]+\)/gi, "(#)");
 
+  // 2. Bảo vệ khối code (fenced code blocks) và inline code để tránh bị nhận nhầm là công thức toán
+  const codeTokens: Record<string, string> = {};
+  let codeCounter = 0;
+
+  preprocessed = preprocessed.replace(/(```[\s\S]*?```)/g, (match) => {
+    const token = `@@@LAB_CODE_BLOCK_PROTECT_${codeCounter++}@@@`;
+    codeTokens[token] = match;
+    return token;
+  });
+
+  preprocessed = preprocessed.replace(/(`[^`\n]+`)/g, (match) => {
+    const token = `@@@LAB_INLINE_CODE_PROTECT_${codeCounter++}@@@`;
+    codeTokens[token] = match;
+    return token;
+  });
+
+  // 3. Xử lý công thức toán học LaTeX (KaTeX)
+  const mathTokens: Record<string, string> = {};
+  let mathCounter = 0;
+
+  // A. Công thức khối (Display Math: $$...$$)
+  preprocessed = preprocessed.replace(/\$\$([\s\S]+?)\$\$/g, (_match, formula) => {
+    const rendered = renderKaTeXSafe(formula, true);
+    const html = `\n\n<div class="lab-math-block my-5 py-3 px-4 bg-slate-50/80 dark:bg-bg-elevated/40 rounded-2xl border border-border/80 overflow-x-auto text-center flex justify-center items-center select-text shadow-xs">${rendered}</div>\n\n`;
+    const token = `@@@LAB_MATH_BLOCK_${mathCounter++}@@@`;
+    mathTokens[token] = html;
+    return `\n\n${token}\n\n`;
+  });
+
+  // B. Công thức nội dòng (Inline Math: $...$)
+  preprocessed = preprocessed.replace(/(?<!\\)\$([^\s$](?:[^$\n]*?[^\s$])?)\$(?!\d)/g, (_match, formula) => {
+    const rendered = renderKaTeXSafe(formula, false);
+    const html = `<span class="lab-math-inline px-1 py-0.5 rounded select-text">${rendered}</span>`;
+    const token = `@@@LAB_MATH_INLINE_${mathCounter++}@@@`;
+    mathTokens[token] = html;
+    return token;
+  });
+
+  // Khôi phục lại khối code trước khi chuyển giao cho marked biên dịch
+  Object.keys(codeTokens).forEach((token) => {
+    preprocessed = preprocessed.replaceAll(token, codeTokens[token]);
+  });
+
   try {
     let html = labMarkedInstance.parse(preprocessed) as string;
 
     // Phục hồi lại toàn bộ khối ảnh HTML
     Object.keys(imgTokens).forEach((token) => {
       html = html.replaceAll(token, imgTokens[token]);
+    });
+
+    // Phục hồi lại toàn bộ khối công thức KaTeX
+    Object.keys(mathTokens).forEach((token) => {
+      const pWrappedRegex = new RegExp(`<p>\\s*${token}\\s*<\\/p>`, "g");
+      if (pWrappedRegex.test(html)) {
+        html = html.replace(pWrappedRegex, mathTokens[token]);
+      } else {
+        html = html.replaceAll(token, mathTokens[token]);
+      }
     });
 
     return html;

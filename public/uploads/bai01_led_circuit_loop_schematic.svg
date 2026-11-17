@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1020 420" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #0b1120; }
+      .card { fill: #1e293b; stroke: #334155; stroke-width: 1.5; rx: 12px; }
+      .card-accent { fill: #0f172a; stroke: #38bdf8; stroke-width: 2; rx: 12px; }
+      .card-safe { fill: #052e16; stroke: #22c55e; stroke-width: 1.5; rx: 8px; }
+      
+      .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 20px; font-weight: 800; fill: #f8fafc; text-anchor: middle; }
+      .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; fill: #94a3b8; text-anchor: middle; }
+      .block-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; font-weight: 700; fill: #f8fafc; }
+      .text-sm { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; fill: #94a3b8; }
+      .code-sm { font-family: "JetBrains Mono", Consolas, monospace; font-size: 12px; fill: #38bdf8; }
+      .math-val { font-family: "JetBrains Mono", Consolas, monospace; font-size: 13px; font-weight: 700; fill: #fbbf24; }
+      
+      .wire { stroke: #38bdf8; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .wire-gnd { stroke: #64748b; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .flow-arrow { fill: #38bdf8; }
+      .kvl-loop { stroke: #f59e0b; stroke-width: 2; stroke-dasharray: 6,4; fill: none; }
+    </style>
+    
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8"/>
+    </marker>
+    <marker id="arrow-kvl" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#f59e0b"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1020" height="420" class="bg"/>
+
+  <!-- Title & Subtitle -->
+  <text x="510" y="38" class="title">SƠ ĐỒ VÒNG KÍN MẠCH ĐỆM GPIO17 &amp; ĐỊNH LUẬT KIRCHHOFF (KVL)</text>
+  <text x="510" y="62" class="subtitle">Mô hình phân cực thuận diode LED, điện áp sụt trên điện trở R và dòng định mức an toàn cho SoC BCM2711</text>
+
+  <!-- Stage 1: GPIO17 Output Driver (Pin 11) -->
+  <rect x="40" y="90" width="230" height="230" class="card"/>
+  <rect x="55" y="105" width="200" height="30" rx="6" fill="#1e1b4b" stroke="#6366f1" stroke-width="1"/>
+  <text x="155" y="125" class="block-title" fill="#a5b4fc" text-anchor="middle">BCM2711 SoC Output</text>
+  <text x="55" y="160" class="text-sm">Chân vật lý: <tspan class="code-sm">Pin 11 (GPIO17)</tspan></text>
+  <text x="55" y="185" class="text-sm">Tầng đệm ngõ ra: <tspan class="text-sm" fill="#e2e8f0">Push-Pull Driver</tspan></text>
+  <text x="55" y="210" class="text-sm">Trạng thái High: <tspan class="math-val">V_OH = 3.3V</tspan></text>
+  <text x="55" y="235" class="text-sm">Chuẩn giao tiếp: <tspan class="text-sm" fill="#e2e8f0">LVCMOS Logic</tspan></text>
+  <text x="55" y="260" class="text-sm">Giới hạn dòng cực đại: <tspan class="text-sm" fill="#ef4444">I_MAX = 16 mA</tspan></text>
+  <circle cx="270" cy="205" r="5" fill="#38bdf8"/>
+  <text x="250" y="195" class="code-sm" font-size="11px">Pin 11</text>
+
+  <!-- Wire 1: SoC to Resistor -->
+  <path d="M 270 205 L 350 205" class="wire" marker-end="url(#arrow)"/>
+  <text x="310" y="195" class="math-val" font-size="11px" text-anchor="middle">I_LED →</text>
+
+  <!-- Stage 2: Current Limiting Resistor (330 Ohm) -->
+  <rect x="360" y="90" width="230" height="230" class="card-accent"/>
+  <rect x="375" y="105" width="200" height="30" rx="6" fill="#0f2b48" stroke="#38bdf8" stroke-width="1"/>
+  <text x="475" y="125" class="block-title" fill="#38bdf8" text-anchor="middle">Điện Trở Hạn Dòng R</text>
+  
+  <!-- Resistor Zigzag Symbol -->
+  <g transform="translate(420, 150)">
+    <path d="M 0 15 L 20 15 L 28 0 L 44 30 L 60 0 L 76 30 L 92 0 L 100 15 L 115 15" stroke="#38bdf8" stroke-width="3" fill="none"/>
+  </g>
+  <text x="475" y="205" class="math-val" font-size="16px" text-anchor="middle">R = 330 Ω (1/4W)</text>
+  <text x="380" y="235" class="text-sm">Độ sụt áp: <tspan class="math-val">V_R = I_LED × R</tspan></text>
+  <text x="380" y="260" class="text-sm">Giá trị thực tế: <tspan class="math-val">V_R ≈ 1.30 V</tspan></text>
+  <text x="380" y="285" class="text-sm">Công suất tiêu tán: <tspan class="text-sm" fill="#e2e8f0">P_R ≈ 5.1 mW</tspan></text>
+
+  <!-- Wire 2: Resistor to LED Anode -->
+  <path d="M 590 205 L 670 205" class="wire" marker-end="url(#arrow)"/>
+  <text x="630" y="195" class="math-val" font-size="11px" text-anchor="middle">Anode (+)</text>
+
+  <!-- Stage 3: Red LED -->
+  <rect x="680" y="90" width="200" height="230" class="card"/>
+  <rect x="695" y="105" width="170" height="30" rx="6" fill="#3b1111" stroke="#ef4444" stroke-width="1"/>
+  <text x="780" y="125" class="block-title" fill="#f87171" text-anchor="middle">Đèn LED Đỏ (5mm)</text>
+  
+  <!-- Diode Schematic Symbol -->
+  <g transform="translate(745, 145)">
+    <line x1="0" y1="20" x2="25" y2="20" stroke="#f87171" stroke-width="3"/>
+    <polygon points="25,5 25,35 55,20" fill="#ef4444" stroke="#f87171" stroke-width="1.5"/>
+    <line x1="55" y1="5" x2="55" y2="35" stroke="#f87171" stroke-width="3"/>
+    <line x1="55" y1="20" x2="75" y2="20" stroke="#f87171" stroke-width="3"/>
+    <!-- Light Rays -->
+    <line x1="45" y1="5" x2="55" y2="-5" stroke="#fbbf24" stroke-width="2"/>
+    <line x1="55" y1="10" x2="65" y2="0" stroke="#fbbf24" stroke-width="2"/>
+  </g>
+  <text x="780" y="205" class="text-sm" text-anchor="middle">Ngưỡng mở: <tspan class="math-val">V_F ≈ 2.0 V</tspan></text>
+  <text x="700" y="235" class="text-sm">Cực dương: <tspan class="text-sm" fill="#e2e8f0">Chân dài (Anode)</tspan></text>
+  <text x="700" y="260" class="text-sm">Cực âm: <tspan class="text-sm" fill="#e2e8f0">Chân vát (Cathode)</tspan></text>
+  <text x="700" y="285" class="text-sm">Bước sóng: <tspan class="text-sm" fill="#e2e8f0">λ ≈ 625 nm (Red)</tspan></text>
+
+  <!-- Wire 3: LED Cathode to Ground Return -->
+  <path d="M 880 205 L 940 205 L 940 370 L 155 370 L 155 320" class="wire-gnd"/>
+  <circle cx="940" cy="205" r="4" fill="#64748b"/>
+  <text x="940" y="195" class="text-sm" fill="#94a3b8" text-anchor="middle">Cathode (-)</text>
+
+  <!-- Ground Symbol -->
+  <g transform="translate(500, 360)">
+    <line x1="-20" y1="10" x2="20" y2="10" stroke="#64748b" stroke-width="3"/>
+    <line x1="-12" y1="16" x2="12" y2="16" stroke="#64748b" stroke-width="2.5"/>
+    <line x1="-5" y1="22" x2="5" y2="22" stroke="#64748b" stroke-width="2"/>
+    <text x="0" y="42" class="code-sm" fill="#94a3b8" font-size="11px" text-anchor="middle">Pin 6 (GND = 0V)</text>
+  </g>
+
+  <!-- KVL Closed Loop Annotation -->
+  <path d="M 320 280 C 370 310, 600 310, 680 280" class="kvl-loop" marker-end="url(#arrow-kvl)"/>
+  <text x="500" y="315" class="math-val" font-size="13px" text-anchor="middle">Vòng KVL: V_OH - V_R - V_F = 0 ⟹ 3.3V - 1.3V - 2.0V = 0</text>
+
+  <!-- Bottom Safe Verification Box -->
+  <rect x="680" y="345" width="280" height="50" class="card-safe"/>
+  <text x="695" y="367" class="block-title" fill="#4ade80" font-size="13px">✓ DÒNG THỰC TẾ: I_LED ≈ 3.94 mA</text>
+  <text x="695" y="385" class="text-sm" fill="#bbf7d0">An toàn tuyệt đối (&lt; 16 mA của BCM2711)</text>
+</svg>

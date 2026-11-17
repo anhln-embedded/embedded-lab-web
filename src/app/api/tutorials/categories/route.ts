@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
-export const DEFAULT_CATEGORIES = [
+const DEFAULT_CATEGORIES = [
   { slug: "linux", name: "Embedded Linux & Kernel", icon: "🐧", order: 1 },
   { slug: "rtos", name: "Real-Time OS (RTOS)", icon: "clock", order: 2 },
   { slug: "automotive", name: "Automotive & CAN/UDS", icon: "🚗", order: 3 },

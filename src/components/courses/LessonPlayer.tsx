@@ -10,6 +10,7 @@ import { CourseTableOfContents } from "./CourseTableOfContents";
 import { ReadingRewardTracker } from "@/components/gamification/ReadingRewardTracker";
 import { extractHeadingsFromContent } from "@/lib/markdown-importer";
 import { renderAllMermaidDiagrams } from "@/components/ui/MermaidInitializer";
+import { renderAllMathInDocument } from "@/components/ui/MathInitializer";
 import { CodeSnippetView } from "@/components/ui/CodeSnippetView";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -178,11 +179,12 @@ export function LessonPlayer({
     return extractHeadingsFromContent(displayContentHtml);
   }, [displayContentHtml]);
 
-  // Tự động vẽ sơ đồ thuật toán Mermaid trong nội dung bài học
+  // Tự động vẽ sơ đồ thuật toán Mermaid và render KaTeX trong nội dung bài học
   React.useEffect(() => {
     if (!displayContentHtml) return;
     const timer = setTimeout(() => {
       renderAllMermaidDiagrams();
+      renderAllMathInDocument();
     }, 100);
     return () => clearTimeout(timer);
   }, [displayContentHtml]);

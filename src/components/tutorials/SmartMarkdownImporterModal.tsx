@@ -111,7 +111,20 @@ export function SmartMarkdownImporterModal({
     setProgressText("Đang quét danh sách file...");
     const filesArray = Array.from(fileList);
 
-    // Lọc chỉ nhận các file Markdown (.md, .markdown, .txt)
+    // 1. Nhận diện các file ảnh đi kèm (nếu nạp cả folder chứa images/)
+    const imageFiles = filesArray.filter((f) => {
+      const name = f.name.toLowerCase();
+      return (
+        name.endsWith(".svg") ||
+        name.endsWith(".png") ||
+        name.endsWith(".jpg") ||
+        name.endsWith(".jpeg") ||
+        name.endsWith(".webp") ||
+        name.endsWith(".gif")
+      );
+    });
+
+    // 2. Lọc chỉ nhận các file Markdown (.md, .markdown, .txt)
     const mdFiles = filesArray.filter((f) => {
       const name = f.name.toLowerCase();
       return name.endsWith(".md") || name.endsWith(".markdown") || name.endsWith(".txt");
@@ -128,6 +141,51 @@ export function SmartMarkdownImporterModal({
     mdFiles.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" }));
 
     try {
+      // 3. Tự động đồng bộ và tải các file ảnh lên Server nếu có thư mục images/ đi kèm
+      const imageMap = new Map<string, string>();
+      if (imageFiles.length > 0) {
+        for (let i = 0; i < imageFiles.length; i++) {
+          const imgFile = imageFiles[i];
+          setProgressText(`Đang đồng bộ ảnh ${i + 1}/${imageFiles.length}: ${imgFile.name}...`);
+          await new Promise((resolve) => setTimeout(resolve, 5));
+
+          let uploadedUrl = "";
+          try {
+            const formData = new FormData();
+            formData.append("file", imgFile);
+            const uploadRes = await fetch("/api/upload", {
+              method: "POST",
+              body: formData,
+            });
+            if (uploadRes.ok) {
+              const resData = await uploadRes.json();
+              if (resData.success && resData.url) {
+                uploadedUrl = resData.url;
+              }
+            }
+          } catch (uploadErr) {
+            console.warn("Lỗi upload ảnh lên server, dùng object URL tạm thời:", uploadErr);
+          }
+
+          if (!uploadedUrl) {
+            uploadedUrl = URL.createObjectURL(imgFile);
+          }
+
+          const baseName = imgFile.name;
+          imageMap.set(baseName, uploadedUrl);
+          imageMap.set(`images/${baseName}`, uploadedUrl);
+          imageMap.set(`/images/${baseName}`, uploadedUrl);
+          imageMap.set(`../images/${baseName}`, uploadedUrl);
+
+          const relPath = (imgFile as any).webkitRelativePath;
+          if (relPath) {
+            imageMap.set(relPath, uploadedUrl);
+            const afterSlash = relPath.substring(relPath.indexOf("/") + 1);
+            imageMap.set(afterSlash, uploadedUrl);
+          }
+        }
+      }
+
       const rawFiles: Array<{ name: string; content: string }> = [];
 
       for (let idx = 0; idx < mdFiles.length; idx++) {
@@ -137,11 +195,20 @@ export function SmartMarkdownImporterModal({
         // Tạm nghỉ 4ms để trình duyệt cập nhật UI mượt mà, không bị khóa luồng
         await new Promise((resolve) => setTimeout(resolve, 4));
 
-        const content = await new Promise<string>((resolve) => {
+        let content = await new Promise<string>((resolve) => {
           const reader = new FileReader();
           reader.onload = (e) => resolve((e.target?.result as string) || "");
           reader.readAsText(file, "UTF-8");
         });
+
+        // Tự động thay thế đường dẫn ảnh tương đối thành URL thực đã tải lên
+        if (imageMap.size > 0) {
+          imageMap.forEach((newUrl, oldRef) => {
+            content = content.split(`"${oldRef}"`).join(`"${newUrl}"`);
+            content = content.split(`'${oldRef}'`).join(`'${newUrl}'`);
+            content = content.split(`(${oldRef})`).join(`(${newUrl})`);
+          });
+        }
 
         const relativePath = (file as any).webkitRelativePath || file.name;
         rawFiles.push({ name: relativePath, content });

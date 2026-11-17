@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import "katex/dist/katex.min.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { siteConfig } from "@/lib/constants";
@@ -95,6 +96,7 @@ export const viewport: Viewport = {
 import { AuthProvider } from "@/context/AuthContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { MermaidInitializer } from "@/components/ui/MermaidInitializer";
+import { MathInitializer } from "@/components/ui/MathInitializer";
 
 export default function RootLayout({
   children,
@@ -135,6 +137,7 @@ export default function RootLayout({
             <main className="flex-1 min-h-[calc(100vh-4.5rem)] w-full max-w-full">{children}</main>
             <Footer />
             <MermaidInitializer />
+            <MathInitializer />
           </AuthProvider>
         </LanguageProvider>
       </body>

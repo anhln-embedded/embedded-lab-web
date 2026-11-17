@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 720" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #0b1120; }
+      .box { rx: 10px; stroke-width: 1.5; }
+      .sys-box { fill: #1e1b4b; stroke: #6366f1; }
+      .vendor-box { fill: #3b0764; stroke: #c084fc; }
+      .binder-box { fill: #451a03; stroke: #f59e0b; }
+      .selinux-box { fill: #1e293b; stroke: #ef4444; }
+      .vintf-box { fill: #064e3b; stroke: #10b981; }
+      
+      .title-main { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 21px; font-weight: 800; fill: #f8fafc; text-anchor: middle; }
+      .title-sub { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; fill: #94a3b8; text-anchor: middle; }
+      .header-txt { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; font-weight: 700; }
+      .item-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 700; fill: #ffffff; }
+      .item-desc { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; fill: #cbd5e1; }
+      .code { font-family: "JetBrains Mono", "SF Mono", Consolas, monospace; font-size: 10.5px; fill: #38bdf8; }
+      .code-green { font-family: "JetBrains Mono", "SF Mono", Consolas, monospace; font-size: 10.5px; fill: #4ade80; }
+      .code-red { font-family: "JetBrains Mono", "SF Mono", Consolas, monospace; font-size: 10.5px; fill: #f87171; }
+      
+      .inner-panel { fill: #0f172a; stroke-width: 1; rx: 6px; }
+      .arrow-flow { stroke-width: 2; fill: none; }
+    </style>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#f59e0b" />
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1080" height="720" class="bg" rx="16" />
+
+  <!-- Title -->
+  <text x="540" y="38" class="title-main">MÔ HÌNH BẢO MẬT SELINUX &amp; GIAO TIẾP STABLE AIDL HAL XUYÊN RANH GIỚI TREBLE</text>
+  <text x="540" y="62" class="title-sub">Quy Chuẩn Định Danh VINTF, Phân Quyền Type Enforcement &amp; Cơ Chế Điều Phối Binder Trong Android 14 / 15 / 17</text>
+
+  <!-- SYSTEM REALM (LEFT) -->
+  <g transform="translate(35, 85)">
+    <rect width="480" height="320" class="box sys-box" />
+    <text x="20" y="28" class="header-txt" fill="#a5b4fc">SYSTEM REALM (/system partition)</text>
+    <text x="20" y="46" font-family="sans-serif" font-size="11" fill="#818cf8">SELinux Domain: domain=system_server • UID=1000 (system)</text>
+
+    <!-- SystemServer Component -->
+    <rect x="15" y="60" width="450" height="110" class="inner-panel" stroke="#6366f1" />
+    <text x="25" y="80" class="item-title">SystemServer &amp; LedService.java</text>
+    <text x="25" y="98" class="item-desc">• Chạy trong process system_server (Thread Pool 32 Binder threads)</text>
+    <text x="25" y="114" class="item-desc">• Khởi tạo Client Proxy kết nối sang HAL qua Binder Driver:</text>
+    <text x="25" y="132" class="code">IBinder b = ServiceManager.waitForDeclaredService(</text>
+    <text x="25" y="148" class="code">    "vendor.example.hardware.led.ILed/default");</text>
+    <text x="25" y="162" class="code">mHal = ILed.Stub.asInterface(b);</text>
+
+    <!-- Client Permission Check -->
+    <rect x="15" y="180" width="450" height="120" class="inner-panel" stroke="#4f46e5" />
+    <text x="25" y="200" class="item-title" fill="#c7d2fe">Framework Caller Verification</text>
+    <text x="25" y="218" class="code-green">mContext.enforceCallingOrSelfPermission(</text>
+    <text x="25" y="234" class="code-green">    "android.permission.CONTROL_LED", null);</text>
+    <text x="25" y="254" class="item-desc">• Chặn đứng các ứng dụng bên thứ ba (Untrusted App) cố ý can thiệp</text>
+    <text x="25" y="270" class="item-desc">• Quản lý Binder Death Recipient (linkToDeath):</text>
+    <text x="25" y="286" class="code">b.linkToDeath(() -&gt; { mHal = null; reconnect(); }, 0);</text>
+  </g>
+
+  <!-- VENDOR REALM (RIGHT) -->
+  <g transform="translate(565, 85)">
+    <rect width="480" height="320" class="box vendor-box" />
+    <text x="20" y="28" class="header-txt" fill="#d8b4fe">VENDOR REALM (/vendor partition)</text>
+    <text x="20" y="46" font-family="sans-serif" font-size="11" fill="#c084fc">SELinux Domain: domain=vendor_led_hal • Process Binary in /vendor/bin/hw/</text>
+
+    <!-- HAL Native Daemon -->
+    <rect x="15" y="60" width="450" height="125" class="inner-panel" stroke="#c084fc" />
+    <text x="25" y="80" class="item-title">vendor.example.hardware.led-service (C++ NDK)</text>
+    <text x="25" y="98" class="item-desc">• Khởi tạo đối tượng Led implementation kế thừa BnLed</text>
+    <text x="25" y="114" class="item-desc">• Đăng ký instance "default" vào ServiceManager:</text>
+    <text x="25" y="132" class="code">std::shared_ptr&lt;Led&gt; led = ndk::SharedRefBase::make&lt;Led&gt;();</text>
+    <text x="25" y="148" class="code">const string inst = string(Led::descriptor) + "/default";</text>
+    <text x="25" y="164" class="code">binder_status_t st = AServiceManager_addService(led-&gt;asBinder().get(), inst.c_str());</text>
+    <text x="25" y="178" class="code">ABinderProcess_joinThreadPool();</text>
+
+    <!-- Hardware Interface Execution -->
+    <rect x="15" y="195" width="450" height="105" class="inner-panel" stroke="#a855f7" />
+    <text x="25" y="215" class="item-title" fill="#e9d5ff">Thao Tác Sysfs An Toàn &amp; Validate Input</text>
+    <text x="25" y="233" class="item-desc">• Kiểm tra giới hạn onMs / offMs (10ms ≤ t ≤ 60000ms)</text>
+    <text x="25" y="249" class="item-desc">• Sử dụng POSIX open() / write() với descriptor chuẩn:</text>
+    <text x="25" y="267" class="code">int fd = open("/sys/class/leds/user-led/brightness", O_WRONLY);</text>
+    <text x="25" y="283" class="code">write(fd, enabled ? "1" : "0", 1); close(fd);</text>
+  </g>
+
+  <!-- BINDER DRIVER & IPC IN THE MIDDLE -->
+  <g transform="translate(35, 420)">
+    <rect width="1010" height="65" class="box binder-box" />
+    <text x="25" y="25" class="header-txt" fill="#fbbf24">KERNEL BINDER IPC &amp; SERVICEMANAGER DISPATCH (/dev/binder)</text>
+    <text x="25" y="45" font-family="sans-serif" font-size="11" fill="#fef3c7">Stable AIDL RPC: Giao dịch ioctl BINDER_WRITE_READ • Zero-copy Memory Mapping • Định danh: vendor.example.hardware.led.ILed/default</text>
+    
+    <!-- Arrows connecting System and Vendor through Binder -->
+    <line x1="250" y1="-15" x2="250" y2="0" class="arrow-flow" stroke="#f59e0b" marker-end="url(#arr-amber)" />
+    <line x1="800" y1="0" x2="800" y2="-15" class="arrow-flow" stroke="#f59e0b" marker-end="url(#arr-amber)" />
+  </g>
+
+  <!-- LOWER ROW: VINTF & SELINUX POLICIES -->
+  <g transform="translate(35, 500)">
+    <!-- VINTF Matrix (Left) -->
+    <rect width="480" height="200" class="box vintf-box" />
+    <text x="20" y="28" class="header-txt" fill="#6ee7b7">VINTF COMPATIBILITY VERIFICATION</text>
+    
+    <rect x="15" y="45" width="450" height="140" class="inner-panel" stroke="#059669" />
+    <text x="25" y="65" class="item-title">Device Manifest (/vendor/etc/vintf/manifest.xml)</text>
+    <text x="25" y="85" class="code-green">&lt;hal format="aidl"&gt;</text>
+    <text x="45" y="101" class="code-green">&lt;name&gt;vendor.example.hardware.led&lt;/name&gt;</text>
+    <text x="45" y="117" class="code-green">&lt;version&gt;1&lt;/version&gt;</text>
+    <text x="45" y="133" class="code-green">&lt;interface&gt;&lt;name&gt;ILed&lt;/name&gt;&lt;instance&gt;default&lt;/instance&gt;&lt;/interface&gt;</text>
+    <text x="25" y="149" class="code-green">&lt;/hal&gt;</text>
+    <text x="25" y="172" class="item-desc">⚠️ Nếu thiếu: ServiceManager chặn kết nối và trả về Service Not Declared!</text>
+  </g>
+
+  <g transform="translate(565, 500)">
+    <!-- SELinux Policy & AVC (Right) -->
+    <rect width="480" height="200" class="box selinux-box" />
+    <text x="20" y="28" class="header-txt" fill="#f87171">SELINUX TYPE ENFORCEMENT &amp; AVC AUDIT</text>
+
+    <rect x="15" y="45" width="450" height="140" class="inner-panel" stroke="#dc2626" />
+    <text x="25" y="65" class="item-title">Khai Báo Cấp Quyền (device/sepolicy/vendor_led_hal.te)</text>
+    <text x="25" y="85" class="code"># 1. Cho phép system_server tìm kiếm Service trong servicemanager:</text>
+    <text x="25" y="101" class="code">allow system_server vendor_led_hal_service:service_manager find;</text>
+    <text x="25" y="117" class="code"># 2. Cho phép HAL ghi vào file điều khiển LED:</text>
+    <text x="25" y="133" class="code">allow vendor_led_hal sysfs_leds:file { open read write getattr };</text>
+    <text x="25" y="153" class="code-red"># Bẫy lỗi thường gặp: avc: denied { find } for service=... scontext=...</text>
+    <text x="25" y="172" class="item-desc">Khắc phục bằng quy tắc chính thống, tuyệt đối KHÔNG tắt permissive!</text>
+  </g>
+</svg>
