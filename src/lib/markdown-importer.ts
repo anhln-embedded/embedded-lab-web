@@ -585,16 +585,32 @@ export function compileMathInHtml(html: string): string {
 export function markdownToLabHtml(markdown: string): string {
   if (!markdown) return "";
 
-  // 1. Trích xuất và chuẩn hóa mọi thẻ HTML <img> (kể cả có lỗi cú pháp thuộc tính như width = "640 , height = "480">, thiếu </p>...)
+  // 1. Bảo vệ khối code (fenced code blocks) và inline code TRƯỚC TIÊN để tránh các thẻ HTML/công thức trong code bị parse nhầm
+  const codeTokens: Record<string, string> = {};
+  let codeCounter = 0;
+
+  let preprocessed = markdown.replace(/(```[\s\S]*?```)/g, (match) => {
+    const token = `@@@LAB_CODE_BLOCK_PROTECT_${codeCounter++}@@@`;
+    codeTokens[token] = match;
+    return token;
+  });
+
+  preprocessed = preprocessed.replace(/(`[^`\n]+`)/g, (match) => {
+    const token = `@@@LAB_INLINE_CODE_PROTECT_${codeCounter++}@@@`;
+    codeTokens[token] = match;
+    return token;
+  });
+
+  // 2. Trích xuất và chuẩn hóa mọi thẻ HTML <img> ngoài văn bản (kể cả có lỗi cú pháp thuộc tính như width = "640 , height = "480">, thiếu </p>...)
   const imgTokens: Record<string, string> = {};
   let imgCounter = 0;
 
   const imgBlockRegex = /(?:<p[^>]*align\s*=\s*["']?center["']?[^>]*>\s*)?<img\s+([^>]+)>(?:\s*<\/p>)?/gi;
 
-  let preprocessed = markdown.replace(imgBlockRegex, (fullMatch, attrs) => {
+  preprocessed = preprocessed.replace(imgBlockRegex, (fullMatch, attrs) => {
     const srcMatch = attrs.match(/src\s*=\s*["']?([^"'\s>]+)["']?/i);
     let src = srcMatch ? srcMatch[1] : "";
-    if (!src) return fullMatch;
+    if (!src || src.includes("...") || src.includes("ten_anh")) return fullMatch;
 
     // Chuẩn hóa đường dẫn ảnh tương đối images/ thành /images/ để Next.js phục vụ từ thư mục public
     if (src.startsWith("images/")) {
@@ -661,22 +677,6 @@ export function markdownToLabHtml(markdown: string): string {
 
   // Loại bỏ đường dẫn cục bộ file:/// và chuyển thành anchor sạch
   preprocessed = preprocessed.replace(/\(file:\/\/\/[^\)]+\)/gi, "(#)");
-
-  // 2. Bảo vệ khối code (fenced code blocks) và inline code để tránh bị nhận nhầm là công thức toán
-  const codeTokens: Record<string, string> = {};
-  let codeCounter = 0;
-
-  preprocessed = preprocessed.replace(/(```[\s\S]*?```)/g, (match) => {
-    const token = `@@@LAB_CODE_BLOCK_PROTECT_${codeCounter++}@@@`;
-    codeTokens[token] = match;
-    return token;
-  });
-
-  preprocessed = preprocessed.replace(/(`[^`\n]+`)/g, (match) => {
-    const token = `@@@LAB_INLINE_CODE_PROTECT_${codeCounter++}@@@`;
-    codeTokens[token] = match;
-    return token;
-  });
 
   // 3. Xử lý công thức toán học LaTeX (KaTeX)
   const mathTokens: Record<string, string> = {};
