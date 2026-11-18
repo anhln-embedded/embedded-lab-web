@@ -20,26 +20,7 @@
         --conn-line: #94a3b8;
       }
 
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --canvas-bg: #0b1120;
-          --canvas-border: #1e293b;
-          --title: #f8fafc;
-          --subtitle: #94a3b8;
-          
-          --center-bg: #1e1b4b;
-          --center-border: #6366f1;
-          --center-title: #a5b4fc;
-          --center-code: #38bdf8;
-          
-          --branch-bg: #1e293b;
-          --branch-border: #334155;
-          --cat-desc: #94a3b8;
-          --code-line: #38bdf8;
-          
-          --conn-line: #6366f1;
-        }
-      }
+      
 
       .canvas-bg { fill: var(--canvas-bg); stroke: var(--canvas-border); stroke-width: 1.5; }
       .center-card { fill: var(--center-bg); stroke: var(--center-border); stroke-width: 2; rx: 12px; }

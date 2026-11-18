@@ -686,3 +686,25 @@ body {
 .dark .katex-html {
   color: inherit;
 }
+
+/* ============================================
+   TUTORIAL DIAGRAMS & IMAGES THEME SWITCHING
+   Driven strictly by website theme (.dark on html), NOT by OS preference
+   ============================================ */
+html:not(.dark) .lab-img-dark,
+html:not(.dark) img.dark\:block {
+  display: none !important;
+}
+html:not(.dark) .lab-img-light,
+html:not(.dark) img.dark\:hidden {
+  display: block !important;
+}
+html.dark .lab-img-light,
+html.dark img.dark\:hidden {
+  display: none !important;
+}
+html.dark .lab-img-dark,
+html.dark img.dark\:block {
+  display: block !important;
+}
+

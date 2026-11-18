@@ -238,6 +238,40 @@ export function extractHeadingsFromContent(htmlOrMarkdown: string): HeadingItem[
 }
 
 /**
+ * Chuẩn hóa và ánh xạ các biến thể sáng/tối cho ảnh SVG kỹ thuật
+ * Đảm bảo việc chọn ảnh hoàn toàn dựa trên trạng thái website (.dark class),
+ * không phụ thuộc vào prefers-color-scheme của hệ điều hành.
+ */
+export function resolveThemedSvgSources(rawSrc: string): {
+  isSvg: boolean;
+  lightSrc: string;
+  darkSrc: string;
+  baseSrc: string;
+} {
+  let src = (rawSrc || "").trim();
+  if (src.startsWith("images/")) {
+    src = "/" + src;
+  }
+  const isSvg = src.toLowerCase().endsWith(".svg");
+  if (!isSvg) {
+    return { isSvg: false, lightSrc: src, darkSrc: "", baseSrc: src };
+  }
+
+  // Tách base name (loại bỏ _dark hoặc _light nếu người dùng chỉ định cụ thể)
+  let baseSrc = src;
+  if (src.toLowerCase().endsWith("_dark.svg")) {
+    baseSrc = src.replace(/_dark\.svg$/i, ".svg");
+  } else if (src.toLowerCase().endsWith("_light.svg")) {
+    baseSrc = src.replace(/_light\.svg$/i, ".svg");
+  }
+
+  const lightSrc = baseSrc;
+  const darkSrc = baseSrc.replace(/\.svg$/i, "_dark.svg");
+
+  return { isSvg: true, lightSrc, darkSrc, baseSrc };
+}
+
+/**
  * Chuyển đổi Markdown thô thành HTML chuẩn phong cách Lab
  * Hỗ trợ: Fenced Code Blocks (C/C++, Python...), Bảng Markdown, Callout Tip/Warn/Note, Mermaid, LaTeX
  */
@@ -454,20 +488,15 @@ labMarkedInstance.use({
     },
 
     image({ href, title, text }) {
-      let src = href || "";
-      if (src.startsWith("images/")) {
-        src = "/" + src;
-      }
-      const isSvg = src.toLowerCase().endsWith(".svg") && !src.toLowerCase().endsWith("_dark.svg");
-      const darkSrc = isSvg ? src.replace(/\.svg$/i, "_dark.svg") : "";
+      const { isSvg, lightSrc, darkSrc, baseSrc } = resolveThemedSvgSources(href || "");
 
       if (isSvg) {
         return `
         <figure class="my-8 text-center flex flex-col items-center justify-center w-full">
           <div class="w-full max-w-5xl mx-auto">
-            <a href="${src}" target="_blank" rel="noopener noreferrer" class="block w-full cursor-zoom-in group" title="Bấm để mở ảnh kích thước lớn">
-              <img src="${src}" alt="${text || ""}" class="block dark:hidden rounded-2xl border border-border/80 shadow-lg mx-auto bg-bg-panel/40 p-2 w-full h-auto transition-transform duration-200 group-hover:scale-[1.01]" style="width: 100%; height: auto;" loading="lazy" />
-              <img src="${darkSrc}" alt="${text || ""}" class="hidden dark:block rounded-2xl border border-border/80 shadow-lg mx-auto bg-bg-panel/40 p-2 w-full h-auto transition-transform duration-200 group-hover:scale-[1.01]" style="width: 100%; height: auto;" loading="lazy" onerror="this.onerror=null; this.src='${src}';" />
+            <a href="${baseSrc}" target="_blank" rel="noopener noreferrer" class="block w-full cursor-zoom-in group" title="Bấm để mở ảnh kích thước lớn">
+              <img src="${lightSrc}" alt="${text || ""}" class="lab-img-light block dark:hidden rounded-2xl border border-border/80 shadow-lg mx-auto bg-bg-panel/40 p-2 w-full h-auto transition-transform duration-200 group-hover:scale-[1.01]" style="width: 100%; height: auto;" loading="lazy" />
+              <img src="${darkSrc}" alt="${text || ""}" class="lab-img-dark hidden dark:block rounded-2xl border border-border/80 shadow-lg mx-auto bg-bg-panel/40 p-2 w-full h-auto transition-transform duration-200 group-hover:scale-[1.01]" style="width: 100%; height: auto;" loading="lazy" onerror="this.onerror=null; this.src='${baseSrc}';" />
             </a>
           </div>
           ${text ? `<figcaption class="mt-2.5 text-xs text-text-muted italic font-medium flex items-center justify-center gap-1.5 flex-wrap"><span>🔍 Bấm vào ảnh để xem kích thước lớn</span><span>•</span><span>📷 ${text}</span></figcaption>` : ""}
@@ -477,8 +506,8 @@ labMarkedInstance.use({
       return `
         <figure class="my-8 text-center flex flex-col items-center justify-center w-full">
           <div class="w-full max-w-5xl mx-auto">
-            <a href="${src}" target="_blank" rel="noopener noreferrer" class="block w-full cursor-zoom-in group" title="Bấm để mở ảnh kích thước lớn">
-              <img src="${src}" alt="${text || ""}" class="rounded-2xl border border-border/80 shadow-lg mx-auto bg-bg-panel/40 p-2 w-full h-auto transition-transform duration-200 group-hover:scale-[1.01]" style="width: 100%; height: auto;" loading="lazy" />
+            <a href="${baseSrc}" target="_blank" rel="noopener noreferrer" class="block w-full cursor-zoom-in group" title="Bấm để mở ảnh kích thước lớn">
+              <img src="${lightSrc}" alt="${text || ""}" class="rounded-2xl border border-border/80 shadow-lg mx-auto bg-bg-panel/40 p-2 w-full h-auto transition-transform duration-200 group-hover:scale-[1.01]" style="width: 100%; height: auto;" loading="lazy" />
             </a>
           </div>
           ${text ? `<figcaption class="mt-2.5 text-xs text-text-muted italic font-medium flex items-center justify-center gap-1.5 flex-wrap"><span>🔍 Bấm vào ảnh để xem kích thước lớn</span><span>•</span><span>📷 ${text}</span></figcaption>` : ""}
@@ -592,20 +621,19 @@ export function markdownToLabHtml(markdown: string): string {
       styleParts.push(`max-height: ${hCss}`);
     }
 
-    const isSvg = src.toLowerCase().endsWith(".svg") && !src.toLowerCase().endsWith("_dark.svg");
-    const darkSrc = isSvg ? src.replace(/\.svg$/i, "_dark.svg") : "";
+    const { isSvg, lightSrc, darkSrc, baseSrc } = resolveThemedSvgSources(src);
 
     let innerImgs = "";
     if (isSvg) {
       innerImgs = `
-    <a href="${src}" target="_blank" rel="noopener noreferrer" class="block w-full cursor-zoom-in group" title="Bấm để xem ảnh kích thước lớn">
-      <img src="${src}" alt="${alt}" ${width ? `width="${width}"` : ""} ${height ? `height="${height}"` : ""} style="${styleParts.join("; ")}" class="block dark:hidden rounded-2xl border border-border/80 shadow-lg mx-auto bg-bg-panel/40 p-2 w-full h-auto transition-transform duration-200 group-hover:scale-[1.01]" loading="lazy" />
-      <img src="${darkSrc}" alt="${alt}" ${width ? `width="${width}"` : ""} ${height ? `height="${height}"` : ""} style="${styleParts.join("; ")}" class="hidden dark:block rounded-2xl border border-border/80 shadow-lg mx-auto bg-bg-panel/40 p-2 w-full h-auto transition-transform duration-200 group-hover:scale-[1.01]" loading="lazy" onerror="this.onerror=null; this.src='${src}';" />
+    <a href="${baseSrc}" target="_blank" rel="noopener noreferrer" class="block w-full cursor-zoom-in group" title="Bấm để xem ảnh kích thước lớn">
+      <img src="${lightSrc}" alt="${alt}" ${width ? `width="${width}"` : ""} ${height ? `height="${height}"` : ""} style="${styleParts.join("; ")}" class="lab-img-light block dark:hidden rounded-2xl border border-border/80 shadow-lg mx-auto bg-bg-panel/40 p-2 w-full h-auto transition-transform duration-200 group-hover:scale-[1.01]" loading="lazy" />
+      <img src="${darkSrc}" alt="${alt}" ${width ? `width="${width}"` : ""} ${height ? `height="${height}"` : ""} style="${styleParts.join("; ")}" class="lab-img-dark hidden dark:block rounded-2xl border border-border/80 shadow-lg mx-auto bg-bg-panel/40 p-2 w-full h-auto transition-transform duration-200 group-hover:scale-[1.01]" loading="lazy" onerror="this.onerror=null; this.src='${baseSrc}';" />
     </a>`;
     } else {
       innerImgs = `
-    <a href="${src}" target="_blank" rel="noopener noreferrer" class="block w-full cursor-zoom-in group" title="Bấm để xem ảnh kích thước lớn">
-      <img src="${src}" alt="${alt}" ${width ? `width="${width}"` : ""} ${height ? `height="${height}"` : ""} style="${styleParts.join("; ")}" class="rounded-2xl border border-border/80 shadow-lg mx-auto bg-bg-panel/40 p-2 w-full h-auto transition-transform duration-200 group-hover:scale-[1.01]" loading="lazy" />
+    <a href="${baseSrc}" target="_blank" rel="noopener noreferrer" class="block w-full cursor-zoom-in group" title="Bấm để xem ảnh kích thước lớn">
+      <img src="${lightSrc}" alt="${alt}" ${width ? `width="${width}"` : ""} ${height ? `height="${height}"` : ""} style="${styleParts.join("; ")}" class="rounded-2xl border border-border/80 shadow-lg mx-auto bg-bg-panel/40 p-2 w-full h-auto transition-transform duration-200 group-hover:scale-[1.01]" loading="lazy" />
     </a>`;
     }
 

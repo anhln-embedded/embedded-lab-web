@@ -170,6 +170,7 @@ export function SmartMarkdownImporterModal({
           try {
             const formData = new FormData();
             formData.append("file", imgFile);
+            formData.append("preserveName", "true");
             const uploadRes = await fetch("/api/upload", {
               method: "POST",
               body: formData,

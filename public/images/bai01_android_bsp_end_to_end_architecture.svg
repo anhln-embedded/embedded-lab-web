@@ -61,67 +61,7 @@
         --arrow-hw: #16a34a;
       }
 
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --canvas-bg: #0b1120;
-          --canvas-border: #1e293b;
-          --title-color: #f8fafc;
-          --subtitle-color: #94a3b8;
-          
-          --app-bg: #1e1b4b;
-          --app-border: #6366f1;
-          --app-title: #a5b4fc;
-          --app-box-bg: #0f172a;
-          --app-box-border: #818cf8;
-          --app-box-title: #ffffff;
-          --app-box-desc: #cbd5e1;
-          --app-box-sec-border: #f43f5e;
-          --app-box-sec-title: #fda4af;
-          
-          --fw-bg: #172554;
-          --fw-border: #3b82f6;
-          --fw-title: #93c5fd;
-          --fw-box-bg: #0f172a;
-          --fw-box-border: #60a5fa;
-          --fw-box-title: #ffffff;
-          --fw-box-desc: #cbd5e1;
-          
-          --ipc-bg: #451a03;
-          --ipc-border: #f59e0b;
-          --ipc-title: #fde68a;
-          
-          --hal-bg: #3b0764;
-          --hal-border: #a855f7;
-          --hal-title: #d8b4fe;
-          --hal-box-bg: #0f172a;
-          --hal-box-border: #c084fc;
-          --hal-box-title: #ffffff;
-          --hal-box-desc: #cbd5e1;
-          --hal-box-sec-border: #ec4899;
-          --hal-box-sec-title: #fbcfe8;
-          
-          --kernel-bg: #064e3b;
-          --kernel-border: #10b981;
-          --kernel-title: #6ee7b7;
-          --kernel-box-bg: #0f172a;
-          --kernel-box-border: #34d399;
-          --kernel-box-title: #ffffff;
-          --kernel-box-desc: #cbd5e1;
-          
-          --hw-bg: #1e293b;
-          --hw-border: #64748b;
-          --hw-title: #e2e8f0;
-          --hw-box-bg: #0f172a;
-          --hw-box-border: #94a3b8;
-          --hw-box-title: #ffffff;
-          --hw-box-desc: #cbd5e1;
-          --hw-box-led-border: #22c55e;
-          --hw-box-led-title: #86efac;
-          
-          --arrow-color: #38bdf8;
-          --arrow-hw: #10b981;
-        }
-      }
+      
 
       .canvas-bg { fill: var(--canvas-bg); stroke: var(--canvas-border); stroke-width: 1.5; }
       .layer-card { rx: 12px; stroke-width: 1.5; }

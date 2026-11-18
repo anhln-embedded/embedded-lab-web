@@ -32,38 +32,7 @@
         --code-line: #0369a1;
       }
 
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --canvas-bg: #0b1120;
-          --canvas-border: #1e293b;
-          --title: #f8fafc;
-          --subtitle: #94a3b8;
-          
-          --box-pf-bg: #1e1b4b;
-          --box-pf-border: #6366f1;
-          --box-pf-title: #a5b4fc;
-          --box-pf-sub: #c7d2fe;
-          --box-pf-card-bg: #0f172a;
-          --box-pf-card-border: #4338ca;
-          --box-pf-out-bg: #1e1b4b;
-          --box-pf-out-border: #818cf8;
-          --box-pf-out-txt: #818cf8;
-          
-          --box-k-bg: #064e3b;
-          --box-k-border: #10b981;
-          --box-k-title: #6ee7b7;
-          --box-k-sub: #a7f3d0;
-          --box-k-card-bg: #0f172a;
-          --box-k-card-border: #047857;
-          --box-k-out-bg: #064e3b;
-          --box-k-out-border: #34d399;
-          --box-k-out-txt: #34d399;
-          
-          --node-hdr: #ffffff;
-          --node-body: #cbd5e1;
-          --code-line: #38bdf8;
-        }
-      }
+      
 
       .canvas-bg { fill: var(--canvas-bg); stroke: var(--canvas-border); stroke-width: 1.5; }
       .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 20px; font-weight: 800; fill: var(--title); text-anchor: middle; }

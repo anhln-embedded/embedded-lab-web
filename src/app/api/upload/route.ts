@@ -27,9 +27,12 @@ export async function POST(request: Request) {
       .basename(file.name, ext)
       .toLowerCase()
       .replace(/[^a-z0-9_\-]/g, "_")
-      .slice(0, 40);
+      .slice(0, 100);
 
-    const uniqueFileName = `${cleanBaseName}_${Date.now().toString().slice(-6)}${ext}`;
+    const preserveName = formData.get("preserveName") === "true";
+    const uniqueFileName = preserveName
+      ? `${cleanBaseName}${ext}`
+      : `${cleanBaseName}_${Date.now().toString().slice(-6)}${ext}`;
     const filePath = path.join(uploadDir, uniqueFileName);
 
     await writeFile(filePath, buffer);

@@ -32,38 +32,7 @@
         --arrow-color: #0284c7;
       }
 
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --canvas-bg: #0f172a;
-          --canvas-border: #1e293b;
-          --title: #f8fafc;
-          --subtitle: #94a3b8;
-          
-          --stage-bg: #1e293b;
-          --stage-border: #334155;
-          --stage-hdr: #ffffff;
-          --stage-desc: #cbd5e1;
-          --stage-muted: #94a3b8;
-          
-          --well-bg: #0b1120;
-          --well-border: #334155;
-          --code-txt: #38bdf8;
-          
-          --fail-bg: #450a0a;
-          --fail-border: #ef4444;
-          --fail-txt: #fca5a5;
-          
-          --pass-border: #22c55e;
-          --pass-txt: #4ade80;
-          
-          --success-bg: #064e3b;
-          --success-border: #22c55e;
-          --success-hdr: #86efac;
-          --success-txt: #bbf7d0;
-          
-          --arrow-color: #38bdf8;
-        }
-      }
+      
 
       .canvas-bg { fill: var(--canvas-bg); stroke: var(--canvas-border); stroke-width: 1.5; }
       .stage-card { fill: var(--stage-bg); stroke: var(--stage-border); stroke-width: 1.5; rx: 10px; }
