@@ -1,109 +1,154 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="100%" height="100%">
   <defs>
     <style>
-      .bg { fill: #0b1120; }
-      .panel-left { fill: #1e293b; stroke: #475569; stroke-width: 1.5; rx: 12px; }
-      .panel-right { fill: #1e1b4b; stroke: #6366f1; stroke-width: 2; rx: 12px; }
-      
-      .title-main { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 20px; font-weight: 800; fill: #f8fafc; text-anchor: middle; }
-      .title-sub { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; fill: #94a3b8; text-anchor: middle; }
+      :root {
+        --canvas-bg: #f8fafc;
+        --canvas-border: #e2e8f0;
+        --title-main: #0f172a;
+        --title-sub: #475569;
+        
+        --left-panel-bg: #f1f5f9;
+        --left-panel-border: #cbd5e1;
+        --left-panel-hdr: #334155;
+        --left-panel-sub: #64748b;
+        --left-box-bg: #ffffff;
+        --left-box-border: #94a3b8;
+        --left-box-txt: #0f172a;
+        --left-box-sub: #64748b;
+        --left-box-warn-bg: #fef2f2;
+        --left-box-warn-border: #fca5a5;
+        --left-box-warn-txt: #991b1b;
+        
+        --right-panel-bg: #eff6ff;
+        --right-panel-border: #93c5fd;
+        --right-panel-hdr: #1e40af;
+        --right-panel-sub: #3b82f6;
+        --right-box-bg: #ffffff;
+        --right-box-txt: #0f172a;
+        --right-box-sub: #64748b;
+        --right-box-ok-bg: #f0fdf4;
+        --right-box-ok-border: #86efac;
+        --right-box-ok-txt: #166534;
+        
+        --arrow-color: #0284c7;
+        --arrow-red: #ef4444;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --canvas-bg: #0b1120;
+          --canvas-border: #1e293b;
+          --title-main: #f8fafc;
+          --title-sub: #94a3b8;
+          
+          --left-panel-bg: #1e293b;
+          --left-panel-border: #475569;
+          --left-panel-hdr: #94a3b8;
+          --left-panel-sub: #cbd5e1;
+          --left-box-bg: #0f172a;
+          --left-box-border: #64748b;
+          --left-box-txt: #f8fafc;
+          --left-box-sub: #94a3b8;
+          --left-box-warn-bg: #450a0a;
+          --left-box-warn-border: #b91c1c;
+          --left-box-warn-txt: #fca5a5;
+          
+          --right-panel-bg: #1e1b4b;
+          --right-panel-border: #6366f1;
+          --right-panel-hdr: #a5b4fc;
+          --right-panel-sub: #c7d2fe;
+          --right-box-bg: #0f172a;
+          --right-box-txt: #f8fafc;
+          --right-box-sub: #94a3b8;
+          --right-box-ok-bg: #064e3b;
+          --right-box-ok-border: #059669;
+          --right-box-ok-txt: #6ee7b7;
+          
+          --arrow-color: #38bdf8;
+          --arrow-red: #ef4444;
+        }
+      }
+
+      .canvas-bg { fill: var(--canvas-bg); stroke: var(--canvas-border); stroke-width: 1.5; }
+      .title-main { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 20px; font-weight: 800; fill: var(--title-main); text-anchor: middle; }
+      .title-sub { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; fill: var(--title-sub); text-anchor: middle; }
       .panel-hdr { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; font-weight: 700; }
-      
-      .box { fill: #0f172a; stroke-width: 1; rx: 6px; }
-      .box-txt { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11.5px; font-weight: 600; fill: #f8fafc; }
-      .box-sub { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 10px; fill: #94a3b8; }
+      .box-txt { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11.5px; font-weight: 600; fill: var(--left-box-txt); }
+      .box-sub { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 10px; fill: var(--left-box-sub); }
       .badge-txt { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 10px; font-weight: bold; }
-      
-      .arrow { stroke: #38bdf8; stroke-width: 2; fill: none; }
-      .arrow-red { stroke: #ef4444; stroke-width: 2; fill: none; }
     </style>
     <marker id="arr" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--arrow-color)" />
     </marker>
     <marker id="arr-red" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#ef4444" />
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--arrow-red)" />
     </marker>
   </defs>
 
-  <!-- Background -->
-  <rect width="1000" height="500" class="bg" rx="16" />
+  <rect width="1000" height="500" class="canvas-bg" rx="16" />
 
-  <!-- Main Header -->
   <text x="500" y="38" class="title-main">ĐỐI CHIẾU KIẾN TRÚC: LINUX NHÚNG TRUYỀN THỐNG VS ANDROID AOSP TREBLE</text>
   <text x="500" y="62" class="title-sub">Sự Khác Biệt Giữa Truy Cập Phần Cứng Tự Do (Direct Access) Và Mô Hình Bảo Mật Phân Tầng Sandbox</text>
 
   <!-- LEFT: EMBEDDED LINUX -->
   <g transform="translate(30, 85)">
-    <rect width="450" height="385" class="panel-left" />
-    <text x="25" y="32" class="panel-hdr" fill="#94a3b8">1. EMBEDDED LINUX TRUYỀN THỐNG (Yocto / Buildroot)</text>
-    <text x="25" y="52" font-family="sans-serif" font-size="11" fill="#cbd5e1">Kiến trúc nguyên khối Monolithic • Quyền Root trực tiếp</text>
+    <rect width="450" height="385" rx="12" fill="var(--left-panel-bg)" stroke="var(--left-panel-border)" stroke-width="1.5" />
+    <text x="25" y="32" class="panel-hdr" fill="var(--left-panel-hdr)">1. EMBEDDED LINUX TRUYỀN THỐNG (Yocto / Buildroot)</text>
+    <text x="25" y="52" font-family="sans-serif" font-size="11" fill="var(--left-panel-sub)">Kiến trúc nguyên khối Monolithic • Quyền Root trực tiếp</text>
 
     <!-- App Box -->
-    <rect x="25" y="70" width="400" height="55" class="box" stroke="#64748b" />
+    <rect x="25" y="70" width="400" height="55" rx="6" fill="var(--left-box-bg)" stroke="var(--left-box-border)" stroke-width="1" />
     <text x="40" y="94" class="box-txt">User Application (C/C++ / Python Daemon)</text>
     <text x="40" y="112" class="box-sub">• Chạy với quyền root (UID 0) hoặc user nhóm gpio</text>
 
-    <!-- Arrow down -->
-    <line x1="225" y1="125" x2="225" y2="155" class="arrow-red" marker-end="url(#arr-red)" />
-    <text x="235" y="145" font-family="monospace" font-size="10" fill="#f87171">Ghi trực tiếp sysfs / dev</text>
+    <line x1="225" y1="125" x2="225" y2="155" stroke="var(--arrow-red)" stroke-width="2" marker-end="url(#arr-red)" />
+    <text x="235" y="145" font-family="monospace" font-size="10" fill="var(--arrow-red)">Ghi trực tiếp sysfs / dev</text>
 
-    <!-- Interface Box -->
-    <rect x="25" y="160" width="400" height="55" class="box" stroke="#ef4444" />
-    <text x="40" y="184" class="box-txt" fill="#fca5a5">Mở file /sys/class/gpio hoặc /dev/gpiochipX</text>
+    <rect x="25" y="160" width="400" height="55" rx="6" fill="var(--left-box-bg)" stroke="var(--arrow-red)" stroke-width="1.5" />
+    <text x="40" y="184" class="box-txt" fill="var(--arrow-red)">Mở file /sys/class/gpio hoặc /dev/gpiochipX</text>
     <text x="40" y="202" class="box-sub">• Không có ranh giới bảo mật • Không có Framework kiểm soát</text>
 
-    <!-- Arrow down -->
-    <line x1="225" y1="215" x2="225" y2="245" class="arrow" marker-end="url(#arr)" />
+    <line x1="225" y1="215" x2="225" y2="245" stroke="var(--arrow-color)" stroke-width="2" marker-end="url(#arr)" />
 
-    <!-- Driver Box -->
-    <rect x="25" y="250" width="400" height="55" class="box" stroke="#64748b" />
+    <rect x="25" y="250" width="400" height="55" rx="6" fill="var(--left-box-bg)" stroke="var(--left-box-border)" stroke-width="1" />
     <text x="40" y="274" class="box-txt">Linux Kernel GPIO Driver (BCM2835 GPIO)</text>
     <text x="40" y="292" class="box-sub">• Trực tiếp thao tác thanh ghi MMIO phần cứng</text>
 
-    <!-- Assessment -->
-    <rect x="25" y="320" width="400" height="50" fill="#450a0a" rx="6" stroke="#b91c1c" />
-    <text x="35" y="340" class="badge-txt" fill="#fca5a5">⚠️ HẠN CHẾ &amp; RỦI RO:</text>
-    <text x="35" y="358" font-family="sans-serif" font-size="10.5" fill="#fecaca">• Xung đột Race Condition khi nhiều app cùng ghi • Không có SELinux Sandbox.</text>
+    <rect x="25" y="320" width="400" height="50" rx="6" fill="var(--left-box-warn-bg)" stroke="var(--left-box-warn-border)" stroke-width="1" />
+    <text x="35" y="340" class="badge-txt" fill="var(--left-box-warn-txt)">⚠️ HẠN CHẾ &amp; RỦI RO:</text>
+    <text x="35" y="358" font-family="sans-serif" font-size="10.5" fill="var(--left-box-warn-txt)">• Xung đột Race Condition khi nhiều app cùng ghi • Không có SELinux Sandbox.</text>
   </g>
 
   <!-- RIGHT: ANDROID AOSP -->
   <g transform="translate(520, 85)">
-    <rect width="450" height="385" class="panel-right" />
-    <text x="25" y="32" class="panel-hdr" fill="#a5b4fc">2. ANDROID AOSP BSP (Chuẩn Google Project Treble)</text>
-    <text x="25" y="52" font-family="sans-serif" font-size="11" fill="#c7d2fe">Mô hình phân tầng Sandbox • Treble Partition • Stable AIDL</text>
+    <rect width="450" height="385" rx="12" fill="var(--right-panel-bg)" stroke="var(--right-panel-border)" stroke-width="1.5" />
+    <text x="25" y="32" class="panel-hdr" fill="var(--right-panel-hdr)">2. ANDROID AOSP BSP (Chuẩn Google Project Treble)</text>
+    <text x="25" y="52" font-family="sans-serif" font-size="11" fill="var(--right-panel-sub)">Mô hình phân tầng Sandbox • Treble Partition • Stable AIDL</text>
 
-    <!-- App Box -->
-    <rect x="25" y="70" width="400" height="42" class="box" stroke="#818cf8" />
+    <rect x="25" y="70" width="400" height="42" rx="6" fill="var(--right-box-bg)" stroke="#818cf8" stroke-width="1" />
     <text x="40" y="88" class="box-txt">Android App (LedController.apk)</text>
     <text x="40" y="103" class="box-sub">App UID Sandbox riêng biệt • Gọi Client SDK LedManager</text>
 
-    <!-- Arrow -->
-    <line x1="225" y1="112" x2="225" y2="128" class="arrow" marker-end="url(#arr)" />
+    <line x1="225" y1="112" x2="225" y2="128" stroke="var(--arrow-color)" stroke-width="2" marker-end="url(#arr)" />
 
-    <!-- Framework Box -->
-    <rect x="25" y="130" width="400" height="42" class="box" stroke="#3b82f6" />
+    <rect x="25" y="130" width="400" height="42" rx="6" fill="var(--right-box-bg)" stroke="#3b82f6" stroke-width="1" />
     <text x="40" y="148" class="box-txt">Framework System Service (system_server)</text>
     <text x="40" y="163" class="box-sub">LedService.java • Xác thực quyền android.permission.CONTROL_LED</text>
 
-    <!-- Arrow -->
-    <line x1="225" y1="172" x2="225" y2="188" class="arrow" marker-end="url(#arr)" />
+    <line x1="225" y1="172" x2="225" y2="188" stroke="var(--arrow-color)" stroke-width="2" marker-end="url(#arr)" />
 
-    <!-- HAL Box -->
-    <rect x="25" y="190" width="400" height="42" class="box" stroke="#a855f7" />
+    <rect x="25" y="190" width="400" height="42" rx="6" fill="var(--right-box-bg)" stroke="#a855f7" stroke-width="1" />
     <text x="40" y="208" class="box-txt">Stable AIDL Vendor HAL Daemon (C++ NDK)</text>
     <text x="40" y="223" class="box-sub">vendor.example.hardware.led • Treble Boundary /dev/binder</text>
 
-    <!-- Arrow -->
-    <line x1="225" y1="232" x2="225" y2="248" class="arrow" marker-end="url(#arr)" />
+    <line x1="225" y1="232" x2="225" y2="248" stroke="var(--arrow-color)" stroke-width="2" marker-end="url(#arr)" />
 
-    <!-- Linux Subsystem Box -->
-    <rect x="25" y="250" width="400" height="55" class="box" stroke="#10b981" />
+    <rect x="25" y="250" width="400" height="55" rx="6" fill="var(--right-box-bg)" stroke="#10b981" stroke-width="1" />
     <text x="40" y="274" class="box-txt">Linux LED Class Subsystem (/sys/class/leds/user-led/)</text>
     <text x="40" y="292" class="box-sub">• leds-gpio.c driver • Device Tree Binding • Hardware Timer Trigger</text>
 
-    <!-- Assessment -->
-    <rect x="25" y="320" width="400" height="50" fill="#064e3b" rx="6" stroke="#059669" />
-    <text x="35" y="340" class="badge-txt" fill="#6ee7b7">✓ ƯU THẾ VƯỢT TRỘI CHUẨN GOOGLE:</text>
-    <text x="35" y="358" font-family="sans-serif" font-size="10.5" fill="#a7f3d0">• Bảo mật tuyệt đối bằng SELinux • Cập nhật GSI OTA không hỏng driver vendor.</text>
+    <rect x="25" y="320" width="400" height="50" rx="6" fill="var(--right-box-ok-bg)" stroke="var(--right-box-ok-border)" stroke-width="1" />
+    <text x="35" y="340" class="badge-txt" fill="var(--right-box-ok-txt)">✓ ƯU THẾ VƯỢT TRỘI CHUẨN GOOGLE:</text>
+    <text x="35" y="358" font-family="sans-serif" font-size="10.5" fill="var(--right-box-ok-txt)">• Bảo mật tuyệt đối bằng SELinux • Cập nhật GSI OTA không hỏng driver vendor.</text>
   </g>
 </svg>

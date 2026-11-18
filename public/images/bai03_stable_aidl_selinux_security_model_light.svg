@@ -1,0 +1,176 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 720" width="100%" height="100%">
+  <defs>
+    <style>
+      :root {
+        --canvas-bg: #f8fafc;
+        --canvas-border: #e2e8f0;
+        --title-main: #0f172a;
+        --title-sub: #475569;
+        
+        --sys-bg: #eff6ff;
+        --sys-border: #93c5fd;
+        --sys-title: #1e40af;
+        --sys-card-bg: #ffffff;
+        
+        --vendor-bg: #faf5ff;
+        --vendor-border: #d8b4fe;
+        --vendor-title: #6b21a8;
+        --vendor-card-bg: #ffffff;
+        
+        --binder-bg: #fffbeb;
+        --binder-border: #fde68a;
+        --binder-title: #92400e;
+        
+        --selinux-bg: #fef2f2;
+        --selinux-border: #fca5a5;
+        --selinux-title: #991b1b;
+        
+        --vintf-bg: #f0fdf4;
+        --vintf-border: #86efac;
+        --vintf-title: #166534;
+        
+        --box-title: #0f172a;
+        --box-desc: #334155;
+        --code-line: #0369a1;
+        --code-accent: #059669;
+        
+        --arrow-color: #0284c7;
+      }
+
+      
+
+      .canvas-bg { fill: var(--canvas-bg); stroke: var(--canvas-border); stroke-width: 1.5; }
+      .box { rx: 10px; stroke-width: 1.5; }
+      .title-main { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 20px; font-weight: 800; fill: var(--title-main); text-anchor: middle; }
+      .title-sub { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; fill: var(--title-sub); text-anchor: middle; }
+      .hdr-text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13.5px; font-weight: 700; }
+      .box-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 700; fill: var(--box-title); }
+      .box-desc { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 10.5px; fill: var(--box-desc); }
+      .code-line { font-family: "JetBrains Mono", Consolas, monospace; font-size: 10px; fill: var(--code-line); }
+      .code-accent { font-family: "JetBrains Mono", Consolas, monospace; font-size: 10px; fill: var(--code-accent); }
+    </style>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--arrow-color)" />
+    </marker>
+  </defs>
+
+  <rect width="1080" height="720" class="canvas-bg" rx="16" />
+
+  <text x="540" y="38" class="title-main">MÔ HÌNH BẢO MẬT TREBLE: STABLE AIDL INTERFACE VÀ CHÍNH SÁCH SELINUX POLICY</text>
+  <text x="540" y="62" class="title-sub">Cơ Chế @VintfStability, servicemanager Phân Vùng Hệ Thống Và Kiểm Soát Quyền Truy Cập Driver LED</text>
+
+  <!-- COLUMN 1: SYSTEM PARTITION -->
+  <g transform="translate(35, 85)">
+    <rect width="320" height="460" rx="10" fill="var(--sys-bg)" stroke="var(--sys-border)" stroke-width="1.5" />
+    <text x="20" y="28" class="hdr-text" fill="var(--sys-title)">SYSTEM DOMAIN (/system)</text>
+    <text x="20" y="46" font-family="sans-serif" font-size="10.5" fill="var(--box-desc)">SELinux Context: u:r:system_server:s0</text>
+
+    <!-- Component 1: System Service -->
+    <rect x="15" y="60" width="290" height="90" rx="6" fill="var(--sys-card-bg)" stroke="var(--sys-border)" stroke-width="1" />
+    <text x="25" y="80" class="box-title">SystemServer Process</text>
+    <text x="25" y="98" class="box-desc">• LedService.java (Framework Core)</text>
+    <text x="25" y="114" class="box-desc">• ServiceManager.waitForDeclaredService()</text>
+    <text x="25" y="132" class="code-line">Target: "vendor.example.hardware.led.ILed/default"</text>
+
+    <!-- Component 2: Client Proxy -->
+    <rect x="15" y="165" width="290" height="110" rx="6" fill="var(--sys-card-bg)" stroke="var(--sys-border)" stroke-width="1" />
+    <text x="25" y="185" class="box-title">Stable AIDL Proxy Code (Auto-gen)</text>
+    <text x="25" y="203" class="code-line">ILed.Stub.Proxy.setBrightness(1)</text>
+    <text x="25" y="221" class="box-desc">• Gói tham số vào Parcel Data Buffer</text>
+    <text x="25" y="239" class="box-desc">• Gọi mRemote.transact(TRANSACTION_setBrightness)</text>
+    <text x="25" y="257" class="box-desc">• Treble Stability: @VintfStability (Frozen V1)</text>
+
+    <!-- Component 3: SELinux Client Rules -->
+    <rect x="15" y="290" width="290" height="150" rx="6" fill="var(--sys-card-bg)" stroke="#818cf8" stroke-width="1" />
+    <text x="25" y="310" class="box-title" fill="#4338ca">SELinux System Policy (system_server.te):</text>
+    <text x="25" y="332" class="code-line">allow system_server hal_led_client:binder { call transfer };</text>
+    <text x="25" y="352" class="code-line">allow system_server hal_led_service:service_manager find;</text>
+    <text x="25" y="372" class="code-line">allow system_server hal_led_hwservice:hwservice_manager find;</text>
+    <text x="25" y="396" class="box-desc">• Ngăn system_server mở trực tiếp sysfs driver</text>
+    <text x="25" y="414" class="box-desc">• Bắt buộc giao tiếp thông qua HAL Daemon</text>
+  </g>
+
+  <!-- COLUMN 2: BINDER IPC CORE -->
+  <g transform="translate(385, 85)">
+    <rect width="310" height="460" rx="10" fill="var(--binder-bg)" stroke="var(--binder-border)" stroke-width="1.5" />
+    <text x="20" y="28" class="hdr-text" fill="var(--binder-title)">TREBLE IPC &amp; SERVICE DISCOVERY</text>
+    <text x="20" y="46" font-family="sans-serif" font-size="10.5" fill="var(--box-desc)">Cơ Chế Phân Định Ranh Giới Treble</text>
+
+    <!-- Box 1: servicemanager -->
+    <rect x="15" y="60" width="280" height="110" rx="6" fill="var(--canvas-bg)" stroke="var(--binder-border)" stroke-width="1" />
+    <text x="25" y="80" class="box-title" fill="var(--binder-title)">Android ServiceManager (/dev/binder)</text>
+    <text x="25" y="98" class="box-desc">• Đăng ký interface AIDL qua C++ NDK API:</text>
+    <text x="25" y="116" class="code-line">AServiceManager_addService(instance, name)</text>
+    <text x="25" y="134" class="box-desc">• Kiểm tra khai báo trong VINTF Compatibility</text>
+    <text x="25" y="152" class="box-desc">• Quản lý Death Recipient (linkToDeath)</text>
+
+    <!-- Box 2: Kernel Binder Driver -->
+    <rect x="15" y="185" width="280" height="120" rx="6" fill="var(--canvas-bg)" stroke="var(--binder-border)" stroke-width="1" />
+    <text x="25" y="205" class="box-title" fill="var(--binder-title)">Linux Kernel Binder Subsystem</text>
+    <text x="25" y="223" class="code-line">ioctl(binder_fd, BINDER_WRITE_READ)</text>
+    <text x="25" y="241" class="box-desc">• Shared Memory Copy: Zero-Copy Parcel Data</text>
+    <text x="25" y="259" class="box-desc">• Truyền Transaction từ Caller (UID 1000)</text>
+    <text x="25" y="277" class="box-desc">  sang HAL Daemon Process (UID vendor)</text>
+    <text x="25" y="293" class="box-desc">• Tự động kiểm tra quyền Calling UID/PID</text>
+
+    <!-- Box 3: Treble Interface Stability -->
+    <rect x="15" y="320" width="280" height="120" rx="6" fill="var(--canvas-bg)" stroke="#d97706" stroke-width="1" />
+    <text x="25" y="340" class="box-title" fill="#d97706">@VintfStability Interface Contract</text>
+    <text x="25" y="358" class="box-desc">• Định nghĩa bất biến giữa System &amp; Vendor</text>
+    <text x="25" y="376" class="box-desc">• Đóng băng phiên bản: AIDL API Dump V1</text>
+    <text x="25" y="394" class="box-desc">• Cho phép Google GSI OTA độc lập</text>
+    <text x="25" y="412" class="box-desc">  mà không cần biên dịch lại Vendor Image</text>
+  </g>
+
+  <!-- COLUMN 3: VENDOR PARTITION -->
+  <g transform="translate(725, 85)">
+    <rect width="320" height="460" rx="10" fill="var(--vendor-bg)" stroke="var(--vendor-border)" stroke-width="1.5" />
+    <text x="20" y="28" class="hdr-text" fill="var(--vendor-title)">VENDOR DOMAIN (/vendor)</text>
+    <text x="20" y="46" font-family="sans-serif" font-size="10.5" fill="var(--box-desc)">SELinux Context: u:r:vendor_led_hal:s0</text>
+
+    <!-- Component 1: AIDL HAL Daemon -->
+    <rect x="15" y="60" width="290" height="100" rx="6" fill="var(--vendor-card-bg)" stroke="var(--vendor-border)" stroke-width="1" />
+    <text x="25" y="80" class="box-title">Vendor AIDL HAL Daemon (C++ NDK)</text>
+    <text x="25" y="98" class="code-line">/vendor/bin/hw/vendor.example.hardware.led-service</text>
+    <text x="25" y="116" class="box-desc">• class BnLed : public BnLed (Stub Server)</text>
+    <text x="25" y="132" class="box-desc">• onTransact() → gọi setBrightness(int b)</text>
+    <text x="25" y="148" class="box-desc">• Mở và ghi giá trị vào sysfs node an toàn</text>
+
+    <!-- Component 2: SELinux Policy -->
+    <rect x="15" y="175" width="290" height="150" rx="6" fill="var(--vendor-card-bg)" stroke="#ec4899" stroke-width="1" />
+    <text x="25" y="195" class="box-title" fill="#db2777">SELinux Policy (vendor_led.te):</text>
+    <text x="25" y="215" class="code-line">type vendor_led_hal, domain;</text>
+    <text x="25" y="231" class="code-line">type vendor_led_hal_exec, exec_type, file_type;</text>
+    <text x="25" y="247" class="code-line">init_daemon_domain(vendor_led_hal)</text>
+    <text x="25" y="267" class="code-accent">allow vendor_led_hal sysfs_leds:dir search;</text>
+    <text x="25" y="283" class="code-accent">allow vendor_led_hal sysfs_leds:file rw_file_perms;</text>
+    <text x="25" y="303" class="box-desc">• Chỉ riêng daemon này mới có quyền ghi vào</text>
+    <text x="25" y="317" class="box-desc">  /sys/class/leds/user-led/brightness</text>
+
+    <!-- Component 3: Hardware Sysfs Driver -->
+    <rect x="15" y="340" width="290" height="100" rx="6" fill="var(--vendor-card-bg)" stroke="#16a34a" stroke-width="1" />
+    <text x="25" y="360" class="box-title" fill="#15803d">Linux Kernel Driver Sysfs Target</text>
+    <text x="25" y="378" class="code-line">/sys/class/leds/user-led/brightness</text>
+    <text x="25" y="396" class="box-desc">• SELinux File Context: u:object_r:sysfs_leds:s0</text>
+    <text x="25" y="412" class="box-desc">• write(fd, "1
+", 2) → BCM2711 GPIO17 = 3.3V</text>
+    <text x="25" y="428" class="box-desc">✓ Bật đèn LED vật lý trên Raspberry Pi 4</text>
+  </g>
+
+  <!-- LOWER BANNER: COMPATIBILITY MATRIX -->
+  <g transform="translate(35, 560)">
+    <rect width="1010" height="130" rx="10" fill="var(--vintf-bg)" stroke="var(--vintf-border)" stroke-width="1.5" />
+    <text x="25" y="26" class="hdr-text" fill="var(--vintf-title)">VINTF COMPATIBILITY MATRIX &amp; DEVICE MANIFEST SPECIFICATION:</text>
+    
+    <text x="25" y="52" class="code-line" fill="var(--vintf-title)">&lt;hal format="aidl"&gt;</text>
+    <text x="45" y="70" class="code-line" fill="var(--vintf-title)">  &lt;name&gt;vendor.example.hardware.led&lt;/name&gt;</text>
+    <text x="45" y="88" class="code-line" fill="var(--vintf-title)">  &lt;version&gt;1&lt;/version&gt;</text>
+    <text x="45" y="106" class="code-line" fill="var(--vintf-title)">  &lt;fqname&gt;ILed/default&lt;/fqname&gt;</text>
+    <text x="25" y="124" class="code-line" fill="var(--vintf-title)">&lt;/hal&gt;</text>
+
+    <text x="500" y="52" class="box-desc" font-weight="bold" fill="var(--vintf-title)">Xác Minh Tính Tương Thích Lúc Boot (VINTF Check):</text>
+    <text x="500" y="72" class="box-desc">• Framework đọc /system/etc/vintf/compatibility_matrix.xml</text>
+    <text x="500" y="90" class="box-desc">• Đối chiếu với /vendor/etc/vintf/manifest.xml trên phân vùng vendor của RPi4</text>
+    <text x="500" y="108" class="box-desc">• Nếu thiếu hoặc sai phiên bản AIDL, init sẽ báo lỗi và từ chối nạp System Service</text>
+  </g>
+</svg>

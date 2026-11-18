@@ -124,10 +124,27 @@ export function SmartMarkdownImporterModal({
       );
     });
 
-    // 2. Lọc chỉ nhận các file Markdown (.md, .markdown, .txt)
+    // 2. Lọc chỉ nhận các file Markdown (.md, .markdown, .txt), bỏ qua README nếu có bài học
     const mdFiles = filesArray.filter((f) => {
       const name = f.name.toLowerCase();
-      return name.endsWith(".md") || name.endsWith(".markdown") || name.endsWith(".txt");
+      const isMd = name.endsWith(".md") || name.endsWith(".markdown") || name.endsWith(".txt");
+      if (!isMd) return false;
+
+      const baseName = name.split("/").pop() || name;
+      if (baseName.startsWith("readme")) {
+        const hasLessonFiles = filesArray.some((other) => {
+          const oName = (other.name || "").toLowerCase();
+          const oBase = oName.split("/").pop() || oName;
+          return !oBase.startsWith("readme") && (
+            oBase.includes("bai") ||
+            oBase.includes("lesson") ||
+            /^\d+/.test(oBase)
+          );
+        });
+        if (hasLessonFiles) return false;
+      }
+
+      return true;
     });
 
     if (mdFiles.length === 0) {

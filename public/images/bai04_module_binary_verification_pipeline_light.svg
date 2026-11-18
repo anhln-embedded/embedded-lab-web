@@ -1,0 +1,138 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1020 560" width="100%" height="100%">
+  <defs>
+    <style>
+      :root {
+        --canvas-bg: #f8fafc;
+        --canvas-border: #e2e8f0;
+        --title: #0f172a;
+        --subtitle: #475569;
+        
+        --stage-bg: #ffffff;
+        --stage-border: #cbd5e1;
+        --stage-hdr: #0f172a;
+        --stage-desc: #334155;
+        --stage-muted: #64748b;
+        
+        --well-bg: #f1f5f9;
+        --well-border: #e2e8f0;
+        --code-txt: #0369a1;
+        
+        --fail-bg: #fef2f2;
+        --fail-border: #fca5a5;
+        --fail-txt: #991b1b;
+        
+        --pass-border: #16a34a;
+        --pass-txt: #15803d;
+        
+        --success-bg: #f0fdf4;
+        --success-border: #16a34a;
+        --success-hdr: #15803d;
+        --success-txt: #166534;
+        
+        --arrow-color: #0284c7;
+      }
+
+      
+
+      .canvas-bg { fill: var(--canvas-bg); stroke: var(--canvas-border); stroke-width: 1.5; }
+      .stage-card { fill: var(--stage-bg); stroke: var(--stage-border); stroke-width: 1.5; rx: 10px; }
+      
+      .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 20px; font-weight: 800; fill: var(--title); text-anchor: middle; }
+      .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; fill: var(--subtitle); text-anchor: middle; }
+      .stage-hdr { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13.5px; font-weight: 700; fill: var(--stage-hdr); }
+      .stage-desc { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; fill: var(--stage-desc); }
+      .code-txt { font-family: "JetBrains Mono", Consolas, monospace; font-size: 10.5px; fill: var(--code-txt); }
+      .fail-txt { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 10.5px; font-weight: bold; fill: var(--fail-txt); }
+      .pass-txt { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; font-weight: bold; fill: var(--pass-txt); }
+    </style>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--arrow-color)" />
+    </marker>
+  </defs>
+
+  <rect width="1020" height="560" class="canvas-bg" rx="16" />
+
+  <text x="510" y="38" class="title">CHUỖI KIỂM SOÁT TƯƠNG THÍCH NHỊ PHÂN KHI NẠP KERNEL MODULE (INSMOD)</text>
+  <text x="510" y="62" class="subtitle">3 Cổng Kiểm Tra An Toàn Bắt Buộc Của Linux Kernel: Vermagic String, MODVERSIONS CRC &amp; Module Signature</text>
+
+  <!-- Top Hub: Command invocation -->
+  <g transform="translate(340, 85)">
+    <rect width="340" height="50" rx="8" fill="var(--stage-bg)" stroke="#818cf8" stroke-width="2" />
+    <text x="170" y="24" class="code-txt" font-size="12px" text-anchor="middle">adb shell insmod hello_android.ko</text>
+    <text x="170" y="40" class="stage-desc" fill="var(--stage-muted)" text-anchor="middle">Syscall init_module() / finit_module()</text>
+  </g>
+
+  <line x1="510" y1="135" x2="510" y2="165" stroke="var(--arrow-color)" stroke-width="2" marker-end="url(#arr-blue)" />
+
+  <!-- GATE 1: VERMAGIC CHECK -->
+  <g transform="translate(40, 165)">
+    <rect width="280" height="260" class="stage-card" />
+    <text x="20" y="28" class="stage-hdr">CỔNG 1: VERMAGIC STRING</text>
+    <text x="20" y="46" class="stage-desc">So khớp chuỗi phiên bản trong elf .modinfo</text>
+
+    <rect x="15" y="60" width="250" height="85" rx="6" fill="var(--well-bg)" stroke="var(--well-border)" stroke-width="1" />
+    <text x="25" y="80" class="code-txt">Target uname -r:</text>
+    <text x="25" y="96" class="code-txt">6.18.38-g7a9131c1065a-v8</text>
+    <text x="25" y="118" class="stage-desc" fill="var(--stage-muted)">Flags: SMP preempt mod_unload</text>
+    <text x="25" y="134" class="stage-desc" fill="var(--stage-muted)">Arch: aarch64</text>
+
+    <rect x="15" y="155" width="250" height="42" rx="4" fill="var(--fail-bg)" stroke="var(--fail-border)" stroke-width="1" />
+    <text x="25" y="172" class="fail-txt">❌ Sai lệch chuỗi (VD: -maybe-dirty):</text>
+    <text x="25" y="188" class="fail-txt">Lỗi: Exec format error (Từ chối ngay)</text>
+
+    <text x="25" y="222" class="pass-txt">✓ Trùng khớp 100%:</text>
+    <text x="25" y="240" class="stage-desc">Vượt qua cổng 1 → Chuyển sang Cổng 2</text>
+  </g>
+
+  <line x1="320" y1="295" x2="365" y2="295" stroke="var(--arrow-color)" stroke-width="2" marker-end="url(#arr-blue)" />
+
+  <!-- GATE 2: MODVERSIONS CRC -->
+  <g transform="translate(370, 165)">
+    <rect width="280" height="260" class="stage-card" stroke="#f59e0b" />
+    <text x="20" y="28" class="stage-hdr" fill="#d97706">CỔNG 2: CONFIG_MODVERSIONS</text>
+    <text x="20" y="46" class="stage-desc">Xác minh mã băm CRC của từng Kernel Symbol</text>
+
+    <rect x="15" y="60" width="250" height="85" rx="6" fill="var(--well-bg)" stroke="#fde68a" stroke-width="1" />
+    <text x="25" y="80" class="code-txt">Symbol Table (__versions):</text>
+    <text x="25" y="98" class="code-txt">• printk: CRC 0x27e1a049</text>
+    <text x="25" y="116" class="code-txt">• module_layout: CRC 0x8a92f1b0</text>
+    <text x="25" y="134" class="code-txt">• __fentry__: CRC 0xbdfb6dbb</text>
+
+    <rect x="15" y="155" width="250" height="42" rx="4" fill="var(--fail-bg)" stroke="var(--fail-border)" stroke-width="1" />
+    <text x="25" y="172" class="fail-txt">❌ Sai lệch CRC bất kỳ symbol nào:</text>
+    <text x="25" y="188" class="fail-txt">disagrees about version of symbol</text>
+
+    <text x="25" y="222" class="pass-txt">✓ Khớp toàn bộ CRC:</text>
+    <text x="25" y="240" class="stage-desc">Vượt qua cổng 2 → Chuyển sang Cổng 3</text>
+  </g>
+
+  <line x1="650" y1="295" x2="695" y2="295" stroke="var(--arrow-color)" stroke-width="2" marker-end="url(#arr-blue)" />
+
+  <!-- GATE 3: SIGNATURE & TAINT -->
+  <g transform="translate(700, 165)">
+    <rect width="280" height="260" class="stage-card" stroke="#8b5cf6" />
+    <text x="20" y="28" class="stage-hdr" fill="#7c3aed">CỔNG 3: MODULE SIGNATURE</text>
+    <text x="20" y="46" class="stage-desc">Chữ ký số mật mã &amp; Giám sát cờ Kernel Taint</text>
+
+    <rect x="15" y="60" width="250" height="85" rx="6" fill="var(--well-bg)" stroke="#ddd6fe" stroke-width="1" />
+    <text x="25" y="80" class="code-txt">sig_enforce Check:</text>
+    <text x="25" y="98" class="stage-desc">• sig_enforce = 1: Bắt buộc khóa ký hợp lệ</text>
+    <text x="25" y="116" class="stage-desc">• sig_enforce = 0: Cho phép module chưa ký</text>
+    <text x="25" y="134" class="stage-desc" fill="#f59e0b">  (Kèm cảnh báo Taint vào dmesg)</text>
+
+    <rect x="15" y="155" width="250" height="42" rx="4" fill="var(--fail-bg)" stroke="var(--fail-border)" stroke-width="1" />
+    <text x="25" y="172" class="fail-txt">❌ sig_enforce=1 &amp; Key sai:</text>
+    <text x="25" y="188" class="fail-txt">Lỗi: Key was rejected by service</text>
+
+    <text x="25" y="222" class="pass-txt">✓ sig_enforce=0 (userdebug ROM):</text>
+    <text x="25" y="240" class="stage-desc">Kích hoạt cờ Taint nhưng VẪN NẠP THÀNH CÔNG</text>
+  </g>
+
+  <!-- BOTTOM BANNER: SUCCESS EXECUTION -->
+  <g transform="translate(40, 445)">
+    <rect width="940" height="90" rx="10" fill="var(--success-bg)" stroke="var(--success-border)" stroke-width="2" />
+    <text x="25" y="28" class="stage-hdr" fill="var(--success-hdr)">✓ KẾT QUẢ CUỐI CÙNG: MODULE NẠP THÀNH CÔNG VÀO ANDROID KERNEL</text>
+    <text x="25" y="50" class="code-txt" fill="var(--success-txt)">[  142.508192] hello_android: loading out-of-tree module taints kernel.</text>
+    <text x="25" y="68" class="code-txt" fill="var(--success-hdr)">[  142.508215] [Hello AOSP] Module init on Raspberry Pi 4 (Kernel 6.18.38)!</text>
+  </g>
+</svg>

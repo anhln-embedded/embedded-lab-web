@@ -1,143 +1,177 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1050 640" width="100%" height="100%">
   <defs>
     <style>
-      .bg { fill: #0f172a; }
-      .card { fill: #1e293b; stroke: #334155; stroke-width: 1.5; rx: 12px; }
-      .card-warn { fill: #1e293b; stroke: #ef4444; stroke-width: 1.5; rx: 12px; }
+      :root {
+        --canvas-bg: #f8fafc;
+        --canvas-border: #e2e8f0;
+        --title: #0f172a;
+        --subtitle: #475569;
+        
+        --card-bg: #ffffff;
+        --card-border: #cbd5e1;
+        --header-txt: #0284c7;
+        
+        --well-bg: #f1f5f9;
+        --well-border: #e2e8f0;
+        
+        --pin-lbl: #0f172a;
+        --pin-desc: #475569;
+        --pin-num: #0284c7;
+        
+        --wire-active: #0284c7;
+        --wire-gnd: #64748b;
+        --resistor-color: #d97706;
+        --resistor-txt: #b45309;
+        
+        --formula: #b45309;
+        --calc-txt: #334155;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --canvas-bg: #0f172a;
+          --canvas-border: #1e293b;
+          --title: #f8fafc;
+          --subtitle: #94a3b8;
+          
+          --card-bg: #1e293b;
+          --card-border: #334155;
+          --header-txt: #38bdf8;
+          
+          --well-bg: #0b1120;
+          --well-border: #334155;
+          
+          --pin-lbl: #f8fafc;
+          --pin-desc: #94a3b8;
+          --pin-num: #38bdf8;
+          
+          --wire-active: #38bdf8;
+          --wire-gnd: #64748b;
+          --resistor-color: #f59e0b;
+          --resistor-txt: #fcd34d;
+          
+          --formula: #fbbf24;
+          --calc-txt: #cbd5e1;
+        }
+      }
+
+      .canvas-bg { fill: var(--canvas-bg); stroke: var(--canvas-border); stroke-width: 1.5; }
+      .card { fill: var(--card-bg); stroke: var(--card-border); stroke-width: 1.5; rx: 12px; }
       
-      .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 20px; font-weight: 800; fill: #f8fafc; text-anchor: middle; }
-      .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; fill: #94a3b8; text-anchor: middle; }
-      .header-txt { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; font-weight: 700; }
-      .pin-lbl { font-family: "JetBrains Mono", monospace; font-size: 11px; font-weight: 600; }
-      .pin-desc { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 10px; fill: #94a3b8; }
-      .calc-txt { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; fill: #cbd5e1; }
-      .formula { font-family: "JetBrains Mono", monospace; font-size: 13px; font-weight: bold; fill: #38bdf8; }
+      .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 20px; font-weight: 800; fill: var(--title); text-anchor: middle; }
+      .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; fill: var(--subtitle); text-anchor: middle; }
+      .header-txt { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; font-weight: 700; fill: var(--header-txt); }
+      .pin-lbl { font-family: "JetBrains Mono", monospace; font-size: 11px; font-weight: 600; fill: var(--pin-lbl); }
+      .pin-desc { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 10px; fill: var(--pin-desc); }
+      .pin-num { font-family: "JetBrains Mono", monospace; font-size: 11px; font-weight: 800; fill: var(--pin-num); }
       
-      .pin-circle { stroke-width: 1.5; }
-      .pin-3v3 { fill: #f59e0b; stroke: #d97706; }
-      .pin-5v { fill: #ef4444; stroke: #b91c1c; }
-      .pin-gnd { fill: #0f172a; stroke: #64748b; }
-      .pin-gpio { fill: #10b981; stroke: #059669; }
-      .pin-highlight { fill: #38bdf8; stroke: #0284c7; }
-      
-      .wire-active { stroke: #38bdf8; stroke-width: 2.5; fill: none; }
-      .wire-gnd { stroke: #64748b; stroke-width: 2.5; fill: none; }
+      .wire-active { stroke: var(--wire-active); stroke-width: 3; fill: none; }
+      .wire-gnd { stroke: var(--wire-gnd); stroke-width: 3; fill: none; }
+      .formula { font-family: "JetBrains Mono", Consolas, monospace; font-size: 14px; font-weight: bold; fill: var(--formula); }
+      .calc-txt { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11.5px; fill: var(--calc-txt); }
     </style>
   </defs>
 
-  <!-- Background -->
-  <rect width="1050" height="640" class="bg" rx="16" />
+  <rect width="1050" height="640" class="canvas-bg" rx="16" />
 
-  <!-- Title -->
-  <text x="525" y="38" class="title">SƠ ĐỒ NỐI DÂY PHẦN CỨNG &amp; MẠCH ĐỆM ĐÈN LED AN TOÀN TRÊN RASPBERRY PI 4</text>
-  <text x="525" y="62" class="subtitle">Đấu Nối Chân GPIO17 (Pin 11), Tính Toán Điện Trở Hạn Dòng 330 Ω &amp; Biện Pháp Phòng Ngừa Chập Nguồn 5V</text>
+  <text x="525" y="38" class="title">SƠ ĐỒ ĐẤU NỐI MẠCH ĐIỀU KHIỂN LED QUA GPIO17 RASPBERRY PI 4</text>
+  <text x="525" y="62" class="subtitle">Bản Đồ 40-Pin Header, Tính Toán Định Luật Ohm &amp; Cách Ly Bảo Vệ Cổng Ra Vi Xử Lý BCM2711</text>
 
-  <!-- LEFT: 40-PIN HEADER VISUALIZATION -->
+  <!-- LEFT: 40-PIN HEADER DIAGRAM -->
   <g transform="translate(35, 85)">
     <rect width="360" height="520" class="card" />
-    <text x="20" y="28" class="header-txt" fill="#38bdf8">1. RASPBERRY PI 4 40-PIN HEADER PINOUT</text>
-
-    <!-- Header outline -->
-    <rect x="25" y="45" width="310" height="455" fill="#0b1120" rx="8" stroke="#334155" />
+    <text x="20" y="28" class="header-txt">1. RASPBERRY PI 4 40-PIN PINOUT</text>
     
-    <!-- Top Pins (Pin 1 - 12 focus) -->
     <!-- Pin 1 & Pin 2 -->
-    <circle cx="90" cy="80" r="12" class="pin-circle pin-3v3" />
-    <text x="90" y="84" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle">1</text>
-    <text x="65" y="84" class="pin-lbl" fill="#f59e0b" text-anchor="end">3.3V DC</text>
-
-    <circle cx="250" cy="80" r="12" class="pin-circle pin-5v" />
-    <text x="250" y="84" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle">2</text>
-    <text x="275" y="84" class="pin-lbl" fill="#ef4444">5V (DANGER!)</text>
+    <rect x="25" y="50" width="145" height="32" rx="4" fill="var(--well-bg)" stroke="#ef4444" stroke-width="1.5" />
+    <text x="35" y="66" class="pin-num" fill="#ef4444">Pin 01: 3.3V Power</text>
+    <text x="35" y="78" class="pin-desc">DC Power (Max 50mA)</text>
+    
+    <rect x="190" y="50" width="145" height="32" rx="4" fill="var(--well-bg)" stroke="#ef4444" stroke-width="1.5" />
+    <text x="200" y="66" class="pin-num" fill="#ef4444">Pin 02: 5.0V Power</text>
+    <text x="200" y="78" class="pin-desc">⚠️ NGUY HIỂM: Hỏng SoC!</text>
 
     <!-- Pin 3 & Pin 4 -->
-    <circle cx="90" cy="120" r="12" class="pin-circle pin-gpio" />
-    <text x="90" y="124" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle">3</text>
-    <text x="65" y="124" class="pin-lbl" fill="#6ee7b7" text-anchor="end">GPIO2 (SDA)</text>
+    <rect x="25" y="90" width="145" height="32" rx="4" fill="var(--well-bg)" stroke="var(--well-border)" stroke-width="1" />
+    <text x="35" y="106" class="pin-lbl">Pin 03: GPIO02 (SDA)</text>
+    <text x="35" y="118" class="pin-desc">I2C1 Data line</text>
+    
+    <rect x="190" y="90" width="145" height="32" rx="4" fill="var(--well-bg)" stroke="#ef4444" stroke-width="1.5" />
+    <text x="200" y="106" class="pin-num" fill="#ef4444">Pin 04: 5.0V Power</text>
+    <text x="200" y="118" class="pin-desc">⚠️ Tuyệt đối không chạm</text>
 
-    <circle cx="250" cy="120" r="12" class="pin-circle pin-5v" />
-    <text x="250" y="124" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle">4</text>
-    <text x="275" y="124" class="pin-lbl" fill="#ef4444">5V (DANGER!)</text>
-
-    <!-- Pin 5 & Pin 6 (GND Highlight) -->
-    <circle cx="90" cy="160" r="12" class="pin-circle pin-gpio" />
-    <text x="90" y="164" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle">5</text>
-    <text x="65" y="164" class="pin-lbl" fill="#6ee7b7" text-anchor="end">GPIO3 (SCL)</text>
-
-    <circle cx="250" cy="160" r="14" class="pin-circle pin-highlight" />
-    <text x="250" y="164" fill="#0f172a" font-size="9" font-weight="bold" text-anchor="middle">6</text>
-    <text x="275" y="164" class="pin-lbl" fill="#38bdf8" font-weight="bold">PIN 6: GND (★)</text>
+    <!-- Pin 5 & Pin 6 (Pin 6 is GND!) -->
+    <rect x="25" y="130" width="145" height="32" rx="4" fill="var(--well-bg)" stroke="var(--well-border)" stroke-width="1" />
+    <text x="35" y="146" class="pin-lbl">Pin 05: GPIO03 (SCL)</text>
+    <text x="35" y="158" class="pin-desc">I2C1 Clock line</text>
+    
+    <rect x="190" y="130" width="145" height="32" rx="4" fill="var(--well-bg)" stroke="#64748b" stroke-width="2" />
+    <text x="200" y="146" class="pin-num" fill="#64748b">Pin 06: GROUND (GND)</text>
+    <text x="200" y="158" class="pin-desc" font-weight="bold">★ Nối vào Cathode LED (-)</text>
 
     <!-- Pin 7 & Pin 8 -->
-    <circle cx="90" cy="200" r="12" class="pin-circle pin-gpio" />
-    <text x="90" y="204" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle">7</text>
-    <text x="65" y="204" class="pin-lbl" fill="#6ee7b7" text-anchor="end">GPIO4</text>
-
-    <circle cx="250" cy="200" r="12" class="pin-circle pin-gpio" />
-    <text x="250" y="204" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle">8</text>
-    <text x="275" y="204" class="pin-lbl" fill="#6ee7b7">GPIO14 (TXD)</text>
+    <rect x="25" y="170" width="145" height="32" rx="4" fill="var(--well-bg)" stroke="var(--well-border)" stroke-width="1" />
+    <text x="35" y="186" class="pin-lbl">Pin 07: GPIO04 (GPCLK)</text>
+    
+    <rect x="190" y="170" width="145" height="32" rx="4" fill="var(--well-bg)" stroke="var(--well-border)" stroke-width="1" />
+    <text x="200" y="186" class="pin-lbl">Pin 08: GPIO14 (TXD)</text>
 
     <!-- Pin 9 & Pin 10 -->
-    <circle cx="90" cy="240" r="12" class="pin-circle pin-gnd" />
-    <text x="90" y="244" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle">9</text>
-    <text x="65" y="244" class="pin-lbl" fill="#94a3b8" text-anchor="end">GND</text>
+    <rect x="25" y="210" width="145" height="32" rx="4" fill="var(--well-bg)" stroke="#64748b" stroke-width="1" />
+    <text x="35" y="226" class="pin-num" fill="#64748b">Pin 09: GROUND</text>
+    
+    <rect x="190" y="210" width="145" height="32" rx="4" fill="var(--well-bg)" stroke="var(--well-border)" stroke-width="1" />
+    <text x="200" y="226" class="pin-lbl">Pin 10: GPIO15 (RXD)</text>
 
-    <circle cx="250" cy="240" r="12" class="pin-circle pin-gpio" />
-    <text x="250" y="244" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle">10</text>
-    <text x="275" y="244" class="pin-lbl" fill="#6ee7b7">GPIO15 (RXD)</text>
-
-    <!-- Pin 11 (GPIO17 Highlight) & Pin 12 -->
-    <circle cx="90" cy="280" r="14" class="pin-circle pin-highlight" />
-    <text x="90" y="284" fill="#0f172a" font-size="9" font-weight="bold" text-anchor="middle">11</text>
-    <text x="65" y="284" class="pin-lbl" fill="#38bdf8" font-weight="bold" text-anchor="end">PIN 11: GPIO17 (★)</text>
-
-    <circle cx="250" cy="280" r="12" class="pin-circle pin-gpio" />
-    <text x="250" y="284" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle">12</text>
-    <text x="275" y="284" class="pin-lbl" fill="#6ee7b7">GPIO18 (PCM_C)</text>
+    <!-- Pin 11 (GPIO17 - TARGET!) & Pin 12 -->
+    <rect x="25" y="250" width="145" height="42" rx="6" fill="var(--well-bg)" stroke="#0284c7" stroke-width="2.5" />
+    <text x="35" y="268" class="pin-num" fill="#0284c7">Pin 11: BCM GPIO17</text>
+    <text x="35" y="282" class="pin-desc" font-weight="bold" fill="#0284c7">★ CHÂN ĐIỀU KHIỂN LED</text>
+    
+    <rect x="190" y="250" width="145" height="32" rx="4" fill="var(--well-bg)" stroke="var(--well-border)" stroke-width="1" />
+    <text x="200" y="266" class="pin-lbl">Pin 12: GPIO18 (PWM0)</text>
 
     <!-- Dotted continuation -->
-    <text x="170" y="340" fill="#64748b" font-size="14" text-anchor="middle">⋮ (Các chân từ Pin 13 đến Pin 40) ⋮</text>
+    <text x="170" y="325" fill="#64748b" font-size="14" text-anchor="middle">⋮ (Các chân từ Pin 13 đến Pin 40) ⋮</text>
     
-    <rect x="35" y="380" width="290" height="105" fill="#1e293b" rx="6" stroke="#475569" />
-    <text x="45" y="402" class="pin-lbl" fill="#facc15">LƯU Ý ĐIỆN ÁP LOGIC RPI4:</text>
-    <text x="45" y="420" class="pin-desc">• Mức logic chuẩn: 3.3V (LVCMOS).</text>
-    <text x="45" y="436" class="pin-desc">• Các chân GPIO KHÔNG CÓ khả năng chịu 5V (Not 5V-tolerant).</text>
-    <text x="45" y="452" class="pin-desc">• Đưa điện áp 5V vào GPIO sẽ phá hủy chân I/O của SoC BCM2711.</text>
-    <text x="45" y="468" class="pin-desc">• Dòng tối đa khuyến nghị: 16 mA/chân, tổng không quá 50 mA.</text>
+    <rect x="25" y="360" width="310" height="135" rx="6" fill="var(--well-bg)" stroke="#eab308" stroke-width="1.5" />
+    <text x="35" y="382" class="pin-lbl" fill="#ca8a04">LƯU Ý ĐIỆN ÁP LOGIC RPI4:</text>
+    <text x="35" y="402" class="pin-desc">• Mức logic chuẩn: 3.3V (LVCMOS).</text>
+    <text x="35" y="420" class="pin-desc">• Các chân GPIO KHÔNG CÓ khả năng chịu 5V (Not 5V-tolerant).</text>
+    <text x="35" y="438" class="pin-desc">• Đưa điện áp 5V vào GPIO sẽ phá hủy chân I/O của SoC BCM2711.</text>
+    <text x="35" y="456" class="pin-desc">• Dòng tối đa khuyến nghị: 16 mA/chân, tổng không quá 50 mA.</text>
+    <text x="35" y="474" class="pin-desc">• Luôn ngắt nguồn điện khi thao tác cắm dây breadboard.</text>
   </g>
 
   <!-- RIGHT: CIRCUIT SCHEMATIC & CURRENT LIMITING CALCULATION -->
   <g transform="translate(425, 85)">
     <!-- Circuit Box -->
     <rect width="590" height="300" class="card" />
-    <text x="20" y="28" class="header-txt" fill="#38bdf8">2. MẠCH ĐIỆN VẬT LÝ CHI TIẾT (ACTIVE-HIGH TOPOLOGY)</text>
+    <text x="20" y="28" class="header-txt">2. MẠCH ĐIỆN VẬT LÝ CHI TIẾT (ACTIVE-HIGH TOPOLOGY)</text>
 
     <!-- Wire: Pin 11 to Resistor -->
     <line x1="30" y1="80" x2="120" y2="80" class="wire-active" />
-    <circle cx="30" cy="80" r="5" fill="#38bdf8" />
-    <text x="30" y="65" class="pin-lbl" fill="#38bdf8">Pin 11 (GPIO17)</text>
+    <circle cx="30" cy="80" r="5" fill="var(--wire-active)" />
+    <text x="30" y="65" class="pin-lbl" fill="var(--wire-active)">Pin 11 (GPIO17)</text>
 
     <!-- Resistor Symbol -->
-    <rect x="120" y="65" width="80" height="30" fill="#0b1120" stroke="#f59e0b" stroke-width="2" rx="4" />
-    <text x="160" y="85" fill="#fcd34d" font-family="monospace" font-size="12" font-weight="bold" text-anchor="middle">R = 330 Ω</text>
+    <rect x="120" y="65" width="80" height="30" rx="4" fill="var(--well-bg)" stroke="var(--resistor-color)" stroke-width="2" />
+    <text x="160" y="85" fill="var(--resistor-txt)" font-family="monospace" font-size="12" font-weight="bold" text-anchor="middle">R = 330 Ω</text>
     <text x="160" y="112" class="pin-desc" text-anchor="middle">Điện trở hạn dòng 1/4W</text>
 
     <!-- Wire: Resistor to Anode -->
     <line x1="200" y1="80" x2="280" y2="80" class="wire-active" />
 
     <!-- LED Symbol -->
-    <!-- Triangle -->
     <polygon points="280,65 315,80 280,95" fill="#ef4444" stroke="#dc2626" stroke-width="2" />
-    <!-- Bar -->
-    <line x1="315" y1="65" x2="315" y2="95" stroke="#ffffff" stroke-width="2.5" />
-    <!-- Emission arrows -->
+    <line x1="315" y1="65" x2="315" y2="95" stroke="#94a3b8" stroke-width="2.5" />
     <line x1="295" y1="60" x2="310" y2="45" stroke="#ef4444" stroke-width="1.5" />
     <polygon points="310,45 303,47 308,52" fill="#ef4444" />
     <line x1="305" y1="65" x2="320" y2="50" stroke="#ef4444" stroke-width="1.5" />
     <polygon points="320,50 313,52 318,57" fill="#ef4444" />
     
-    <text x="290" y="112" class="pin-lbl" fill="#ef4444">Anode (+)</text>
-    <text x="325" y="112" class="pin-lbl" fill="#94a3b8">Cathode (-)</text>
+    <text x="290" y="112" class="pin-lbl" fill="#dc2626">Anode (+)</text>
+    <text x="325" y="112" class="pin-lbl" fill="var(--pin-desc)">Cathode (-)</text>
     <text x="300" y="130" class="pin-desc" text-anchor="middle">Đèn LED đỏ (V_F ≈ 2.0V)</text>
 
     <!-- Wire: Cathode to Ground -->
@@ -145,14 +179,14 @@
     <line x1="420" y1="80" x2="420" y2="150" class="wire-gnd" />
     
     <!-- GND symbol -->
-    <line x1="400" y1="150" x2="440" y2="150" stroke="#64748b" stroke-width="3" />
-    <line x1="408" y1="156" x2="432" y2="156" stroke="#64748b" stroke-width="2" />
-    <line x1="416" y1="162" x2="424" y2="162" stroke="#64748b" stroke-width="1.5" />
-    <text x="450" y="155" class="pin-lbl" fill="#94a3b8">Pin 6 (GND)</text>
+    <line x1="400" y1="150" x2="440" y2="150" stroke="var(--wire-gnd)" stroke-width="3" />
+    <line x1="408" y1="156" x2="432" y2="156" stroke="var(--wire-gnd)" stroke-width="2" />
+    <line x1="416" y1="162" x2="424" y2="162" stroke="var(--wire-gnd)" stroke-width="1.5" />
+    <text x="450" y="155" class="pin-lbl" fill="var(--pin-desc)">Pin 6 (GND)</text>
 
     <!-- State table inside box -->
-    <rect x="30" y="180" width="530" height="95" fill="#0b1120" rx="6" stroke="#334155" />
-    <text x="45" y="202" class="pin-lbl" fill="#6ee7b7">TRẠNG THÁI LOGIC ĐIỀU KHIỂN (Active-High):</text>
+    <rect x="30" y="180" width="530" height="95" rx="6" fill="var(--well-bg)" stroke="var(--well-border)" stroke-width="1" />
+    <text x="45" y="202" class="pin-lbl" fill="#16a34a">TRẠNG THÁI LOGIC ĐIỀU KHIỂN (Active-High):</text>
     <text x="45" y="224" class="calc-txt">• Xuất mức logic 1 (HIGH = 3.3V) → LED sáng (I ≈ 4 mA).</text>
     <text x="45" y="244" class="calc-txt">• Xuất mức logic 0 (LOW = 0V)   → Điện áp bằng 0V → LED tắt hoàn toàn.</text>
     <text x="45" y="264" class="calc-txt">• Cấu hình Device Tree: gpios = &lt;&amp;gpio 17 GPIO_ACTIVE_HIGH&gt;;</text>
@@ -161,9 +195,9 @@
   <!-- RIGHT LOWER: CALCULATION & OHM'S LAW -->
   <g transform="translate(425, 405)">
     <rect width="590" height="200" class="card" />
-    <text x="20" y="28" class="header-txt" fill="#f59e0b">3. TÍNH TOÁN ĐỊNH LƯỢNG ĐIỆN TRỞ HẠN DÒNG (ĐỊNH LUẬT OHM)</text>
+    <text x="20" y="28" class="header-txt" fill="#d97706">3. TÍNH TOÁN ĐỊNH LƯỢNG ĐIỆN TRỞ HẠN DÒNG (ĐỊNH LUẬT OHM)</text>
 
-    <rect x="20" y="45" width="550" height="135" fill="#0b1120" rx="8" stroke="#334155" />
+    <rect x="20" y="45" width="550" height="135" rx="8" fill="var(--well-bg)" stroke="var(--well-border)" stroke-width="1" />
     <text x="35" y="70" class="calc-txt">Công thức tính điện trở bảo vệ theo định luật Ohm cho tải LED:</text>
     
     <text x="35" y="98" class="formula">R = (V_OH - V_F) / I_LED</text>

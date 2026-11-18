@@ -1,115 +1,169 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1020 560" width="100%" height="100%">
   <defs>
     <style>
-      .bg { fill: #0f172a; }
-      .stage-card { fill: #1e293b; stroke: #334155; stroke-width: 1.5; rx: 10px; }
-      .stage-pass { fill: #1e293b; stroke: #22c55e; stroke-width: 2; rx: 10px; }
-      .stage-fail { fill: #450a0a; stroke: #ef4444; stroke-width: 1.5; rx: 6px; }
+      :root {
+        --canvas-bg: #f8fafc;
+        --canvas-border: #e2e8f0;
+        --title: #0f172a;
+        --subtitle: #475569;
+        
+        --stage-bg: #ffffff;
+        --stage-border: #cbd5e1;
+        --stage-hdr: #0f172a;
+        --stage-desc: #334155;
+        --stage-muted: #64748b;
+        
+        --well-bg: #f1f5f9;
+        --well-border: #e2e8f0;
+        --code-txt: #0369a1;
+        
+        --fail-bg: #fef2f2;
+        --fail-border: #fca5a5;
+        --fail-txt: #991b1b;
+        
+        --pass-border: #16a34a;
+        --pass-txt: #15803d;
+        
+        --success-bg: #f0fdf4;
+        --success-border: #16a34a;
+        --success-hdr: #15803d;
+        --success-txt: #166534;
+        
+        --arrow-color: #0284c7;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --canvas-bg: #0f172a;
+          --canvas-border: #1e293b;
+          --title: #f8fafc;
+          --subtitle: #94a3b8;
+          
+          --stage-bg: #1e293b;
+          --stage-border: #334155;
+          --stage-hdr: #ffffff;
+          --stage-desc: #cbd5e1;
+          --stage-muted: #94a3b8;
+          
+          --well-bg: #0b1120;
+          --well-border: #334155;
+          --code-txt: #38bdf8;
+          
+          --fail-bg: #450a0a;
+          --fail-border: #ef4444;
+          --fail-txt: #fca5a5;
+          
+          --pass-border: #22c55e;
+          --pass-txt: #4ade80;
+          
+          --success-bg: #064e3b;
+          --success-border: #22c55e;
+          --success-hdr: #86efac;
+          --success-txt: #bbf7d0;
+          
+          --arrow-color: #38bdf8;
+        }
+      }
+
+      .canvas-bg { fill: var(--canvas-bg); stroke: var(--canvas-border); stroke-width: 1.5; }
+      .stage-card { fill: var(--stage-bg); stroke: var(--stage-border); stroke-width: 1.5; rx: 10px; }
       
-      .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 20px; font-weight: 800; fill: #f8fafc; text-anchor: middle; }
-      .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; fill: #94a3b8; text-anchor: middle; }
-      .stage-hdr { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; font-weight: 700; fill: #ffffff; }
-      .stage-desc { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; fill: #cbd5e1; }
-      .code-txt { font-family: "JetBrains Mono", "SF Mono", Consolas, monospace; font-size: 10px; fill: #38bdf8; }
-      
-      .arrow-blue { stroke: #38bdf8; stroke-width: 2; fill: none; }
-      .arrow-red { stroke: #ef4444; stroke-width: 2; fill: none; }
-      .arrow-green { stroke: #22c55e; stroke-width: 2; fill: none; }
+      .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 20px; font-weight: 800; fill: var(--title); text-anchor: middle; }
+      .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; fill: var(--subtitle); text-anchor: middle; }
+      .stage-hdr { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13.5px; font-weight: 700; fill: var(--stage-hdr); }
+      .stage-desc { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; fill: var(--stage-desc); }
+      .code-txt { font-family: "JetBrains Mono", Consolas, monospace; font-size: 10.5px; fill: var(--code-txt); }
+      .fail-txt { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 10.5px; font-weight: bold; fill: var(--fail-txt); }
+      .pass-txt { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; font-weight: bold; fill: var(--pass-txt); }
     </style>
-    <marker id="arr-b" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
-    </marker>
-    <marker id="arr-r" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#ef4444" />
-    </marker>
-    <marker id="arr-g" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#22c55e" />
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--arrow-color)" />
     </marker>
   </defs>
 
-  <!-- Background -->
-  <rect width="1020" height="560" class="bg" rx="16" />
+  <rect width="1020" height="560" class="canvas-bg" rx="16" />
 
-  <!-- Title -->
-  <text x="510" y="38" class="title">CHUỖI KIỂM SOÁT TƯƠNG THÍCH NHỊ PHÂN KHI NẠP KERNEL MODULE VÀO ANDROID</text>
-  <text x="510" y="62" class="subtitle">Quy Trình Thẩm Định 3 Tầng: Vermagic String, MODVERSIONS Symbol CRC &amp; Chính Sách Ký Số Chữ Ký</text>
+  <text x="510" y="38" class="title">CHUỖI KIỂM SOÁT TƯƠNG THÍCH NHỊ PHÂN KHI NẠP KERNEL MODULE (INSMOD)</text>
+  <text x="510" y="62" class="subtitle">3 Cổng Kiểm Tra An Toàn Bắt Buộc Của Linux Kernel: Vermagic String, MODVERSIONS CRC &amp; Module Signature</text>
 
-  <!-- TRIGGER: INSMOD -->
-  <g transform="translate(35, 95)">
-    <rect width="160" height="110" class="stage-card" stroke="#38bdf8" />
-    <text x="15" y="25" font-family="sans-serif" font-size="11" font-weight="bold" fill="#38bdf8">LỆNH NGƯỜI DÙNG</text>
-    <text x="15" y="48" class="stage-hdr">insmod hello.ko</text>
-    <text x="15" y="70" class="stage-desc">• Chạy trong ADB Root</text>
-    <text x="15" y="88" class="stage-desc">• Gọi syscall init_module()</text>
+  <!-- Top Hub: Command invocation -->
+  <g transform="translate(340, 85)">
+    <rect width="340" height="50" rx="8" fill="var(--stage-bg)" stroke="#818cf8" stroke-width="2" />
+    <text x="170" y="24" class="code-txt" font-size="12px" text-anchor="middle">adb shell insmod hello_android.ko</text>
+    <text x="170" y="40" class="stage-desc" fill="var(--stage-muted)" text-anchor="middle">Syscall init_module() / finit_module()</text>
   </g>
 
-  <!-- Arrow 0 to 1 -->
-  <line x1="195" y1="150" x2="230" y2="150" class="arrow-blue" marker-end="url(#arr-b)" />
+  <line x1="510" y1="135" x2="510" y2="165" stroke="var(--arrow-color)" stroke-width="2" marker-end="url(#arr-blue)" />
 
-  <!-- CHECK 1: VERMAGIC -->
-  <g transform="translate(235, 95)">
-    <rect width="210" height="240" class="stage-card" stroke="#60a5fa" />
-    <text x="15" y="25" font-family="sans-serif" font-size="11" font-weight="bold" fill="#60a5fa">RÀO CẢN SỐ 01</text>
-    <text x="15" y="46" class="stage-hdr">Kiểm Tra Vermagic</text>
-    <text x="15" y="68" class="code-txt">strings hello.ko |</text>
-    <text x="15" y="84" class="code-txt">  grep vermagic=</text>
-    <text x="15" y="106" class="stage-desc">So với <tspan class="code-txt">uname -r</tspan>:</text>
-    <text x="15" y="124" class="code-txt" fill="#93c5fd">6.18.38-g7a9131c1065a-v8</text>
+  <!-- GATE 1: VERMAGIC CHECK -->
+  <g transform="translate(40, 165)">
+    <rect width="280" height="260" class="stage-card" />
+    <text x="20" y="28" class="stage-hdr">CỔNG 1: VERMAGIC STRING</text>
+    <text x="20" y="46" class="stage-desc">So khớp chuỗi phiên bản trong elf .modinfo</text>
 
-    <!-- Branch fail -->
-    <rect x="12" y="145" width="186" height="75" class="stage-fail" />
-    <text x="20" y="165" font-family="sans-serif" font-size="10.5" font-weight="bold" fill="#fca5a5">KHÔNG KHỚP ❌</text>
-    <text x="20" y="183" font-size="9.5" fill="#fecaca">Lỗi: Exec format error</text>
-    <text x="20" y="200" font-size="9.5" fill="#fecaca">(Dính -maybe-dirty)</text>
+    <rect x="15" y="60" width="250" height="85" rx="6" fill="var(--well-bg)" stroke="var(--well-border)" stroke-width="1" />
+    <text x="25" y="80" class="code-txt">Target uname -r:</text>
+    <text x="25" y="96" class="code-txt">6.18.38-g7a9131c1065a-v8</text>
+    <text x="25" y="118" class="stage-desc" fill="var(--stage-muted)">Flags: SMP preempt mod_unload</text>
+    <text x="25" y="134" class="stage-desc" fill="var(--stage-muted)">Arch: aarch64</text>
+
+    <rect x="15" y="155" width="250" height="42" rx="4" fill="var(--fail-bg)" stroke="var(--fail-border)" stroke-width="1" />
+    <text x="25" y="172" class="fail-txt">❌ Sai lệch chuỗi (VD: -maybe-dirty):</text>
+    <text x="25" y="188" class="fail-txt">Lỗi: Exec format error (Từ chối ngay)</text>
+
+    <text x="25" y="222" class="pass-txt">✓ Trùng khớp 100%:</text>
+    <text x="25" y="240" class="stage-desc">Vượt qua cổng 1 → Chuyển sang Cổng 2</text>
   </g>
 
-  <!-- Arrow 1 to 2 -->
-  <line x1="445" y1="150" x2="480" y2="150" class="arrow-blue" marker-end="url(#arr-b)" />
+  <line x1="320" y1="295" x2="365" y2="295" stroke="var(--arrow-color)" stroke-width="2" marker-end="url(#arr-blue)" />
 
-  <!-- CHECK 2: MODVERSIONS -->
-  <g transform="translate(485, 95)">
-    <rect width="225" height="240" class="stage-card" stroke="#f59e0b" />
-    <text x="15" y="25" font-family="sans-serif" font-size="11" font-weight="bold" fill="#fbbf24">RÀO CẢN SỐ 02</text>
-    <text x="15" y="46" class="stage-hdr">Kiểm Tra MODVERSIONS</text>
-    <text x="15" y="68" class="stage-desc">Kiểm tra mã băm CRC 32-bit</text>
-    <text x="15" y="86" class="stage-desc">của từng hàm kernel gọi tới:</text>
-    <text x="15" y="106" class="code-txt">• _printk (0x27e4e138)</text>
-    <text x="15" y="124" class="code-txt">• module_layout (CRC...)</text>
+  <!-- GATE 2: MODVERSIONS CRC -->
+  <g transform="translate(370, 165)">
+    <rect width="280" height="260" class="stage-card" stroke="#f59e0b" />
+    <text x="20" y="28" class="stage-hdr" fill="#d97706">CỔNG 2: CONFIG_MODVERSIONS</text>
+    <text x="20" y="46" class="stage-desc">Xác minh mã băm CRC của từng Kernel Symbol</text>
 
-    <!-- Branch fail -->
-    <rect x="12" y="145" width="201" height="75" class="stage-fail" />
-    <text x="20" y="165" font-family="sans-serif" font-size="10.5" font-weight="bold" fill="#fca5a5">LỆCH MÃ BĂM CRC ❌</text>
-    <text x="20" y="183" font-size="9.5" fill="#fecaca">Lỗi: disagrees about</text>
-    <text x="20" y="200" font-size="9.5" fill="#fecaca">version of symbol</text>
+    <rect x="15" y="60" width="250" height="85" rx="6" fill="var(--well-bg)" stroke="#fde68a" stroke-width="1" />
+    <text x="25" y="80" class="code-txt">Symbol Table (__versions):</text>
+    <text x="25" y="98" class="code-txt">• printk: CRC 0x27e1a049</text>
+    <text x="25" y="116" class="code-txt">• module_layout: CRC 0x8a92f1b0</text>
+    <text x="25" y="134" class="code-txt">• __fentry__: CRC 0xbdfb6dbb</text>
+
+    <rect x="15" y="155" width="250" height="42" rx="4" fill="var(--fail-bg)" stroke="var(--fail-border)" stroke-width="1" />
+    <text x="25" y="172" class="fail-txt">❌ Sai lệch CRC bất kỳ symbol nào:</text>
+    <text x="25" y="188" class="fail-txt">disagrees about version of symbol</text>
+
+    <text x="25" y="222" class="pass-txt">✓ Khớp toàn bộ CRC:</text>
+    <text x="25" y="240" class="stage-desc">Vượt qua cổng 2 → Chuyển sang Cổng 3</text>
   </g>
 
-  <!-- Arrow 2 to 3 -->
-  <line x1="710" y1="150" x2="745" y2="150" class="arrow-blue" marker-end="url(#arr-b)" />
+  <line x1="650" y1="295" x2="695" y2="295" stroke="var(--arrow-color)" stroke-width="2" marker-end="url(#arr-blue)" />
 
-  <!-- CHECK 3: SIGNATURE & EXECUTION -->
-  <g transform="translate(750, 95)">
-    <rect width="235" height="240" class="stage-pass" />
-    <text x="15" y="25" font-family="sans-serif" font-size="11" font-weight="bold" fill="#4ade80">RÀO CẢN SỐ 03 &amp; THỰC THI</text>
-    <text x="15" y="46" class="stage-hdr">Chữ Ký &amp; Cấp Phép</text>
-    <text x="15" y="68" class="stage-desc">• sig_enforce = N (Non-strict)</text>
-    <text x="15" y="86" class="stage-desc">• Ghi nhận Taint: [O] Out-of-tree</text>
-    <text x="15" y="104" class="stage-desc">• Ghi nhận Taint: [E] Unsigned</text>
+  <!-- GATE 3: SIGNATURE & TAINT -->
+  <g transform="translate(700, 165)">
+    <rect width="280" height="260" class="stage-card" stroke="#8b5cf6" />
+    <text x="20" y="28" class="stage-hdr" fill="#7c3aed">CỔNG 3: MODULE SIGNATURE</text>
+    <text x="20" y="46" class="stage-desc">Chữ ký số mật mã &amp; Giám sát cờ Kernel Taint</text>
 
-    <!-- Success Box -->
-    <rect x="12" y="125" width="211" height="95" fill="#064e3b" rx="6" stroke="#22c55e" />
-    <text x="20" y="148" font-family="sans-serif" font-size="11" font-weight="bold" fill="#86efac">KHỞI CHẠY THÀNH CÔNG! ✓</text>
-    <text x="20" y="168" class="code-txt" fill="#ffffff" font-size="9.5">hello_android_init()</text>
-    <text x="20" y="186" class="code-txt" fill="#86efac" font-size="9.5">pr_info: Hello Android</text>
-    <text x="20" y="202" class="code-txt" fill="#86efac" font-size="9.5">Kernel! SoC BCM2711</text>
+    <rect x="15" y="60" width="250" height="85" rx="6" fill="var(--well-bg)" stroke="#ddd6fe" stroke-width="1" />
+    <text x="25" y="80" class="code-txt">sig_enforce Check:</text>
+    <text x="25" y="98" class="stage-desc">• sig_enforce = 1: Bắt buộc khóa ký hợp lệ</text>
+    <text x="25" y="116" class="stage-desc">• sig_enforce = 0: Cho phép module chưa ký</text>
+    <text x="25" y="134" class="stage-desc" fill="#f59e0b">  (Kèm cảnh báo Taint vào dmesg)</text>
+
+    <rect x="15" y="155" width="250" height="42" rx="4" fill="var(--fail-bg)" stroke="var(--fail-border)" stroke-width="1" />
+    <text x="25" y="172" class="fail-txt">❌ sig_enforce=1 &amp; Key sai:</text>
+    <text x="25" y="188" class="fail-txt">Lỗi: Key was rejected by service</text>
+
+    <text x="25" y="222" class="pass-txt">✓ sig_enforce=0 (userdebug ROM):</text>
+    <text x="25" y="240" class="stage-desc">Kích hoạt cờ Taint nhưng VẪN NẠP THÀNH CÔNG</text>
   </g>
 
-  <!-- LOWER EXPLANATION BAR -->
-  <g transform="translate(35, 360)">
-    <rect width="950" height="170" class="stage-card" stroke="#3b82f6" />
-    <text x="25" y="30" class="stage-hdr" fill="#93c5fd">TỔNG KẾT NGUYÊN TẮC BẢO VỆ NHỊ PHÂN CỦA ANDROID GKI KERNEL:</text>
-    <text x="25" y="58" class="stage-desc">1. <tspan font-weight="bold" fill="#f8fafc">Vermagic</tspan> bảo vệ tính tương thích ở cấp độ tên bản phát hành nhân và kiến trúc CPU.</text>
-    <text x="25" y="82" class="stage-desc">2. <tspan font-weight="bold" fill="#f8fafc">CONFIG_MODVERSIONS</tspan> bảo vệ tính tương thích ở cấp độ định nghĩa cấu trúc dữ liệu (`struct`). Bất kỳ thay đổi nào trong `defconfig` làm thay đổi kích thước của struct đều làm lệch CRC và bị nhân chặn đứng.</text>
-    <text x="25" y="106" class="stage-desc">3. <tspan font-weight="bold" fill="#f8fafc">Module Signature (Ký số)</tspan> bảo vệ hệ điều hành khỏi các rootkit độc hại chèn vào nhân trong môi trường sản phẩm thương mại.</text>
-    <text x="25" y="130" class="stage-desc">4. Trong môi trường nghiên cứu/lab, thông báo <tspan class="code-txt">taints kernel</tspan> và <tspan class="code-txt">signature missing</tspan> là hoàn toàn bình thường, chứng minh module đã nạp thành công vào nhân.</text>
+  <!-- BOTTOM BANNER: SUCCESS EXECUTION -->
+  <g transform="translate(40, 445)">
+    <rect width="940" height="90" rx="10" fill="var(--success-bg)" stroke="var(--success-border)" stroke-width="2" />
+    <text x="25" y="28" class="stage-hdr" fill="var(--success-hdr)">✓ KẾT QUẢ CUỐI CÙNG: MODULE NẠP THÀNH CÔNG VÀO ANDROID KERNEL</text>
+    <text x="25" y="50" class="code-txt" fill="var(--success-txt)">[  142.508192] hello_android: loading out-of-tree module taints kernel.</text>
+    <text x="25" y="68" class="code-txt" fill="var(--success-hdr)">[  142.508215] [Hello AOSP] Module init on Raspberry Pi 4 (Kernel 6.18.38)!</text>
   </g>
 </svg>

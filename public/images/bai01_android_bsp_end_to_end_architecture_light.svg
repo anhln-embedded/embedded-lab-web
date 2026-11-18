@@ -1,0 +1,224 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 850" width="100%" height="100%">
+  <defs>
+    <style>
+      :root {
+        --canvas-bg: #f8fafc;
+        --canvas-border: #e2e8f0;
+        --title-color: #0f172a;
+        --subtitle-color: #475569;
+        
+        --app-bg: #eef2ff;
+        --app-border: #818cf8;
+        --app-title: #3730a3;
+        --app-box-bg: #ffffff;
+        --app-box-border: #c7d2fe;
+        --app-box-title: #1e1b4b;
+        --app-box-desc: #475569;
+        --app-box-sec-border: #f43f5e;
+        --app-box-sec-title: #9f1239;
+        
+        --fw-bg: #eff6ff;
+        --fw-border: #60a5fa;
+        --fw-title: #1e40af;
+        --fw-box-bg: #ffffff;
+        --fw-box-border: #bfdbfe;
+        --fw-box-title: #172554;
+        --fw-box-desc: #475569;
+        
+        --ipc-bg: #fffbeb;
+        --ipc-border: #f59e0b;
+        --ipc-title: #92400e;
+        
+        --hal-bg: #faf5ff;
+        --hal-border: #c084fc;
+        --hal-title: #6b21a8;
+        --hal-box-bg: #ffffff;
+        --hal-box-border: #e9d5ff;
+        --hal-box-title: #3b0764;
+        --hal-box-desc: #475569;
+        --hal-box-sec-border: #ec4899;
+        --hal-box-sec-title: #9d174d;
+        
+        --kernel-bg: #f0fdf4;
+        --kernel-border: #4ade80;
+        --kernel-title: #065f46;
+        --kernel-box-bg: #ffffff;
+        --kernel-box-border: #bbf7d0;
+        --kernel-box-title: #064e3b;
+        --kernel-box-desc: #475569;
+        
+        --hw-bg: #f1f5f9;
+        --hw-border: #94a3b8;
+        --hw-title: #334155;
+        --hw-box-bg: #ffffff;
+        --hw-box-border: #cbd5e1;
+        --hw-box-title: #0f172a;
+        --hw-box-desc: #475569;
+        --hw-box-led-border: #16a34a;
+        --hw-box-led-title: #15803d;
+        
+        --arrow-color: #0284c7;
+        --arrow-hw: #16a34a;
+      }
+
+      
+
+      .canvas-bg { fill: var(--canvas-bg); stroke: var(--canvas-border); stroke-width: 1.5; }
+      .layer-card { rx: 12px; stroke-width: 1.5; }
+      .title-text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 22px; font-weight: 800; fill: var(--title-color); text-anchor: middle; }
+      .subtitle-text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; fill: var(--subtitle-color); text-anchor: middle; }
+      .layer-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; font-weight: 700; }
+      .box-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 700; }
+      .box-desc { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 10px; }
+    </style>
+    <marker id="arrow-down" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--arrow-color)" />
+    </marker>
+    <marker id="arrow-down-hw" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--arrow-hw)" />
+    </marker>
+  </defs>
+
+  <rect width="1100" height="850" class="canvas-bg" rx="16" />
+
+  <text x="550" y="40" class="title-text">KIẾN TRÚC TOÀN TRÌNH ANDROID BSP &amp; LED SUBSYSTEM TRÊN RASPBERRY PI 4</text>
+  <text x="550" y="65" class="subtitle-text">Từ Ứng Dụng Java, Framework System Service, Stable AIDL HAL Đến Linux Kernel &amp; GPIO Phần Cứng</text>
+
+  <!-- LAYER 1: ANDROID APPLICATION -->
+  <g transform="translate(40, 85)">
+    <rect width="1020" height="95" class="layer-card" fill="var(--app-bg)" stroke="var(--app-border)" />
+    <text x="20" y="25" class="layer-title" fill="var(--app-title)">1. APPLICATION LAYER (Userspace - App UID Sandbox)</text>
+    
+    <rect x="30" y="38" width="300" height="45" rx="8" fill="var(--app-box-bg)" stroke="var(--app-border)" stroke-width="1" />
+    <text x="45" y="56" class="box-title" fill="var(--app-box-title)">MainActivity.java (LedController.apk)</text>
+    <text x="45" y="72" class="box-desc" fill="var(--app-box-desc)">Nút bấm: ON / OFF / BLINK • Nhập delay_on / delay_off</text>
+    
+    <line x1="335" y1="60" x2="385" y2="60" stroke="var(--app-border)" stroke-width="2" marker-end="url(#arrow-down)" />
+    
+    <rect x="390" y="38" width="310" height="45" rx="8" fill="var(--app-box-bg)" stroke="var(--app-border)" stroke-width="1" />
+    <text x="405" y="56" class="box-title" fill="var(--app-box-title)">LedManager.java (Custom SDK Client API)</text>
+    <text x="405" y="72" class="box-desc" fill="var(--app-box-desc)">Context.getSystemService(LedManager.class) • AIDL Proxy</text>
+    
+    <rect x="730" y="38" width="260" height="45" rx="8" fill="var(--app-box-bg)" stroke="var(--app-box-sec-border)" stroke-width="1" />
+    <text x="745" y="56" class="box-title" fill="var(--app-box-sec-title)">Permission Checking Model</text>
+    <text x="745" y="72" class="box-desc" fill="var(--app-box-desc)">android.permission.CONTROL_LED (Signature/Privileged)</text>
+  </g>
+
+  <line x1="545" y1="180" x2="545" y2="205" stroke="var(--arrow-color)" stroke-width="2.5" marker-end="url(#arrow-down)" />
+  <text x="555" y="196" font-family="sans-serif" font-size="10" fill="var(--arrow-color)" font-weight="bold">IPC: ILedManager.aidl</text>
+
+  <!-- LAYER 2: ANDROID FRAMEWORK -->
+  <g transform="translate(40, 205)">
+    <rect width="1020" height="110" class="layer-card" fill="var(--fw-bg)" stroke="var(--fw-border)" />
+    <text x="20" y="25" class="layer-title" fill="var(--fw-title)">2. ANDROID FRAMEWORK LAYER (system_server / System Context)</text>
+    
+    <rect x="30" y="38" width="280" height="60" rx="8" fill="var(--fw-box-bg)" stroke="var(--fw-border)" stroke-width="1" />
+    <text x="45" y="58" class="box-title" fill="var(--fw-box-title)">SystemServer.java (Bootstrap/Other)</text>
+    <text x="45" y="74" class="box-desc" fill="var(--fw-box-desc)">Khởi tạo và đăng ký Service vào</text>
+    <text x="45" y="88" class="box-desc" fill="var(--fw-box-desc)">ServiceManager.addService("led_custom", ...)</text>
+
+    <rect x="330" y="38" width="350" height="60" rx="8" fill="var(--fw-box-bg)" stroke="var(--fw-border)" stroke-width="1" />
+    <text x="345" y="58" class="box-title" fill="var(--fw-box-title)">LedService.java (ILedManager.Stub)</text>
+    <text x="345" y="74" class="box-desc" fill="var(--fw-box-desc)">• enforceCallingOrSelfPermission(CONTROL_LED)</text>
+    <text x="345" y="88" class="box-desc" fill="var(--fw-box-desc)">• Kết nối tới AIDL HAL qua ServiceManager.waitForDeclaredService()</text>
+
+    <rect x="700" y="38" width="290" height="60" rx="8" fill="var(--fw-box-bg)" stroke="var(--fw-border)" stroke-width="1" />
+    <text x="715" y="58" class="box-title" fill="var(--fw-box-title)">Framework AIDL Definition</text>
+    <text x="715" y="74" class="box-desc" fill="var(--fw-box-desc)">interface ILedManager {</text>
+    <text x="715" y="88" class="box-desc" fill="var(--fw-box-desc)">  void setLedState(boolean state); void setBlink(...); }</text>
+  </g>
+
+  <line x1="545" y1="315" x2="545" y2="340" stroke="var(--arrow-color)" stroke-width="2.5" marker-end="url(#arrow-down)" />
+  <text x="555" y="331" font-family="sans-serif" font-size="10" fill="var(--arrow-color)" font-weight="bold">Treble IPC: ILed.aidl (@VintfStability)</text>
+
+  <!-- LAYER 3: TREBLE IPC BOUNDARY -->
+  <g transform="translate(40, 340)">
+    <rect width="1020" height="35" rx="6" fill="var(--ipc-bg)" stroke="var(--ipc-border)" stroke-width="1" stroke-dasharray="6,3" />
+    <text x="510" y="22" font-family="-apple-system, sans-serif" font-size="12" font-weight="bold" fill="var(--ipc-title)" text-anchor="middle">
+      3. PROJECT TREBLE BINDER IPC BOUNDARY (/dev/binder vs /dev/vndbinder) • VENDOR ISOLATION
+    </text>
+  </g>
+
+  <line x1="545" y1="375" x2="545" y2="390" stroke="var(--arrow-color)" stroke-width="2" marker-end="url(#arrow-down)" />
+
+  <!-- LAYER 4: HARDWARE ABSTRACTION LAYER (HAL) -->
+  <g transform="translate(40, 390)">
+    <rect width="1020" height="120" class="layer-card" fill="var(--hal-bg)" stroke="var(--hal-border)" />
+    <text x="20" y="25" class="layer-title" fill="var(--hal-title)">4. HARDWARE ABSTRACTION LAYER (AIDL HAL Daemon - Vendor Userspace)</text>
+
+    <rect x="30" y="38" width="310" height="70" rx="8" fill="var(--hal-box-bg)" stroke="var(--hal-border)" stroke-width="1" />
+    <text x="45" y="58" class="box-title" fill="var(--hal-box-title)">vendor.example.hardware.led-V1-ndk</text>
+    <text x="45" y="74" class="box-desc" fill="var(--hal-box-desc)">@VintfStability interface ILed {</text>
+    <text x="45" y="88" class="box-desc" fill="var(--hal-box-desc)">  void setMode(LedMode mode); void setBrightness(int b);</text>
+    <text x="45" y="100" class="box-desc" fill="var(--hal-box-desc)">  LedCapabilities getCapabilities(); }</text>
+
+    <rect x="360" y="38" width="320" height="70" rx="8" fill="var(--hal-box-bg)" stroke="var(--hal-border)" stroke-width="1" />
+    <text x="375" y="58" class="box-title" fill="var(--hal-box-title)">Led.cpp &amp; service.cpp (Native NDK Daemon)</text>
+    <text x="375" y="74" class="box-desc" fill="var(--hal-box-desc)">• BnLed : public BnLed (NDK AIDL Backend)</text>
+    <text x="375" y="88" class="box-desc" fill="var(--hal-box-desc)">• AServiceManager_addService("vendor.example.led/default")</text>
+    <text x="375" y="100" class="box-desc" fill="var(--hal-box-desc)">• Direct write to /sys/class/leds/user-led/brightness</text>
+
+    <rect x="700" y="38" width="290" height="70" rx="8" fill="var(--hal-box-bg)" stroke="var(--hal-box-sec-border)" stroke-width="1" />
+    <text x="715" y="58" class="box-title" fill="var(--hal-box-sec-title)">VINTF, Init &amp; SELinux Policy</text>
+    <text x="715" y="74" class="box-desc" fill="var(--hal-box-desc)">vintf_manifest: vendor.example.hardware.led</text>
+    <text x="715" y="88" class="box-desc" fill="var(--hal-box-desc)">init.rc: service vendor.led-hal (class hal)</text>
+    <text x="715" y="100" class="box-desc" fill="var(--hal-box-desc)">sepolicy: type vendor_led_hal, exec, domain</text>
+  </g>
+
+  <line x1="545" y1="510" x2="545" y2="530" stroke="var(--arrow-color)" stroke-width="2.5" marker-end="url(#arrow-down)" />
+  <text x="555" y="523" font-family="sans-serif" font-size="10" fill="var(--arrow-color)" font-weight="bold">Sysfs File I/O: write(fd, "1\n", 2)</text>
+
+  <!-- LAYER 5: LINUX KERNEL SPACE -->
+  <g transform="translate(40, 530)">
+    <rect width="1020" height="150" class="layer-card" fill="var(--kernel-bg)" stroke="var(--kernel-border)" />
+    <text x="20" y="25" class="layer-title" fill="var(--kernel-title)">5. LINUX KERNEL SPACE (Linux 6.18 LTS / GKI &amp; Device Tree)</text>
+
+    <rect x="30" y="38" width="280" height="95" rx="8" fill="var(--kernel-box-bg)" stroke="var(--kernel-border)" stroke-width="1" />
+    <text x="45" y="58" class="box-title" fill="var(--kernel-box-title)">Linux LED Class (/sys/class/leds/)</text>
+    <text x="45" y="74" class="box-desc" fill="var(--kernel-box-desc)">• brightness (0 / 1 / max_brightness)</text>
+    <text x="45" y="88" class="box-desc" fill="var(--kernel-box-desc)">• trigger (none, timer, heartbeat...)</text>
+    <text x="45" y="102" class="box-desc" fill="var(--kernel-box-desc)">• delay_on / delay_off (ms)</text>
+    <text x="45" y="116" class="box-desc" fill="var(--kernel-box-desc)">Được tạo tự động bởi led-class driver</text>
+
+    <rect x="330" y="38" width="350" height="95" rx="8" fill="var(--kernel-box-bg)" stroke="var(--kernel-border)" stroke-width="1" />
+    <text x="345" y="58" class="box-title" fill="var(--kernel-box-title)">drivers/leds/leds-gpio.c (gpio-leds driver)</text>
+    <text x="345" y="74" class="box-desc" fill="var(--kernel-box-desc)">• devm_gpiod_get_from_of_node()</text>
+    <text x="345" y="88" class="box-desc" fill="var(--kernel-box-desc)">• gpiod_set_value_cansleep()</text>
+    <text x="345" y="102" class="box-desc" fill="var(--kernel-box-desc)">• Linux GPIO Descriptor Framework (gpiolib)</text>
+    <text x="345" y="116" class="box-desc" fill="var(--kernel-box-desc)">• Tương thích hoàn toàn out-of-tree Kleaf/Bazel</text>
+
+    <rect x="700" y="38" width="290" height="95" rx="8" fill="var(--kernel-box-bg)" stroke="var(--kernel-border)" stroke-width="1" />
+    <text x="715" y="58" class="box-title" fill="var(--kernel-box-title)">Device Tree Overlay (led-gpio.dtbo)</text>
+    <text x="715" y="74" class="box-desc" fill="var(--kernel-box-desc)">compatible = "gpio-leds";</text>
+    <text x="715" y="88" class="box-desc" fill="var(--kernel-box-desc)">label = "user-led";</text>
+    <text x="715" y="102" class="box-desc" fill="var(--kernel-box-desc)">gpios = &lt;&amp;gpio 17 GPIO_ACTIVE_HIGH&gt;;</text>
+    <text x="715" y="116" class="box-desc" fill="var(--kernel-box-desc)">default-state = "off";</text>
+  </g>
+
+  <line x1="545" y1="680" x2="545" y2="700" stroke="var(--arrow-hw)" stroke-width="2.5" marker-end="url(#arrow-down-hw)" />
+  <text x="555" y="694" font-family="sans-serif" font-size="10" fill="var(--arrow-hw)" font-weight="bold">Hardware Register MMIO: BCM2711 GPSET0 / GPCLR0</text>
+
+  <!-- LAYER 6: PHYSICAL HARDWARE -->
+  <g transform="translate(40, 700)">
+    <rect width="1020" height="125" class="layer-card" fill="var(--hw-bg)" stroke="var(--hw-border)" />
+    <text x="20" y="25" class="layer-title" fill="var(--hw-title)">6. PHYSICAL HARDWARE LAYER (Raspberry Pi 4 Model B &amp; LED Circuit)</text>
+
+    <rect x="30" y="38" width="270" height="75" rx="8" fill="var(--hw-box-bg)" stroke="var(--hw-border)" stroke-width="1" />
+    <text x="45" y="58" class="box-title" fill="var(--hw-box-title)">Broadcom BCM2711 SoC</text>
+    <text x="45" y="74" class="box-desc" fill="var(--hw-box-desc)">Quad-core Cortex-A72 @ 1.5/1.8 GHz</text>
+    <text x="45" y="88" class="box-desc" fill="var(--hw-box-desc)">GPIO Controller Block (0xfe200000)</text>
+    <text x="45" y="102" class="box-desc" fill="var(--hw-box-desc)">Logic level: 3.3V LVCMOS (Tối đa 16mA/pin)</text>
+
+    <rect x="320" y="38" width="370" height="75" rx="8" fill="var(--hw-box-bg)" stroke="var(--hw-border)" stroke-width="1" />
+    <text x="335" y="58" class="box-title" fill="var(--hw-box-title)">Raspberry Pi 4 40-Pin Expansion Header</text>
+    <text x="335" y="74" class="box-desc" fill="var(--hw-box-desc)">• Physical Pin 11: BCM GPIO17 (Ngõ ra điều khiển)</text>
+    <text x="335" y="88" class="box-desc" fill="var(--hw-box-desc)">• Physical Pin 6: GND (Chân tiếp địa mạch điện)</text>
+    <text x="335" y="102" class="box-desc" fill="var(--hw-box-desc)">⚠️ Tuyệt đối không chạm vào Pin 2 &amp; 4 (5V Power Bus)</text>
+
+    <rect x="710" y="38" width="280" height="75" rx="8" fill="var(--hw-box-bg)" stroke="var(--hw-box-led-border)" stroke-width="1" />
+    <text x="725" y="58" class="box-title" fill="var(--hw-box-led-title)">Mạch Điện Đèn LED Bảo Vệ</text>
+    <text x="725" y="74" class="box-desc" fill="var(--hw-box-desc)">GPIO17 (Pin 11) → R_hạn_dòng (330 Ω)</text>
+    <text x="725" y="88" class="box-desc" fill="var(--hw-box-desc)">→ Anode (+) Đèn LED đỏ (V_f ≈ 2.0V)</text>
+    <text x="725" y="102" class="box-desc" fill="var(--hw-box-desc)">→ Cathode (-) Đèn LED → GND (Pin 6)</text>
+  </g>
+</svg>
